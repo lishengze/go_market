@@ -1,0 +1,32 @@
+Name: mpu.rpc
+ListenOn: 0.0.0.0:8602
+Timeout: 60000
+
+Exchange: "FTX"
+Proxy: ""
+
+Log:
+  Compress: true
+  KeepDays: 0
+  Level: "info"
+  Mode: "file"
+  Path: "./log/ftx"
+  ServiceName: "opu"
+  StackCooldownMillis: 100
+
+KafkaConf:
+  Address: "152.32.254.76:9117"
+
+NacosConf:
+  DataId: "MPU"
+  Group: "MPU_GROUP"
+  Server:
+    - Host: "10.8.78.83"
+      Port: 8848
+  Client:
+    NamespaceId: "exterior-interactor"
+    TimeoutMs: 5000
+    CacheDir: "./log/ftx/nacos/"
+    LogDir: "./log/ftx/nacoscache/"
+    LogLevel: "debug"
+
