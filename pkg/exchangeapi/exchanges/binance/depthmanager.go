@@ -72,13 +72,13 @@ func NewDepthManager(mgr extools.SymbolManager, api *NativeApi) extools.DepthMan
 	return depthMgr
 }
 
-func newDepthInfo(symbol *exmodel.Symbol, api *NativeApi, outputCh chan *exmodel.StreamDepth) *depthUnit {
+func newDepthUnit(symbol *exmodel.Symbol, api *NativeApi, outputCh chan *exmodel.StreamDepth) *depthUnit {
 	info := &depthUnit{
 		mutex:          sync.Mutex{},
 		api:            api,
 		spotInputCh:    make(chan *binancespot.WsDiffDepth, 1024),
 		spotDepthCache: make([]*binancespot.WsDiffDepth, 0),
-		exchange:       exmodel.BINANCE,
+		exchange:       Name,
 		symbol:         symbol,
 		lastUpdateTime: time.Now(),
 		asks:           treemap.NewWith(utils.Float64Comparator), // 默认按 key 从小到大排序
@@ -301,7 +301,7 @@ func (o *depthManager) Sub(symbols ...exmodel.StdSymbol) {
 		}
 	}, func(item interface{}, writer mr.Writer, cancel func(error)) {
 		symbol := item.(*exmodel.Symbol)
-		info := newDepthInfo(symbol, o.api, o.outputCh)
+		info := newDepthUnit(symbol, o.api, o.outputCh)
 		o.store[symbol.StdSymbol] = info
 		writer.Write(struct{}{})
 	}, func(pipe <-chan interface{}, writer mr.Writer, cancel func(error)) {

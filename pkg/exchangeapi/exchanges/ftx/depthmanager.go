@@ -76,12 +76,12 @@ func NewDepthManager(mgr extools.SymbolManager, api *NativeApi) extools.DepthMan
 	return depthMgr
 }
 
-func newDepthInfo(symbol *exmodel.Symbol, api *NativeApi, outputCh chan *exmodel.StreamDepth, subscriber httptools.AutoWsSubscriber) *depthUnit {
+func newDepthUnit(symbol *exmodel.Symbol, api *NativeApi, outputCh chan *exmodel.StreamDepth, subscriber httptools.AutoWsSubscriber) *depthUnit {
 	info := &depthUnit{
 		mutex:          sync.Mutex{},
 		api:            api,
 		inputCh:        make(chan *ftxapi.StreamDepth, 1024),
-		exchange:       exmodel.BINANCE,
+		exchange:       Name,
 		symbol:         symbol,
 		lastUpdateTime: time.Now(),
 		subscriber:     subscriber,
@@ -299,7 +299,7 @@ func (o *depthManager) run() {
 			}
 			info, ok := o.store[symbol.StdSymbol]
 			if !ok { // 还未初始化完成，先丢弃
-				info = newDepthInfo(symbol, o.api, o.outputCh, o.subscriber)
+				info = newDepthUnit(symbol, o.api, o.outputCh, o.subscriber)
 				o.store[symbol.StdSymbol] = info
 			}
 
