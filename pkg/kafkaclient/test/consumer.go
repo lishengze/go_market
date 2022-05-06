@@ -3,14 +3,16 @@ package main
 import (
 	"exterior-interactor/app/mpu/rpc/mpupb"
 	"fmt"
+	"github.com/Shopify/sarama"
 	"google.golang.org/protobuf/proto"
 	"time"
-
-	"github.com/Shopify/sarama"
 )
 
 //const topic = "my-topic"
 const topic = "DEPTH.BTC_USDT.BINANCE"
+
+//const topic = "KLINE.BTC_USDT.BINANCE"
+//const topic = "TRADE.BTC_USDT.BINANCE"
 
 func main() {
 	// kafka consumer
@@ -36,13 +38,15 @@ func main() {
 		// 异步从每个分区消费信息
 		go func(sarama.PartitionConsumer) {
 			for msg := range pc.Messages() {
-				depth:=mpupb.Depth{}
-				err:=proto.Unmarshal(msg.Value,&depth)
-				if err!=nil{
+				data := mpupb.Depth{}
+				//data:=mpupb.Kline{}
+				//data:=mpupb.Trade{}
+				err := proto.Unmarshal(msg.Value, &data)
+				if err != nil {
 					fmt.Println(err)
 					continue
 				}
-				fmt.Println(depth.Timestamp.AsTime().Format(time.RFC3339Nano))
+				fmt.Println(data.Timestamp.AsTime().Format(time.RFC3339Nano), data.String())
 				//fmt.Printf("Partition:%d Offset:%d Key:%v Value:%v", msg.Partition, msg.Offset, msg.Key, msg.Value)
 			}
 		}(pc)

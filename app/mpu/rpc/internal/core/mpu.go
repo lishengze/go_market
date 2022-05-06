@@ -121,8 +121,6 @@ func NewMpu(c config.Config) Mpu {
 		kafkaSyncProducer:  newKafkaSyncProducer(c),
 	}
 
-	m.nacosClient = newNacosClient(c, m.onConfigUpdate) // 放在最后
-
 	switch exmodel.Exchange(c.Exchange) {
 	case exmodel.BINANCE:
 		api := binance.NewNativeApiWithProxy(exmodel.EmptyAccountConfig, c.Proxy)
@@ -139,6 +137,8 @@ func NewMpu(c config.Config) Mpu {
 	default:
 		panic(fmt.Sprintf("mpu not support exchange:%s", c.Exchange))
 	}
+
+	m.nacosClient = newNacosClient(c, m.onConfigUpdate)
 
 	// 启动时加载一次配置
 	content, err := m.nacosClient.GetConfig(nacosconf.ConfigParam{
@@ -252,7 +252,6 @@ func (o *mpu) dispatchTrade() {
 					Value: sarama.ByteEncoder(bytes),
 				})
 			}
-
 
 			//start := time.Now()
 			err = o.kafkaSyncProducer.SendMessages(msgs)
