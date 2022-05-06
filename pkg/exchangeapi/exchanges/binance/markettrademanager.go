@@ -54,12 +54,13 @@ func (o *marketTradeManager) run() {
 			}
 
 			o.outputCh <- &exmodel.StreamMarketTrade{
-				TradeId:  fmt.Sprint(t.Data.T),
-				Exchange: Name,
-				Time:     time.UnixMilli(t.Data.T1),
-				Symbol:   symbol,
-				Price:    t.Data.P,
-				Volume:   t.Data.Q,
+				TradeId:   fmt.Sprint(t.Data.T),
+				Exchange:  Name,
+				Time:      time.UnixMilli(t.Data.T1),
+				LocalTime: time.Now(),
+				Symbol:    symbol,
+				Price:     t.Data.P,
+				Volume:    t.Data.Q,
 			}
 		}
 	}

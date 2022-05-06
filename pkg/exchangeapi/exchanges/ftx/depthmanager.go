@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	depthOutputLimit = 5
+	depthOutputLimit = 100
 
 	checksumInterval = 20 // 20 次 update 校验一次 checksum
 )
@@ -134,11 +134,12 @@ func (o *depthUnit) generateDepth() (*exmodel.StreamDepth, bool) {
 	}
 
 	d := &exmodel.StreamDepth{
-		Exchange: o.exchange,
-		Time:     o.lastUpdateTime,
-		Symbol:   o.symbol,
-		Asks:     make([][2]string, 0, depthOutputLimit),
-		Bids:     make([][2]string, 0, depthOutputLimit),
+		Exchange:  o.exchange,
+		Time:      o.lastUpdateTime,
+		LocalTime: time.Now(),
+		Symbol:    o.symbol,
+		Asks:      make([][2]string, 0, depthOutputLimit),
+		Bids:      make([][2]string, 0, depthOutputLimit),
 	}
 
 	asksIt := o.asks.Iterator()
@@ -215,6 +216,9 @@ func (o *depthUnit) update(data *ftxapi.StreamDepth) (ok bool) {
 	o.mutex.Lock()
 
 	updateFn := func() {
+		tsDecimal := decimal.NewFromFloat(data.Data.Time)
+		microSec := tsDecimal.Mul(decimal.NewFromInt(1_000_000)).IntPart()
+		o.lastUpdateTime = time.UnixMicro(microSec)
 		for _, item := range data.Data.Asks {
 			price := item[0].String()
 			volume := item[1].String()

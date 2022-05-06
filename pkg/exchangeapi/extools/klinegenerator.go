@@ -62,6 +62,7 @@ func (o *klineInfo) generateKline() *exmodel.Kline {
 	return &exmodel.Kline{
 		Exchange:   o.trades[0].Exchange,
 		Time:       timeutils.TimeToExactMinute(o.trades[0].Time),
+		LocalTime:  time.Now(),
 		Symbol:     o.trades[0].Symbol,
 		Resolution: 60,
 		Open:       open,

@@ -314,20 +314,21 @@ func (o *mpu) dispatchKline() {
 	}
 }
 
+// checkDelay 主要用来检测推送是否有延迟
 func (o *mpu) checkDelay(data interface{}) {
 	now := time.Now()
 	if depth, ok := data.(*exmodel.StreamDepth); ok {
-		delay := depth.Time.Sub(now)
+		delay := depth.LocalTime.Sub(now)
 		if delay > delayThreshold || delay < -delayThreshold {
 			logx.Errorf("depth delay over %v, delay:%v ", delayThreshold, delay)
 		}
 	} else if kline, ok := data.(*exmodel.Kline); ok {
-		delay := kline.Time.Sub(now)
+		delay := kline.LocalTime.Sub(now)
 		if delay > delayThreshold || delay < -delayThreshold {
 			logx.Errorf("kline delay over %v, delay:%v ", delayThreshold, delay)
 		}
 	} else if trade, ok := data.(*exmodel.StreamMarketTrade); ok {
-		delay := trade.Time.Sub(now)
+		delay := trade.LocalTime.Sub(now)
 		if delay > delayThreshold || delay < -delayThreshold {
 			logx.Errorf("trade delay over %v, delay:%v ", delayThreshold, delay)
 		}
@@ -391,11 +392,12 @@ func (o *mpu) convertDepth(in *exmodel.StreamDepth) ([]byte, error) {
 	}
 
 	data := &mpupb.Depth{
-		Timestamp: timestamppb.New(in.Time),
-		Exchange:  in.Exchange.String(),
-		Symbol:    in.Symbol.StdSymbol.String(),
-		Asks:      asks,
-		Bids:      bids,
+		Timestamp:    timestamppb.New(in.Time),
+		MpuTimestamp: timestamppb.New(in.LocalTime),
+		Exchange:     in.Exchange.String(),
+		Symbol:       in.Symbol.StdSymbol.String(),
+		Asks:         asks,
+		Bids:         bids,
 	}
 
 	msg, err := proto.Marshal(data)

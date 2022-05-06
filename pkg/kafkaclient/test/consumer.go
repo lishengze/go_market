@@ -9,10 +9,14 @@ import (
 )
 
 //const topic = "my-topic"
-const topic = "DEPTH.BTC_USDT.BINANCE"
-
+//const topic = "DEPTH.BTC_USDT.BINANCE"
 //const topic = "KLINE.BTC_USDT.BINANCE"
 //const topic = "TRADE.BTC_USDT.BINANCE"
+
+const topic = "DEPTH.BTC_USDT.FTX"
+
+//const topic = "KLINE.BTC_USDT.FTX"
+//const topic = "TRADE.BTC_USDT.FTX"
 
 func main() {
 	// kafka consumer

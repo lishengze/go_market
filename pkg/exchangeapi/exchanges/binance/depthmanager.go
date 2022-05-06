@@ -115,11 +115,12 @@ func (o *depthUnit) generateDepth() (*exmodel.StreamDepth, bool) {
 	//fmt.Println((o.lastUpdateTime).Format(time.RFC3339Nano), "%%%%%%%%%%%%%%")
 	//start:=time.Now()
 	d := &exmodel.StreamDepth{
-		Exchange: o.exchange,
-		Time:     o.lastUpdateTime,
-		Symbol:   o.symbol,
-		Asks:     make([][2]string, 0, depthOutputLimit),
-		Bids:     make([][2]string, 0, depthOutputLimit),
+		Exchange:  o.exchange,
+		Time:      o.lastUpdateTime,
+		LocalTime: time.Now(),
+		Symbol:    o.symbol,
+		Asks:      make([][2]string, 0, depthOutputLimit),
+		Bids:      make([][2]string, 0, depthOutputLimit),
 	}
 
 	asksIt := o.asks.Iterator()

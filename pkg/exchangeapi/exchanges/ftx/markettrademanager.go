@@ -7,6 +7,7 @@ import (
 	"exterior-interactor/pkg/httptools"
 	"fmt"
 	"github.com/zeromicro/go-zero/core/logx"
+	"time"
 )
 
 type marketTradeManager struct {
@@ -58,12 +59,13 @@ func (o *marketTradeManager) run() {
 				//	continue
 				//}
 				o.outputCh <- &exmodel.StreamMarketTrade{
-					TradeId:  fmt.Sprint(t.Id),
-					Exchange: Name,
-					Time:     t.Time,
-					Symbol:   symbol,
-					Price:    fmt.Sprint(t.Price),
-					Volume:   fmt.Sprint(t.Size),
+					TradeId:   fmt.Sprint(t.Id),
+					Exchange:  Name,
+					Time:      t.Time,
+					LocalTime: time.Now(),
+					Symbol:    symbol,
+					Price:     fmt.Sprint(t.Price),
+					Volume:    fmt.Sprint(t.Size),
 				}
 			}
 
