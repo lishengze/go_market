@@ -17,7 +17,10 @@ import (
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"time"
 )
+
+const delayThreshold = time.Second * 10 // 行情延迟
 
 type (
 	Mpu interface {
@@ -182,6 +185,7 @@ func (o *mpu) dispatchDepth() {
 	for {
 		select {
 		case depth := <-depthCh:
+			o.checkDelay(depth)
 			bytes, err := o.convertDepth(depth)
 			if err != nil {
 				continue
@@ -224,6 +228,8 @@ func (o *mpu) dispatchTrade() {
 	for {
 		select {
 		case trade := <-tradeCh:
+			o.checkDelay(trade)
+
 			o.KlineGenerator.InputMarketTrade(trade) // 首先推送到到 kline
 
 			bytes, err := o.convertStreamMarketTrade(trade)
@@ -269,6 +275,8 @@ func (o *mpu) dispatchKline() {
 	for {
 		select {
 		case kline := <-klineCh:
+			o.checkDelay(kline)
+
 			bytes, err := o.convertKline(kline)
 			if err != nil {
 				continue
@@ -302,6 +310,26 @@ func (o *mpu) dispatchKline() {
 			if err != nil {
 				logx.Errorf("kafkaConn write kline err:%s, data:%+v", err, *kline)
 			}
+		}
+	}
+}
+
+func (o *mpu) checkDelay(data interface{}) {
+	now := time.Now()
+	if depth, ok := data.(*exmodel.StreamDepth); ok {
+		delay := depth.Time.Sub(now)
+		if delay > delayThreshold || delay < -delayThreshold {
+			logx.Errorf("depth delay over %v, delay:%v ", delayThreshold, delay)
+		}
+	} else if kline, ok := data.(*exmodel.Kline); ok {
+		delay := kline.Time.Sub(now)
+		if delay > delayThreshold || delay < -delayThreshold {
+			logx.Errorf("kline delay over %v, delay:%v ", delayThreshold, delay)
+		}
+	} else if trade, ok := data.(*exmodel.StreamMarketTrade); ok {
+		delay := trade.Time.Sub(now)
+		if delay > delayThreshold || delay < -delayThreshold {
+			logx.Errorf("trade delay over %v, delay:%v ", delayThreshold, delay)
 		}
 	}
 }

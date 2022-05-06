@@ -257,7 +257,7 @@ func (o *depthUnit) update(data *ftxapi.StreamDepth) (ok bool) {
 			o.resub()
 			return false
 		}
-		fmt.Printf("***right***,symbol:%s checksum:%v, local_checksum:%v\n", o.symbol.ExFormat, data.Data.Checksum, sum)
+		//fmt.Printf("***right***,symbol:%s checksum:%v, local_checksum:%v\n", o.symbol.ExFormat, data.Data.Checksum, sum)
 		return true
 
 	case depthUnitStatusResetting:
