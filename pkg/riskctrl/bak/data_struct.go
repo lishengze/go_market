@@ -1,10 +1,7 @@
-package riskctrl
+package riskctrlbak
 
 import (
 	"encoding/json"
-
-	"github.com/emirpasic/gods/maps/treemap"
-	"github.com/emirpasic/gods/utils"
 )
 
 type TestData struct {
@@ -19,8 +16,8 @@ type TPrice float64
 type TVolume float64
 
 type InnerDepth struct {
-	Volume         float64
-	ExchangeVolume map[string]float64
+	Volume         TVolume
+	ExchangeVolume map[TExchange]TVolume
 }
 
 func (src *InnerDepth) Add(other *InnerDepth) {
@@ -36,16 +33,11 @@ func (src *InnerDepth) Add(other *InnerDepth) {
 }
 
 type DepthQuote struct {
-	Exchange string
-	Symbol   string
-	Time     uint64
-	Asks     *treemap.Map
-	Bids     *treemap.Map
-}
-
-func (d *DepthQuote) Init() {
-	d.Asks = treemap.NewWith(utils.Float64Comparator)
-	d.Bids = treemap.NewWith(utils.Float64Comparator)
+	Exchange TExchange             `json:"Exchange"`
+	Symbol   TSymbol               `json:"Symbol"`
+	Time     uint64                `json:"Time"`
+	Asks     map[TPrice]InnerDepth `json:"Asks"`
+	Bids     map[TPrice]InnerDepth `json:"Bids"`
 }
 
 func (depth_quote *DepthQuote) String(len int) string {

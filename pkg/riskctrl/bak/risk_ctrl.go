@@ -1,12 +1,9 @@
-package riskctrl
+package riskctrlbak
 
 import (
 	"fmt"
 	"math"
 	"time"
-
-	"github.com/emirpasic/gods/maps/treemap"
-	"github.com/emirpasic/gods/utils"
 )
 
 // type TString string
@@ -48,7 +45,7 @@ type HedgeConfig struct {
 }
 
 type RiskCtrlConfig struct {
-	HedgeConfigMap map[string]HedgeConfig
+	HedgeConfigMap map[TExchange]HedgeConfig
 
 	PricePrecison  uint32
 	VolumePrecison uint32
@@ -62,7 +59,7 @@ type RiskCtrlConfig struct {
 	PriceMinumChange float64
 }
 
-type RiskCtrlConfigMap map[string]RiskCtrlConfig
+type RiskCtrlConfigMap map[TSymbol]RiskCtrlConfig
 
 type RiskWorkerInterface interface {
 	Process(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) bool
@@ -132,50 +129,41 @@ func get_bias_value(original_value float64, bias_kind int, bias_value float64) f
 	return biased_value
 }
 
-func get_new_fee_price(original_price float64, exchange string, hedge_config *RiskCtrlConfig, isAsk bool) float64 {
+func get_new_fee_price(original_price TPrice, exchange TExchange, hedge_config *RiskCtrlConfig, isAsk bool) TPrice {
 	defer ExceptionFunc()
 
 	new_price := original_price
 	if hedge_config, ok := hedge_config.HedgeConfigMap[exchange]; ok {
 
 		if isAsk {
-			new_price = float64(get_bias_value(float64(original_price), hedge_config.FeeKind, hedge_config.FeeValue))
+			new_price = TPrice(get_bias_value(float64(original_price), hedge_config.FeeKind, hedge_config.FeeValue))
 		} else {
-			new_price = float64(get_bias_value(float64(original_price), hedge_config.FeeKind, hedge_config.FeeValue*-1))
+			new_price = TPrice(get_bias_value(float64(original_price), hedge_config.FeeKind, hedge_config.FeeValue*-1))
 		}
 	}
 	return new_price
 }
 
 // 根据每个交易所的手续费率，计算手续费
-func (w *FeeWorker) calc_depth_fee(depth *treemap.Map, config *RiskCtrlConfig, isAsk bool) *treemap.Map {
+func (w *FeeWorker) calc_depth_fee(depth map[TPrice]InnerDepth, config *RiskCtrlConfig, isAsk bool) map[TPrice]InnerDepth {
 	defer ExceptionFunc()
 
-	result := treemap.NewWith(utils.Float64Comparator)
+	result := make(map[TPrice]InnerDepth)
 
-	iter := depth.Iterator()
-
-	for iter.Begin(); iter.Next(); {
-		original_price := iter.Key().(float64)
-		inner_depth := iter.Value().(InnerDepth)
-
+	for original_price, inner_depth := range depth {
 		for exchange, _ := range inner_depth.ExchangeVolume {
 			new_price := get_new_fee_price(original_price, exchange, config, isAsk)
 
-			if new_inner_depth_iter, ok := result.Get(new_price); ok {
-
-				new_inner_depth := new_inner_depth_iter.(InnerDepth)
-
+			if new_inner_depth, ok := result[new_price]; ok {
 				new_inner_depth.ExchangeVolume[exchange] += inner_depth.Volume
 				new_inner_depth.Volume += inner_depth.Volume
-
 			} else {
-				new_inner_depth := InnerDepth{0, make(map[string]float64)}
+				new_inner_depth := InnerDepth{0, make(map[TExchange]TVolume)}
 
 				new_inner_depth.ExchangeVolume[exchange] = inner_depth.Volume
 				new_inner_depth.Volume = inner_depth.Volume
 
-				result.Put(new_price, new_inner_depth)
+				result[new_price] = new_inner_depth
 			}
 		}
 	}
@@ -233,33 +221,29 @@ type QuotebiasWorker struct {
 	Worker
 }
 
-func calc_depth_bias(depth *treemap.Map, config *RiskCtrlConfig, isAsk bool) *treemap.Map {
+func calc_depth_bias(depth map[TPrice]InnerDepth, config *RiskCtrlConfig, isAsk bool) map[TPrice]InnerDepth {
 	defer ExceptionFunc()
 
-	result := treemap.NewWith(utils.Float64Comparator)
+	result := make(map[TPrice]InnerDepth)
 
-	depth_iter := depth.Iterator()
-
-	for depth_iter.Begin(); depth_iter.Next(); {
-		original_price := depth_iter.Key().(float64)
-		inner_depth := depth_iter.Value().(InnerDepth)
+	for original_price, inner_depth := range depth {
 
 		// var new_inner_depth InnerDepth
 
-		new_inner_depth := InnerDepth{0, make(map[string]float64)}
+		new_inner_depth := InnerDepth{0, make(map[TExchange]TVolume)}
 
-		new_price := get_bias_value(original_price, config.PriceBiasKind, config.PriceBiasValue)
-		new_volume := get_bias_value(inner_depth.Volume, config.VolumeBiasKind, config.VolumeBiasValue)
+		new_price := TPrice(get_bias_value(float64(original_price), config.PriceBiasKind, config.PriceBiasValue))
+		new_volume := TVolume(get_bias_value(float64(inner_depth.Volume), config.VolumeBiasKind, config.VolumeBiasValue))
 
 		new_inner_depth.Volume = new_volume
 
 		for exchange, exchange_volume := range inner_depth.ExchangeVolume {
-			new_exchange_volume := get_bias_value(exchange_volume, config.VolumeBiasKind, config.VolumeBiasValue)
+			new_exchange_volume := TVolume(get_bias_value(float64(exchange_volume), config.VolumeBiasKind, config.VolumeBiasValue))
 
 			new_inner_depth.ExchangeVolume[exchange] = new_exchange_volume
 		}
 
-		result.Put(new_price, new_inner_depth)
+		result[new_price] = new_inner_depth
 	}
 
 	return result
@@ -314,42 +298,41 @@ type WatermarkWorker struct {
 }
 
 // 每个交易所的买一卖一档，然后取买一卖一中位数的均值
-func calc_watermark(depth_quote *DepthQuote) float64 {
-	var rst float64
+func calc_watermark(depth_quote *DepthQuote) TPrice {
+	var rst TPrice
 
 	return rst
 }
 
-func filter_depth_by_watermark(depth *treemap.Map, watermark float64, price_minum_change float64, isAsk bool) {
+func filter_depth_by_watermark(depth map[TPrice]InnerDepth, watermark TPrice, price_minum_change float64, isAsk bool) {
 
-	crossed_price := []float64{}
-	new_inner_depth := InnerDepth{0, make(map[string]float64)}
-	var new_price float64 = 0
-
-	depth_iter := depth.Iterator()
+	sorted_keys := get_sorted_key(depth)
+	crossed_price := []TPrice{}
+	new_inner_depth := InnerDepth{0, make(map[TExchange]TVolume)}
+	var new_price TPrice = 0
 
 	if isAsk {
-		new_price = watermark + float64(price_minum_change)
+		new_price = watermark + TPrice(price_minum_change)
 
-		for depth_iter.Begin(); depth_iter.Next(); {
-			cur_price := depth_iter.Key().(float64)
-			cur_innerdepth := depth_iter.Value().(InnerDepth)
-
+		for i := 0; i < len(sorted_keys); i++ {
+			cur_price := sorted_keys[i]
+			cur_innerdepth := depth[cur_price]
 			if cur_price <= new_price {
 				crossed_price = append(crossed_price, cur_price)
+
 				new_inner_depth.Add(&cur_innerdepth)
+
 			} else {
 				break
 			}
 		}
 
 	} else {
-		new_price = watermark - float64(price_minum_change)
+		new_price = watermark - TPrice(price_minum_change)
 
-		for depth_iter.End(); depth_iter.Prev(); {
-			cur_price := depth_iter.Key().(float64)
-			cur_innerdepth := depth_iter.Value().(InnerDepth)
-
+		for i := len(sorted_keys); i > -1; i-- {
+			cur_price := sorted_keys[i]
+			cur_innerdepth := depth[cur_price]
 			if cur_price >= new_price {
 				crossed_price = append(crossed_price, cur_price)
 				new_inner_depth.Add(&cur_innerdepth)
@@ -361,47 +344,48 @@ func filter_depth_by_watermark(depth *treemap.Map, watermark float64, price_minu
 
 	if len(crossed_price) > 0 {
 		for _, price := range crossed_price {
-
-			depth.Remove(price)
+			delete(depth, price)
 		}
 	}
 
 	if new_price != 0 {
-		depth.Put(new_price, new_inner_depth)
+		depth[new_price] = new_inner_depth
 	}
 }
 
-func get_sorted_key(depth *treemap.Map) []float64 {
-	var keys []float64
+func get_sorted_key(depth map[TPrice]InnerDepth) []TPrice {
+	var keys []TPrice
 
-	// for price, _ := range depth {
+	for price, _ := range depth {
 
-	// 	keys = append(keys, price)
+		keys = append(keys, price)
 
-	// 	for i := len(keys) - 1; i > 0; i-- {
-	// 		if keys[i] < keys[i-1] {
-	// 			tmp := keys[i]
-	// 			keys[i] = keys[i-1]
-	// 			keys[i-1] = tmp
-	// 		} else {
-	// 			break
-	// 		}
-	// 	}
-	// }
+		for i := len(keys) - 1; i > 0; i-- {
+			if keys[i] < keys[i-1] {
+				tmp := keys[i]
+				keys[i] = keys[i-1]
+				keys[i-1] = tmp
+			} else {
+				break
+			}
+		}
+	}
 	return keys
 }
 
 func check_cross(depth_quote *DepthQuote) bool {
-	if depth_quote.Asks.Size() == 0 || depth_quote.Bids.Size() == 0 {
+	if len(depth_quote.Asks) == 0 || len(depth_quote.Bids) == 0 {
 		return false
 	}
 
-	ask_iter := depth_quote.Asks.Iterator()
-	bid_iter := depth_quote.Bids.Iterator()
+	ask_keys := get_sorted_key(depth_quote.Asks)
 
-	if ask_iter.First() && bid_iter.Last() && ask_iter.Key().(float64) <= bid_iter.Key().(float64) {
+	bid_keys := get_sorted_key(depth_quote.Bids)
+
+	if ask_keys[0] <= bid_keys[len(bid_keys)-1] {
 		return true
 	}
+
 	return false
 }
 
@@ -461,30 +445,27 @@ func resize_float64(src float64, presion uint32) float64 {
 	return math.Trunc(src*x) / x
 }
 
-func resize_depth_precision(depth *treemap.Map, config *RiskCtrlConfig) *treemap.Map {
+func resize_depth_precision(depth map[TPrice]InnerDepth, config *RiskCtrlConfig) map[TPrice]InnerDepth {
 	defer ExceptionFunc()
 
-	result := treemap.NewWith(utils.Float64Comparator)
-	depth_iter := depth.Iterator()
+	result := make(map[TPrice]InnerDepth)
 
-	for depth_iter.Begin(); depth_iter.Next(); {
-		original_price := depth_iter.Key().(float64)
-		inner_depth := depth_iter.Value().(InnerDepth)
+	for original_price, inner_depth := range depth {
 
-		new_inner_depth := InnerDepth{0, make(map[string]float64)}
+		new_inner_depth := InnerDepth{0, make(map[TExchange]TVolume)}
 
-		new_price := resize_float64(original_price, config.PricePrecison)
-		new_volume := resize_float64(inner_depth.Volume, config.VolumePrecison)
+		new_price := TPrice(resize_float64(float64(original_price), config.PricePrecison))
+		new_volume := TVolume(resize_float64(float64(inner_depth.Volume), config.VolumePrecison))
 
 		new_inner_depth.Volume = new_volume
 
 		for exchange, exchange_volume := range inner_depth.ExchangeVolume {
-			new_exchange_volume := float64(resize_float64(float64(exchange_volume), config.VolumePrecison))
+			new_exchange_volume := TVolume(resize_float64(float64(exchange_volume), config.VolumePrecison))
 
 			new_inner_depth.ExchangeVolume[exchange] = new_exchange_volume
 		}
 
-		result.Put(new_price, new_inner_depth)
+		result[new_price] = new_inner_depth
 	}
 
 	return result
@@ -572,32 +553,32 @@ func (r *RiskWorkerManager) Execute(depth_quote *DepthQuote, configs *RiskCtrlCo
 func test_get_sorted_keys() {
 	defer ExceptionFunc()
 
-	test_map := treemap.NewWith(utils.Float64Comparator)
+	test_map := make(map[TPrice]InnerDepth)
 
-	depth1 := InnerDepth{0, make(map[string]float64)}
+	depth1 := InnerDepth{0, make(map[TExchange]TVolume)}
 	depth1.Volume = 1
 	depth1.ExchangeVolume["FTX"] = 1
 
-	depth2 := InnerDepth{0, make(map[string]float64)}
+	depth2 := InnerDepth{0, make(map[TExchange]TVolume)}
 	depth2.Volume = 2
 
-	depth3 := InnerDepth{0, make(map[string]float64)}
+	depth3 := InnerDepth{0, make(map[TExchange]TVolume)}
 	depth3.Volume = 3
 
-	test_map.Put(1.1, depth1)
-	test_map.Put(2.1, depth2)
-	test_map.Put(3.1, depth3)
+	test_map[1.1] = depth1
 
-	// test_map_iter := test_map.Iterator()
+	test_map[2.1] = depth2
 
-	// for price, value := range test_map {
-	// 	fmt.Println(price)
-	// 	fmt.Println(value)
-	// 	fmt.Printf("\n")
-	// }
+	test_map[3.1] = depth3
 
-	// keys := get_sorted_key(test_map)
-	// fmt.Println(keys)
+	for price, value := range test_map {
+		fmt.Println(price)
+		fmt.Println(value)
+		fmt.Printf("\n")
+	}
+
+	keys := get_sorted_key(test_map)
+	fmt.Println(keys)
 }
 
 func get_test_depth() DepthQuote {
@@ -606,20 +587,20 @@ func get_test_depth() DepthQuote {
 	rst.Exchange = "FTX"
 	rst.Symbol = "BTC_USDT"
 	rst.Time = uint64(time.Now().Unix())
-	rst.Asks = treemap.NewWith(utils.Float64Comparator)
-	rst.Bids = treemap.NewWith(utils.Float64Comparator)
+	rst.Asks = make(map[TPrice]InnerDepth)
+	rst.Bids = make(map[TPrice]InnerDepth)
 
-	// rst.Asks[41001.11111] = InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}}
-	// rst.Asks[41002.22222] = InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}}
-	// rst.Asks[41003.33333] = InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}}
-	// rst.Asks[41004.44444] = InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}}
-	// rst.Asks[41005.55555] = InnerDepth{5.55555, map[string]float64{"FTX": 5.55555}}
+	rst.Asks[41001.11111] = InnerDepth{1.11111, map[TExchange]TVolume{"FTX": 1.11111}}
+	rst.Asks[41002.22222] = InnerDepth{2.22222, map[TExchange]TVolume{"FTX": 2.22222}}
+	rst.Asks[41003.33333] = InnerDepth{3.33333, map[TExchange]TVolume{"FTX": 3.33333}}
+	rst.Asks[41004.44444] = InnerDepth{4.44444, map[TExchange]TVolume{"FTX": 4.44444}}
+	rst.Asks[41005.55555] = InnerDepth{5.55555, map[TExchange]TVolume{"FTX": 5.55555}}
 
-	// rst.Bids[41004.44444] = InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}}
-	// rst.Bids[41003.33333] = InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}}
-	// rst.Bids[41002.22222] = InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}}
-	// rst.Bids[41001.11111] = InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}}
-	// rst.Bids[40009.99999] = InnerDepth{9.99999, map[string]float64{"FTX": 9.99999}}
+	rst.Bids[41004.44444] = InnerDepth{4.44444, map[TExchange]TVolume{"FTX": 4.44444}}
+	rst.Bids[41003.33333] = InnerDepth{3.33333, map[TExchange]TVolume{"FTX": 3.33333}}
+	rst.Bids[41002.22222] = InnerDepth{2.22222, map[TExchange]TVolume{"FTX": 2.22222}}
+	rst.Bids[41001.11111] = InnerDepth{1.11111, map[TExchange]TVolume{"FTX": 1.11111}}
+	rst.Bids[40009.99999] = InnerDepth{9.99999, map[TExchange]TVolume{"FTX": 9.99999}}
 
 	// rst.Asks[40002.222222].Volume = 2.222222
 	// rst.Asks[40003.222222].Volume = 2.222222
@@ -631,7 +612,7 @@ func get_test_depth() DepthQuote {
 func get_test_config() RiskCtrlConfigMap {
 	rst := RiskCtrlConfigMap{
 		"BTC_USDT": {
-			HedgeConfigMap:   map[string]HedgeConfig{"FTX": {1, 0.1}},
+			HedgeConfigMap:   map[TExchange]HedgeConfig{"FTX": {1, 0.1}},
 			PricePrecison:    2,
 			VolumePrecison:   3,
 			PriceBiasValue:   0.1,
@@ -659,9 +640,9 @@ func TestWorker() {
 }
 
 func TestInnerDepth() {
-	// a := InnerDepth{0, make(map[string]float64)}
+	// a := InnerDepth{0, make(map[TExchange]TVolume)}
 
-	// var e1 = map[string]float64{
+	// var e1 = map[TExchange]TVolume{
 	// 	"FTX": 1.1,
 	// }
 
@@ -669,7 +650,7 @@ func TestInnerDepth() {
 	// 	"FTX": 1.1,
 	// }
 
-	a := InnerDepth{0, map[string]float64{"FTX": 1.1}}
+	a := InnerDepth{0, map[TExchange]TVolume{"FTX": 1.1}}
 
 	// fmt.Println(e)
 	// fmt.Println(e1)
