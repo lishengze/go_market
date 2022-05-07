@@ -643,7 +643,7 @@ func test_get_sorted_keys() {
 	// fmt.Println(keys)
 }
 
-func get_test_depth() DepthQuote {
+func GetTestDepth() DepthQuote {
 	var rst DepthQuote
 
 	rst.Exchange = "FTX"
@@ -693,7 +693,7 @@ func TestWorker() {
 	risk_worker_manager := RiskWorkerManager{}
 	risk_worker_manager.Init()
 
-	depth_quote := get_test_depth()
+	depth_quote := GetTestDepth()
 	config := get_test_config()
 
 	// fmt.Printf("depth_quote: %v\n", depth_quote)
@@ -721,7 +721,7 @@ func TestInnerDepth() {
 }
 
 func test_json() {
-	depth_quote := get_test_depth()
+	depth_quote := GetTestDepth()
 	fmt.Println(depth_quote.String(5))
 }
 

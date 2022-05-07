@@ -43,6 +43,17 @@ type DepthQuote struct {
 	Bids     *treemap.Map
 }
 
+type Kline struct {
+	Exchange string
+	Symbol   string
+	Time     uint64
+	open     float64
+	high     float64
+	low      float64
+	close    float64
+	volume   float64
+}
+
 func (d *DepthQuote) Init() {
 	d.Asks = treemap.NewWith(utils.Float64Comparator)
 	d.Bids = treemap.NewWith(utils.Float64Comparator)
