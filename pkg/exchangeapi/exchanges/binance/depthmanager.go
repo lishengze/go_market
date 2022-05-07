@@ -282,6 +282,10 @@ func (o *depthManager) Sub(symbols ...exmodel.StdSymbol) {
 	var valid []*exmodel.Symbol
 
 	for _, s := range symbols {
+		if _, ok := o.store[s]; ok {
+			continue
+		}
+
 		r, err := o.SymbolManager.GetSymbol(s)
 		if err != nil {
 			logx.Infof("%s not support symbol:%s", Name, s)

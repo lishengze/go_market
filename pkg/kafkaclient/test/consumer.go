@@ -15,6 +15,8 @@ import (
 
 const topic = "DEPTH.BTC_USDT.FTX"
 
+//const topic = "DEPTH.ETH_USDT.FTX"
+
 //const topic = "KLINE.BTC_USDT.FTX"
 //const topic = "TRADE.BTC_USDT.FTX"
 
@@ -50,7 +52,12 @@ func main() {
 					fmt.Println(err)
 					continue
 				}
-				fmt.Println(data.Timestamp.AsTime().Format(time.RFC3339Nano), data.String())
+				fmt.Println(
+					data.Timestamp.AsTime().Format(time.RFC3339Nano),
+					data.MpuTimestamp.AsTime().Format(time.RFC3339Nano),
+					data.Symbol,
+					//data.String(),
+				)
 				//fmt.Printf("Partition:%d Offset:%d Key:%v Value:%v", msg.Partition, msg.Offset, msg.Key, msg.Value)
 			}
 		}(pc)
