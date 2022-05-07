@@ -7,6 +7,7 @@ import (
 
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
+	"github.com/shopspring/decimal"
 )
 
 // type TString string
@@ -115,21 +116,24 @@ type FeeWorker struct {
 func get_bias_value(original_value float64, bias_kind int, bias_value float64) float64 {
 	defer ExceptionFunc()
 
-	biased_value := original_value
+	rst := decimal.NewFromFloat(original_value)
+
+	// biased_value := original_value
 
 	if bias_kind == 1 {
-		biased_value *= (1 + bias_value)
+		rst = rst.Mul(decimal.NewFromFloat(1 + bias_value))
 	} else if bias_kind == 2 {
-		biased_value += bias_value
+		rst = rst.Add(decimal.NewFromFloat(bias_value))
 	} else {
 		LOG_ERROR("Error Bias Kind")
 	}
 
-	if biased_value < 0 {
-		biased_value = 0
+	rst_float, _ := rst.Float64()
+	if rst_float < 0 {
+		rst_float = 0
 	}
 
-	return biased_value
+	return rst_float
 }
 
 func get_new_fee_price(original_price float64, exchange string, hedge_config *RiskCtrlConfig, isAsk bool) float64 {
@@ -139,9 +143,9 @@ func get_new_fee_price(original_price float64, exchange string, hedge_config *Ri
 	if hedge_config, ok := hedge_config.HedgeConfigMap[exchange]; ok {
 
 		if isAsk {
-			new_price = float64(get_bias_value(float64(original_price), hedge_config.FeeKind, hedge_config.FeeValue))
+			new_price = get_bias_value(original_price, hedge_config.FeeKind, hedge_config.FeeValue)
 		} else {
-			new_price = float64(get_bias_value(float64(original_price), hedge_config.FeeKind, hedge_config.FeeValue*-1))
+			new_price = get_bias_value(original_price, hedge_config.FeeKind, hedge_config.FeeValue*-1)
 		}
 	}
 	return new_price
@@ -206,9 +210,9 @@ func (w *FeeWorker) Process(depth_quote *DepthQuote, configs *RiskCtrlConfigMap)
 
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 
-		fmt.Printf("config:%v \n", configs)
+		fmt.Printf("\nConfig:%v \n", configs)
 		LOG_INFO("\nBefore FeeCtrl: \n" + depth_quote.String(5))
-		fmt.Println(depth_quote)
+		// fmt.Println(depth_quote)
 
 		new_asks := w.calc_depth_fee(depth_quote.Asks, &config, true)
 		depth_quote.Asks = new_asks
@@ -217,7 +221,7 @@ func (w *FeeWorker) Process(depth_quote *DepthQuote, configs *RiskCtrlConfigMap)
 		depth_quote.Bids = new_bids
 
 		LOG_INFO("\nAfter FeeCtrl: \n" + depth_quote.String(5))
-		fmt.Println(depth_quote)
+		// fmt.Println(depth_quote)
 
 	} else {
 
@@ -609,21 +613,22 @@ func get_test_depth() DepthQuote {
 	rst.Asks = treemap.NewWith(utils.Float64Comparator)
 	rst.Bids = treemap.NewWith(utils.Float64Comparator)
 
-	// rst.Asks[41001.11111] = InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}}
-	// rst.Asks[41002.22222] = InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}}
-	// rst.Asks[41003.33333] = InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}}
-	// rst.Asks[41004.44444] = InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}}
-	// rst.Asks[41005.55555] = InnerDepth{5.55555, map[string]float64{"FTX": 5.55555}}
+	rst.Asks.Put(41001.11111, InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
+	rst.Asks.Put(41002.22222, InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
 
-	// rst.Bids[41004.44444] = InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}}
-	// rst.Bids[41003.33333] = InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}}
-	// rst.Bids[41002.22222] = InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}}
-	// rst.Bids[41001.11111] = InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}}
-	// rst.Bids[40009.99999] = InnerDepth{9.99999, map[string]float64{"FTX": 9.99999}}
+	rst.Asks.Put(41003.33333, InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
+	rst.Asks.Put(41004.44444, InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
+	rst.Asks.Put(41005.55555, InnerDepth{5.55555, map[string]float64{"FTX": 5.55555}})
 
-	// rst.Asks[40002.222222].Volume = 2.222222
-	// rst.Asks[40003.222222].Volume = 2.222222
-	// rst.Asks[40004.222222].Volume = 2.222222
+	rst.Bids.Put(41004.44444, InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
+	rst.Bids.Put(41003.33333, InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
+	rst.Bids.Put(41002.22222, InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
+	rst.Bids.Put(41001.11111, InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
+	rst.Bids.Put(40009.99999, InnerDepth{9.99999, map[string]float64{"FTX": 9.99999}})
+
+	// rst.Asks.Put(40002.222222].Volume = 2.222222
+	// rst.Asks.Put(40003.222222].Volume = 2.222222
+	// rst.Asks.Put(40004.222222].Volume = 2.222222
 
 	return rst
 }

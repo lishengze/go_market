@@ -1,11 +1,18 @@
 package main
 
-// func main() {
-// 	fmt.Println("Test Risk Ctrl")
+import (
+	"fmt"
+	"market_aggregate/pkg/riskctrl"
+)
 
-// 	// riskctrl.TestInnerDepth()
+func main() {
+	fmt.Println("Test Risk Ctrl")
 
-// 	// riskctrl.TestImport()
+	// riskctrl.TestInnerDepth()
 
-// 	TestTreeMap()
-// }
+	// riskctrl.TestImport()
+
+	riskctrl.TestWorker()
+
+	// TestTreeMap()
+}

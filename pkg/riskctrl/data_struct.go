@@ -1,7 +1,7 @@
 package riskctrl
 
 import (
-	"encoding/json"
+	"fmt"
 
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
@@ -48,9 +48,9 @@ func (d *DepthQuote) Init() {
 	d.Bids = treemap.NewWith(utils.Float64Comparator)
 }
 
-func (depth_quote *DepthQuote) String(len int) string {
+func (d *DepthQuote) String(len int) string {
 
-	res, _ := json.Marshal(*depth_quote)
+	res := fmt.Sprintf("%s.%s, %d\nAsks: %s\nBids: %s \n", d.Exchange, d.Symbol, d.Time, d.Asks.String(), d.Bids.String())
 
 	return string(res)
 }
