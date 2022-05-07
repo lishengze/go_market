@@ -244,6 +244,14 @@ func calc_depth_bias(depth *treemap.Map, config *RiskCtrlConfig, isAsk bool) *tr
 
 	depth_iter := depth.Iterator()
 
+	PriceBiasValue := config.PriceBiasValue
+	VolumeBiasValue := config.VolumeBiasValue
+
+	if isAsk == false {
+		PriceBiasValue *= -1
+		VolumeBiasValue *= -1
+	}
+
 	for depth_iter.Begin(); depth_iter.Next(); {
 		original_price := depth_iter.Key().(float64)
 		inner_depth := depth_iter.Value().(InnerDepth)
@@ -252,13 +260,13 @@ func calc_depth_bias(depth *treemap.Map, config *RiskCtrlConfig, isAsk bool) *tr
 
 		new_inner_depth := InnerDepth{0, make(map[string]float64)}
 
-		new_price := get_bias_value(original_price, config.PriceBiasKind, config.PriceBiasValue)
-		new_volume := get_bias_value(inner_depth.Volume, config.VolumeBiasKind, config.VolumeBiasValue)
+		new_price := get_bias_value(original_price, config.PriceBiasKind, PriceBiasValue)
+		new_volume := get_bias_value(inner_depth.Volume, config.VolumeBiasKind, VolumeBiasValue)
 
 		new_inner_depth.Volume = new_volume
 
 		for exchange, exchange_volume := range inner_depth.ExchangeVolume {
-			new_exchange_volume := get_bias_value(exchange_volume, config.VolumeBiasKind, config.VolumeBiasValue)
+			new_exchange_volume := get_bias_value(exchange_volume, config.VolumeBiasKind, VolumeBiasValue)
 
 			new_inner_depth.ExchangeVolume[exchange] = new_exchange_volume
 		}
@@ -276,7 +284,7 @@ func (w *QuotebiasWorker) Process(depth_quote *DepthQuote, configs *RiskCtrlConf
 
 		fmt.Printf("config:%v \n", configs)
 		LOG_INFO("\nBefore QuotebiasCtrl: \n" + depth_quote.String(5))
-		fmt.Println(depth_quote)
+		// fmt.Println(depth_quote)
 
 		new_asks := calc_depth_bias(depth_quote.Asks, &config, true)
 		depth_quote.Asks = new_asks
@@ -285,7 +293,7 @@ func (w *QuotebiasWorker) Process(depth_quote *DepthQuote, configs *RiskCtrlConf
 		depth_quote.Bids = new_bids
 
 		LOG_INFO("\nAfter QuotebiasCtrl: \n" + depth_quote.String(5))
-		fmt.Println(depth_quote)
+		// fmt.Println(depth_quote)
 
 	} else {
 
@@ -321,6 +329,39 @@ type WatermarkWorker struct {
 func calc_watermark(depth_quote *DepthQuote) float64 {
 	var rst float64
 
+	ask_iter := depth_quote.Asks.Iterator()
+	bid_iter := depth_quote.Bids.Iterator()
+	ask_iter.First()
+	bid_iter.Last()
+
+	ask_minum := ask_iter.Key().(float64)
+	bid_maxum := bid_iter.Key().(float64)
+
+	ask_crossed_price_list := []float64{}
+	for ask_iter.Begin(); ask_iter.Next(); {
+		if ask_iter.Key().(float64) <= bid_maxum {
+			ask_crossed_price_list = append(ask_crossed_price_list, ask_iter.Key().(float64))
+		} else {
+			break
+		}
+	}
+
+	fmt.Printf("\n------ ask_crossed_price_list:%v \n", ask_crossed_price_list)
+
+	bid_crossed_price_list := []float64{}
+	for bid_iter.End(); bid_iter.Prev(); {
+		if bid_iter.Key().(float64) >= ask_minum {
+			bid_crossed_price_list = append(bid_crossed_price_list, bid_iter.Key().(float64))
+		} else {
+			break
+		}
+	}
+	fmt.Printf("\n------bid_crossed_price_list:%v \n", bid_crossed_price_list)
+
+	rst = (ask_crossed_price_list[len(ask_crossed_price_list)/2] + bid_crossed_price_list[len(bid_crossed_price_list)/2]) / 2
+
+	fmt.Printf("\n-------watermark: %v \n", rst)
+
 	return rst
 }
 
@@ -328,12 +369,12 @@ func filter_depth_by_watermark(depth *treemap.Map, watermark float64, price_minu
 
 	crossed_price := []float64{}
 	new_inner_depth := InnerDepth{0, make(map[string]float64)}
-	var new_price float64 = 0
-
 	depth_iter := depth.Iterator()
+	new_price := watermark + float64(price_minum_change)
+
+	fmt.Printf("\nNewPrice: %v\n", new_price)
 
 	if isAsk {
-		new_price = watermark + float64(price_minum_change)
 
 		for depth_iter.Begin(); depth_iter.Next(); {
 			cur_price := depth_iter.Key().(float64)
@@ -348,7 +389,6 @@ func filter_depth_by_watermark(depth *treemap.Map, watermark float64, price_minu
 		}
 
 	} else {
-		new_price = watermark - float64(price_minum_change)
 
 		for depth_iter.End(); depth_iter.Prev(); {
 			cur_price := depth_iter.Key().(float64)
@@ -432,10 +472,11 @@ func (w *WatermarkWorker) Process(depth_quote *DepthQuote, configs *RiskCtrlConf
 		return true
 	}
 
+	fmt.Println(configs)
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 
 		LOG_INFO("\nBefore WatermarkWorker: \n" + depth_quote.String(5))
-		fmt.Println(depth_quote)
+		// fmt.Println(depth_quote)
 
 		watermark := calc_watermark(depth_quote)
 
@@ -448,7 +489,7 @@ func (w *WatermarkWorker) Process(depth_quote *DepthQuote, configs *RiskCtrlConf
 		filter_depth_by_watermark(depth_quote.Bids, watermark, config.PriceMinumChange*-1, false)
 
 		LOG_INFO("\nAfter WatermarkWorker: \n" + depth_quote.String(5))
-		fmt.Println(depth_quote)
+		// fmt.Println(depth_quote)
 
 	} else {
 
@@ -515,9 +556,8 @@ func (w *PrecisionWorker) Process(depth_quote *DepthQuote, configs *RiskCtrlConf
 
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 
-		fmt.Printf("config:%v \n", configs)
+		fmt.Printf("\nconfig:%v \n", configs)
 		LOG_INFO("\nBefore PrecisionWorker: \n" + depth_quote.String(5))
-		fmt.Println(depth_quote)
 
 		new_asks := resize_depth_precision(depth_quote.Asks, &config)
 		depth_quote.Asks = new_asks
@@ -526,7 +566,6 @@ func (w *PrecisionWorker) Process(depth_quote *DepthQuote, configs *RiskCtrlConf
 		depth_quote.Bids = new_bids
 
 		LOG_INFO("\nAfter PrecisionWorker: \n" + depth_quote.String(5))
-		fmt.Println(depth_quote)
 
 	} else {
 
@@ -566,9 +605,9 @@ func (r *RiskWorkerManager) Execute(depth_quote *DepthQuote, configs *RiskCtrlCo
 
 	// r.FeeWorker_.Execute(depth_quote, configs)
 
-	r.QuotebiasWorker_.Execute(depth_quote, configs)
+	// r.QuotebiasWorker_.Execute(depth_quote, configs)
 
-	// r.WatermarkWorker_.Execute(depth_quote, configs)
+	r.WatermarkWorker_.Execute(depth_quote, configs)
 
 	// r.PrecisionWorker_.Execute(depth_quote, configs)
 }
@@ -643,7 +682,7 @@ func get_test_config() RiskCtrlConfigMap {
 			PriceBiasKind:    1,
 			VolumeBiasValue:  0.1,
 			VolumeBiasKind:   1,
-			PriceMinumChange: 100.0,
+			PriceMinumChange: 1.0,
 		},
 	}
 
@@ -657,8 +696,8 @@ func TestWorker() {
 	depth_quote := get_test_depth()
 	config := get_test_config()
 
-	fmt.Printf("depth_quote: %v\n", depth_quote)
-	fmt.Printf("config: %v\n", config)
+	// fmt.Printf("depth_quote: %v\n", depth_quote)
+	// fmt.Printf("config: %v\n", config)
 
 	risk_worker_manager.Execute(&depth_quote, &config)
 }
