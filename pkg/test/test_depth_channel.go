@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"market_aggregate/pkg/riskctrl"
+	"reflect"
 	"time"
 )
 
@@ -43,6 +44,43 @@ func TestDepthChannel() {
 
 }
 
+type EmptyInterface interface {
+}
+
+func process_depth(depth_quote *riskctrl.DepthQuote) {
+	fmt.Println(depth_quote.String(5))
+}
+
+func TestDepthReflection(data EmptyInterface) {
+
+	// data_value := reflect.ValueOf(data)
+
+	// fmt.Println(data_value)
+
+	// fmt.Println(reflect.TypeOf(data))
+
+	// data_type
+
+	// if reflect.TypeOf(data) == riskctrl.DepthQuote {
+
+	// }
+
+	fmt.Println(reflect.TypeOf(data).Name())
+
+	if reflect.TypeOf(data).Name() == "DepthQuote" {
+		// data_value := reflect.ValueOf(data)
+		// process_depth(data)
+	}
+
+	// reflect.ValueOf(data).(riskctrl.DepthQuote)
+}
+
+func TestReflection() {
+	depth_quote := riskctrl.GetTestDepth()
+
+	TestDepthReflection(depth_quote)
+}
+
 func main() {
 	fmt.Println("Test Risk Ctrl")
 
@@ -52,7 +90,9 @@ func main() {
 
 	// riskctrl.TestWorker()
 
-	TestDepthChannel()
+	// TestDepthChannel()
+
+	TestReflection()
 
 	// TestTreeMap()
 }
