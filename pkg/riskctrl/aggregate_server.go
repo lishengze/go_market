@@ -1,6 +1,11 @@
 package riskctrl
 
-import "sync"
+import (
+	"sync"
+	"time"
+
+	"github.com/emirpasic/gods/maps/treemap"
+)
 
 type aggregator struct {
 	depth_cache map[string]map[string]*DepthQuote
@@ -10,9 +15,50 @@ type aggregator struct {
 	depth_mutex sync.Mutex
 	kline_mutex sync.Mutex
 	trade_mutex sync.Mutex
+
+	depth_aggregator_millsecs time.Duration
 }
 
-func (a *aggregator) process_depth() {
+func (a *aggregator) Start() {
+	a.start_aggregate_depth()
+}
+
+func (a *aggregator) start_aggregate_depth() {
+
+	go func() {
+		LOG_INFO("start_aggregate_depth")
+		timer := time.Tick(time.Duration(a.depth_aggregator_millsecs * time.Millisecond))
+
+		for {
+			select {
+			case <-timer:
+				a.aggregate_depth()
+			}
+		}
+	}()
+}
+
+func mix_depth(src *treemap.Map, other *treemap.Map) {
+
+}
+
+func (a *aggregator) aggregate_depth() {
+	a.depth_mutex.Lock()
+
+	for symbol, exchange_depth_map := range a.depth_cache {
+		new_depth := NewDepth(nil)
+		new_depth.Symbol = symbol
+		new_depth.Exchange = BCTS_EXCHANGE
+		new_depth.Time = uint64(time.Now().Unix())
+
+		for _, cur_depth := range exchange_depth_map {
+			mix_depth(new_depth.Asks, cur_depth.Asks)
+			mix_depth(new_depth.Bids, cur_depth.Bids)
+		}
+
+	}
+
+	defer a.depth_mutex.Unlock()
 
 }
 
