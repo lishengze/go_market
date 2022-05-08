@@ -38,8 +38,21 @@ func (a *aggregator) start_aggregate_depth() {
 	}()
 }
 
-func mix_depth(src *treemap.Map, other *treemap.Map) {
+func mix_depth(src *treemap.Map, other *treemap.Map, exchange string) {
+	other_iter := other.Iterator()
+	if src.Size() == 0 {
 
+		for other_iter.Begin(); other_iter.Next(); {
+			src.Put(other_iter.Key(), other_iter.Value())
+		}
+	} else {
+		for other_iter.Begin(); other_iter.Next(); {
+			if cur_iter, ok := src.Get(other_iter.Key()); ok {
+				cur_iter.(*InnerDepth).Volume += other_iter.Value().(InnerDepth).Volume
+				cur_iter.(*InnerDepth).ExchangeVolume[exchange] = other_iter.Value().(InnerDepth).Volume
+			}
+		}
+	}
 }
 
 func (a *aggregator) aggregate_depth() {
@@ -51,9 +64,9 @@ func (a *aggregator) aggregate_depth() {
 		new_depth.Exchange = BCTS_EXCHANGE
 		new_depth.Time = uint64(time.Now().Unix())
 
-		for _, cur_depth := range exchange_depth_map {
-			mix_depth(new_depth.Asks, cur_depth.Asks)
-			mix_depth(new_depth.Bids, cur_depth.Bids)
+		for exchange, cur_depth := range exchange_depth_map {
+			mix_depth(new_depth.Asks, cur_depth.Asks, exchange)
+			mix_depth(new_depth.Bids, cur_depth.Bids, exchange)
 		}
 
 	}
