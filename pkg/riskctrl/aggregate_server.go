@@ -2,6 +2,7 @@ package riskctrl
 
 import (
 	"fmt"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -24,7 +25,7 @@ type Aggregator struct {
 func (a *Aggregator) Start(data_chan *DataChannel) {
 	a.start_receiver(data_chan)
 	a.start_aggregate_depth()
-
+	a.start_aggregate_kline()
 }
 
 func (a *Aggregator) start_aggregate_depth() {
@@ -64,6 +65,18 @@ func mix_depth(src *treemap.Map, other *treemap.Map, exchange string) {
 	}
 }
 
+func (a *Aggregator) start_aggregate_kline() {
+	LOG_INFO("Aggregate Kline Start!")
+	go func() {
+		for {
+			WaitForNextMinute()
+
+			a.aggregate_kline()
+		}
+	}()
+	LOG_INFO("Aggregate Kline Over!")
+}
+
 func (a *Aggregator) aggregate_depth() {
 	a.depth_mutex.Lock()
 
@@ -73,7 +86,7 @@ func (a *Aggregator) aggregate_depth() {
 		new_depth := NewDepth(nil)
 		new_depth.Symbol = symbol
 		new_depth.Exchange = BCTS_EXCHANGE
-		new_depth.Time = uint64(time.Now().Unix())
+		new_depth.Time = time.Now().Unix()
 
 		for exchange, cur_depth := range exchange_depth_map {
 			LOG_INFO("\n===== <<CurDepth>>: " + cur_depth.String(5))
@@ -112,6 +125,49 @@ func (a *Aggregator) start_receiver(data_chan *DataChannel) {
 	LOG_INFO("Aggregator start_receiver Over!")
 }
 
+func (a *Aggregator) aggregate_kline() {
+	defer a.kline_mutex.Unlock()
+	a.kline_mutex.Lock()
+
+	for _, exchange_kline_map := range a.kline_cache {
+		for _, kline := range exchange_kline_map {
+			new_kline := NewKline(kline)
+			kline.Time = 0
+			new_kline.Time = TimeMinute()
+			a.publish_kline(new_kline)
+		}
+	}
+}
+
+func (a *Aggregator) update_kline(trade *Trade) {
+	defer a.kline_mutex.Unlock()
+	a.kline_mutex.Lock()
+
+	if _, ok := a.kline_cache[trade.Symbol]; ok == false {
+		a.kline_cache[trade.Symbol] = make(map[string]*Kline)
+	}
+
+	if _, ok := a.kline_cache[trade.Symbol][trade.Exchange]; ok == false {
+		a.kline_cache[trade.Symbol][trade.Exchange] = NewKline(nil)
+	}
+
+	cur_kline := a.kline_cache[trade.Symbol][trade.Symbol]
+	if cur_kline.Time == 0 {
+		InitKlineByTrade(cur_kline, trade)
+		return
+	}
+
+	if cur_kline.High < trade.Price {
+		cur_kline.High = trade.Price
+	}
+	if cur_kline.Low > trade.Price {
+		cur_kline.Low = trade.Price
+	}
+
+	cur_kline.Close = trade.Price
+	cur_kline.Volume += trade.Volume
+}
+
 func (a *Aggregator) cache_depth(depth *DepthQuote) {
 
 	a.depth_mutex.Lock()
@@ -136,6 +192,8 @@ func (a *Aggregator) cache_kline(kline *Kline) {
 func (a *Aggregator) cache_trade(trade *Trade) {
 	new_trade := NewTrade(trade)
 	new_trade.Exchange = BCTS_EXCHANGE
+
+	a.update_kline(trade)
 	a.publish_trade(new_trade)
 }
 
@@ -159,7 +217,7 @@ func GetTestDepthByType(index int) *DepthQuote {
 
 	rst.Exchange = exchange_array[exchange_type]
 	rst.Symbol = "BTC_USDT"
-	rst.Time = uint64(time.Now().Unix())
+	rst.Time = time.Now().Unix()
 	rst.Asks = treemap.NewWith(utils.Float64Comparator)
 	rst.Bids = treemap.NewWith(utils.Float64Comparator)
 
@@ -186,6 +244,25 @@ func GetTestDepthByType(index int) *DepthQuote {
 	return &rst
 }
 
+func GetTestTrade() *Trade {
+	rand.Seed(time.Now().UnixNano())
+	randomNum := rand.Intn(3)
+
+	exchange_array := []string{"FTX", "HUOBI", "OKEX"}
+	cur_exchange := exchange_array[randomNum%3]
+	symbol := "ETH_USDT"
+	trade_price := float64(rand.Intn(1000))
+	trade_volume := float64(rand.Intn(100))
+
+	new_trade := NewTrade(nil)
+	new_trade.Exchange = cur_exchange
+	new_trade.Symbol = symbol
+	new_trade.Price = trade_price
+	new_trade.Volume = trade_volume
+	new_trade.Time = time.Now().Unix()
+	return new_trade
+}
+
 func PublishTest(data *DataChannel) {
 	timer := time.Tick(3 * time.Second)
 
@@ -193,9 +270,11 @@ func PublishTest(data *DataChannel) {
 	for {
 		select {
 		case <-timer:
-			depth_quote := GetTestDepthByType(index)
-			index++
-			data.DepthChannel <- depth_quote
+			// depth_quote := GetTestDepthByType(index)
+			// index++
+			// data.DepthChannel <- depth_quote
+
+			data.TradeChannel <- GetTestTrade()
 		}
 	}
 }

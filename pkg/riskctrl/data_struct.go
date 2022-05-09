@@ -43,26 +43,27 @@ func (src *InnerDepth) Add(other *InnerDepth) {
 type DepthQuote struct {
 	Exchange string
 	Symbol   string
-	Time     uint64
+	Time     int64
 	Asks     *treemap.Map
 	Bids     *treemap.Map
 }
 
 type Kline struct {
-	Exchange string
-	Symbol   string
-	Time     uint64
-	Open     float64
-	High     float64
-	Low      float64
-	Close    float64
-	Volume   float64
+	Exchange   string
+	Symbol     string
+	Time       int64
+	Open       float64
+	High       float64
+	Low        float64
+	Close      float64
+	Volume     float64
+	Resolution int
 }
 
 type Trade struct {
 	Exchange string
 	Symbol   string
-	Time     uint64
+	Time     int64
 	Price    float64
 	Volume   float64
 }
@@ -86,20 +87,32 @@ func NewTrade(src *Trade) *Trade {
 func NewKline(src *Kline) *Kline {
 	if src != nil {
 		rst := &Kline{
-			Exchange: src.Exchange,
-			Symbol:   src.Symbol,
-			Time:     src.Time,
-			Open:     src.Open,
-			High:     src.High,
-			Low:      src.Low,
-			Close:    src.Close,
-			Volume:   src.Volume,
+			Exchange:   src.Exchange,
+			Symbol:     src.Symbol,
+			Time:       src.Time,
+			Open:       src.Open,
+			High:       src.High,
+			Low:        src.Low,
+			Close:      src.Close,
+			Volume:     src.Volume,
+			Resolution: src.Resolution,
 		}
 		return rst
 	} else {
 		rst := &Kline{}
 		return rst
 	}
+}
+
+func InitKlineByTrade(src *Kline, trade *Trade) {
+	src.Exchange = BCTS_EXCHANGE
+	src.Symbol = trade.Symbol
+	src.Resolution = 60
+	src.Open = trade.Price
+	src.High = trade.Price
+	src.Low = trade.Price
+	src.Close = trade.Price
+	src.Volume = trade.Volume
 }
 
 func NewDepth(src *DepthQuote) *DepthQuote {

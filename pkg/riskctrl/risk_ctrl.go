@@ -629,7 +629,7 @@ func GetTestDepth() DepthQuote {
 
 	rst.Exchange = "FTX"
 	rst.Symbol = "BTC_USDT"
-	rst.Time = uint64(time.Now().Unix())
+	rst.Time = time.Now().Unix()
 	rst.Asks = treemap.NewWith(utils.Float64Comparator)
 	rst.Bids = treemap.NewWith(utils.Float64Comparator)
 
