@@ -645,31 +645,17 @@ func GetTestDepth() DepthQuote {
 	// rst.Bids.Put(41001.11111, &InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
 	// rst.Bids.Put(40009.99999, &InnerDepth{9.99999, map[string]float64{"FTX": 9.99999}})
 
-	rst.Asks.Put(55000, &InnerDepth{4, map[string]float64{"FTX": 5.5}})
-	rst.Asks.Put(50000, &InnerDepth{5, map[string]float64{"FTX": 5}})
+	rst.Asks.Put(55000.0, &InnerDepth{5.5, map[string]float64{"FTX": 5.5}})
+	rst.Asks.Put(50000.0, &InnerDepth{5.0, map[string]float64{"FTX": 5.0}})
 
-	rst.Bids.Put(45000, &InnerDepth{2, map[string]float64{"FTX": 4.5}})
-	rst.Bids.Put(40000, &InnerDepth{3, map[string]float64{"FTX": 4}})
+	rst.Bids.Put(45000.0, &InnerDepth{4.5, map[string]float64{"FTX": 4.5}})
+	rst.Bids.Put(40000.0, &InnerDepth{4.0, map[string]float64{"FTX": 4.0}})
 
 	// rst.Asks.Put(40002.222222].Volume = 2.222222
 	// rst.Asks.Put(40003.222222].Volume = 2.222222
 	// rst.Asks.Put(40004.222222].Volume = 2.222222
 
 	return rst
-}
-
-func GetTestDepthByType(index int) *DepthQuote {
-	rst := GetTestDepth()
-
-	exchange_type := index % 3
-
-	switch exchange_type {
-	case 0:
-		rst.Exchange = "FTX"
-		rst.Asks.Put(60000, &InnerDepth{4, map[string]float64{"FTX": 4}})
-	}
-
-	return &rst
 }
 
 func get_test_config() RiskCtrlConfigMap {

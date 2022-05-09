@@ -101,7 +101,7 @@ func TestInnerDepth() {
 }
 
 func main() {
-	fmt.Println("Test Risk Ctrl")
+	// fmt.Println("Test Risk Ctrl")
 
 	// riskctrl.TestInnerDepth()
 
@@ -113,7 +113,9 @@ func main() {
 
 	// TestReflection()
 
-	TestInnerDepth()
+	// TestInnerDepth()
 
 	// TestTreeMap()
+
+	riskctrl.TestAggregator()
 }

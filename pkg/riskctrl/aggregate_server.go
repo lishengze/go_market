@@ -27,7 +27,7 @@ func (a *Aggregator) Start(data_chan *DataChannel) {
 }
 
 func (a *Aggregator) start_aggregate_depth() {
-
+	LOG_INFO("Aggregator start_aggregate_depth!")
 	go func() {
 		LOG_INFO("start_aggregate_depth")
 		timer := time.Tick(time.Duration(a.depth_aggregator_millsecs * time.Millisecond))
@@ -39,6 +39,7 @@ func (a *Aggregator) start_aggregate_depth() {
 			}
 		}
 	}()
+	LOG_INFO("Aggregator start_aggregate_depth Over!")
 }
 
 func mix_depth(src *treemap.Map, other *treemap.Map, exchange string) {
@@ -58,7 +59,7 @@ func mix_depth(src *treemap.Map, other *treemap.Map, exchange string) {
 func (a *Aggregator) aggregate_depth() {
 	a.depth_mutex.Lock()
 
-	LOG_INFO("aggregate depth")
+	LOG_INFO("\n----- Start Aggregate Depth ------")
 
 	for symbol, exchange_depth_map := range a.depth_cache {
 		new_depth := NewDepth(nil)
@@ -80,16 +81,19 @@ func (a *Aggregator) aggregate_depth() {
 
 func (a *Aggregator) start_receiver(data_chan *DataChannel) {
 	LOG_INFO("Aggregator start_receiver")
-	for {
-		select {
-		case new_depth := <-data_chan.DepthChannel:
-			a.cache_depth(new_depth)
-		case new_kline := <-data_chan.KlineChannel:
-			a.cache_kline(new_kline)
-		case new_trade := <-data_chan.TradeChannel:
-			a.cache_trade(new_trade)
+	go func() {
+		for {
+			select {
+			case new_depth := <-data_chan.DepthChannel:
+				a.cache_depth(new_depth)
+			case new_kline := <-data_chan.KlineChannel:
+				a.cache_kline(new_kline)
+			case new_trade := <-data_chan.TradeChannel:
+				a.cache_trade(new_trade)
+			}
 		}
-	}
+	}()
+	LOG_INFO("Aggregator start_receiver Over!")
 }
 
 func (a *Aggregator) cache_depth(depth *DepthQuote) {
@@ -97,6 +101,8 @@ func (a *Aggregator) cache_depth(depth *DepthQuote) {
 	new_depth := NewDepth(depth)
 
 	a.depth_mutex.Lock()
+
+	LOG_INFO("\n cache depth: \n " + depth.String(5))
 
 	a.depth_cache[new_depth.Symbol][new_depth.Exchange] = new_depth
 
@@ -125,6 +131,31 @@ func (a *Aggregator) publish_trade(trade *Trade) {
 	fmt.Printf("Publish Trade: \n%+v\n", trade)
 }
 
+func GetTestDepthByType(index int) *DepthQuote {
+	rst := GetTestDepth()
+
+	exchange_type := index % 3
+
+	switch exchange_type {
+	case 0:
+		rst.Exchange = "FTX"
+		rst.Asks.Put(60000.0, &InnerDepth{6.0, map[string]float64{"FTX": 6.0}})
+		rst.Bids.Put(35000.0, &InnerDepth{3.5, map[string]float64{"FTX": 3.5}})
+
+	case 1:
+		rst.Exchange = "HUOBI"
+		rst.Asks.Put(70000.0, &InnerDepth{7.0, map[string]float64{"HUOBI": 7.0}})
+		rst.Bids.Put(30000.0, &InnerDepth{3.0, map[string]float64{"HUOBI": 3.0}})
+
+	case 3:
+		rst.Exchange = "OKEX"
+		rst.Asks.Put(75000.0, &InnerDepth{7.0, map[string]float64{"OKEX": 7.0}})
+		rst.Bids.Put(25000.0, &InnerDepth{2.5, map[string]float64{"OKEX": 2.5}})
+	}
+
+	return &rst
+}
+
 func PublishTest(data *DataChannel) {
 	timer := time.Tick(3 * time.Second)
 
@@ -132,7 +163,9 @@ func PublishTest(data *DataChannel) {
 	for {
 		select {
 		case <-timer:
-			GetTestDepth()
+			depth_quote := GetTestDepthByType(index)
+			index++
+			data.DepthChannel <- depth_quote
 		}
 	}
 }
@@ -150,4 +183,6 @@ func TestAggregator() {
 	aggregator.Start(&data_chan)
 
 	go PublishTest(&data_chan)
+
+	time.Sleep(time.Hour)
 }
