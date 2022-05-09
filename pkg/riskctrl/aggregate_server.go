@@ -1,13 +1,14 @@
 package riskctrl
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
 )
 
-type aggregator struct {
+type Aggregator struct {
 	depth_cache map[string]map[string]*DepthQuote
 	kline_cache map[string]map[string]*Kline
 	trade_cache map[string]map[string]*Trade
@@ -19,11 +20,13 @@ type aggregator struct {
 	depth_aggregator_millsecs time.Duration
 }
 
-func (a *aggregator) Start() {
+func (a *Aggregator) Start(data_chan *DataChannel) {
+	a.start_receiver(data_chan)
 	a.start_aggregate_depth()
+
 }
 
-func (a *aggregator) start_aggregate_depth() {
+func (a *Aggregator) start_aggregate_depth() {
 
 	go func() {
 		LOG_INFO("start_aggregate_depth")
@@ -40,23 +43,22 @@ func (a *aggregator) start_aggregate_depth() {
 
 func mix_depth(src *treemap.Map, other *treemap.Map, exchange string) {
 	other_iter := other.Iterator()
-	if src.Size() == 0 {
 
-		for other_iter.Begin(); other_iter.Next(); {
+	for other_iter.Begin(); other_iter.Next(); {
+		if cur_iter, ok := src.Get(other_iter.Key()); ok {
+			cur_innerdepth := cur_iter.(*InnerDepth)
+			cur_innerdepth.Volume += other_iter.Value().(*InnerDepth).Volume
+			cur_innerdepth.ExchangeVolume[exchange] = other_iter.Value().(*InnerDepth).Volume
+		} else {
 			src.Put(other_iter.Key(), other_iter.Value())
-		}
-	} else {
-		for other_iter.Begin(); other_iter.Next(); {
-			if cur_iter, ok := src.Get(other_iter.Key()); ok {
-				cur_iter.(*InnerDepth).Volume += other_iter.Value().(InnerDepth).Volume
-				cur_iter.(*InnerDepth).ExchangeVolume[exchange] = other_iter.Value().(InnerDepth).Volume
-			}
 		}
 	}
 }
 
-func (a *aggregator) aggregate_depth() {
+func (a *Aggregator) aggregate_depth() {
 	a.depth_mutex.Lock()
+
+	LOG_INFO("aggregate depth")
 
 	for symbol, exchange_depth_map := range a.depth_cache {
 		new_depth := NewDepth(nil)
@@ -69,13 +71,15 @@ func (a *aggregator) aggregate_depth() {
 			mix_depth(new_depth.Bids, cur_depth.Bids, exchange)
 		}
 
+		a.publish_depth(new_depth)
 	}
 
 	defer a.depth_mutex.Unlock()
 
 }
 
-func (a *aggregator) cache_data(data_chan *DataChannel) {
+func (a *Aggregator) start_receiver(data_chan *DataChannel) {
+	LOG_INFO("Aggregator start_receiver")
 	for {
 		select {
 		case new_depth := <-data_chan.DepthChannel:
@@ -88,7 +92,7 @@ func (a *aggregator) cache_data(data_chan *DataChannel) {
 	}
 }
 
-func (a *aggregator) cache_depth(depth *DepthQuote) {
+func (a *Aggregator) cache_depth(depth *DepthQuote) {
 
 	new_depth := NewDepth(depth)
 
@@ -99,24 +103,51 @@ func (a *aggregator) cache_depth(depth *DepthQuote) {
 	defer a.depth_mutex.Unlock()
 }
 
-func (a *aggregator) cache_kline(kline *Kline) {
+func (a *Aggregator) cache_kline(kline *Kline) {
 
 }
 
-func (a *aggregator) cache_trade(trade *Trade) {
+func (a *Aggregator) cache_trade(trade *Trade) {
 	new_trade := NewTrade(trade)
 	new_trade.Exchange = BCTS_EXCHANGE
 	a.publish_trade(new_trade)
 }
 
-func (a *aggregator) publish_depth(depth *DepthQuote) {
-
+func (a *Aggregator) publish_depth(depth *DepthQuote) {
+	LOG_INFO("publish_depth: \n" + depth.String(5))
 }
 
-func (a *aggregator) publish_kline(depth *Kline) {
-
+func (a *Aggregator) publish_kline(kline *Kline) {
+	fmt.Printf("Publish Kline: \n%+v\n", kline)
 }
 
-func (a *aggregator) publish_trade(depth *Trade) {
+func (a *Aggregator) publish_trade(trade *Trade) {
+	fmt.Printf("Publish Trade: \n%+v\n", trade)
+}
 
+func PublishTest(data *DataChannel) {
+	timer := time.Tick(3 * time.Second)
+
+	index := 0
+	for {
+		select {
+		case <-timer:
+			GetTestDepth()
+		}
+	}
+}
+
+func TestAggregator() {
+	aggregator := Aggregator{
+		depth_aggregator_millsecs: 5000,
+	}
+
+	data_chan := DataChannel{
+		DepthChannel: make(chan *DepthQuote),
+		KlineChannel: make(chan *Kline),
+		TradeChannel: make(chan *Trade),
+	}
+	aggregator.Start(&data_chan)
+
+	go PublishTest(&data_chan)
 }
