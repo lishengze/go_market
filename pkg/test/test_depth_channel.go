@@ -100,6 +100,53 @@ func TestInnerDepth() {
 	fmt.Println(new_depth)
 }
 
+func TimeToExactMinute(t time.Time) time.Time {
+	t = t.Add(-time.Nanosecond * time.Duration(t.Nanosecond()))
+	t = t.Add(-time.Second * time.Duration(t.Second()))
+	return t
+}
+
+func TestTime() {
+	// utc_time_secs := time.Now().Unix()
+
+	// utc_time_min_secs := TimeToExactMinute(time.Unix(utc_time_secs, 0)).Unix()
+
+	// delta_secs := utc_time_secs - utc_time_min_secs
+
+	// fmt.Println(utc_time_secs)
+
+	// fmt.Println(utc_time_secs)
+
+	// fmt.Printf("utc_time_secs: %d, utc_time_min_secs: %d, delta_secs: %d\n",
+	// 	utc_time_secs, utc_time_min_secs, delta_secs)
+
+	// fmt.Println(time.Unix(utc_time_secs, 0))
+	// fmt.Println(time.Unix(utc_time_min_secs, 0))
+
+	for {
+		utc_time_secs := time.Now().Unix()
+
+		utc_time_min_secs := TimeToExactMinute(time.Unix(utc_time_secs, 0)).Unix()
+
+		delta_secs := utc_time_secs - utc_time_min_secs
+
+		fmt.Printf("\nutc_time_secs: %d, utc_time_min_secs: %d, delta_secs: %d\n",
+			utc_time_secs, utc_time_min_secs, delta_secs)
+		fmt.Println(time.Unix(utc_time_secs, 0))
+		fmt.Println(time.Unix(utc_time_min_secs, 0))
+
+		time.Sleep(time.Duration(60-delta_secs) * time.Second)
+
+		fmt.Println(time.Now())
+	}
+
+	// time := time.Unix(int_time, 0)
+
+	// fmt.Println(int_time)
+
+	// fmt.Println(time)
+}
+
 func main() {
 	// fmt.Println("Test Risk Ctrl")
 
@@ -117,5 +164,7 @@ func main() {
 
 	// TestTreeMap()
 
-	riskctrl.TestAggregator()
+	// riskctrl.TestAggregator()
+
+	TestTime()
 }

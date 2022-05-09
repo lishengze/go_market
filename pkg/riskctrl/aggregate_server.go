@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
+	"github.com/emirpasic/gods/utils"
 )
 
 type Aggregator struct {
@@ -51,7 +52,14 @@ func mix_depth(src *treemap.Map, other *treemap.Map, exchange string) {
 			cur_innerdepth.Volume += other_iter.Value().(*InnerDepth).Volume
 			cur_innerdepth.ExchangeVolume[exchange] = other_iter.Value().(*InnerDepth).Volume
 		} else {
-			src.Put(other_iter.Key(), other_iter.Value())
+			src_inner_depth := InnerDepth{0, make(map[string]float64)}
+
+			other_inner_depth := other_iter.Value().(*InnerDepth)
+			src_inner_depth.Volume = other_inner_depth.Volume
+			src_inner_depth.ExchangeVolume[exchange] = other_inner_depth.Volume
+			price := other_iter.Key().(float64)
+
+			src.Put(price, &src_inner_depth)
 		}
 	}
 }
@@ -59,7 +67,7 @@ func mix_depth(src *treemap.Map, other *treemap.Map, exchange string) {
 func (a *Aggregator) aggregate_depth() {
 	a.depth_mutex.Lock()
 
-	LOG_INFO("\n----- Start Aggregate Depth ------")
+	LOG_INFO("----- Aggregate Depth Start ------ ")
 
 	for symbol, exchange_depth_map := range a.depth_cache {
 		new_depth := NewDepth(nil)
@@ -68,12 +76,20 @@ func (a *Aggregator) aggregate_depth() {
 		new_depth.Time = uint64(time.Now().Unix())
 
 		for exchange, cur_depth := range exchange_depth_map {
+			LOG_INFO("\n===== <<CurDepth>>: " + cur_depth.String(5))
 			mix_depth(new_depth.Asks, cur_depth.Asks, exchange)
 			mix_depth(new_depth.Bids, cur_depth.Bids, exchange)
 		}
 
+		LOG_INFO("\n^^^^^^^ <<aagregated_depth>>: " + new_depth.String(5))
 		a.publish_depth(new_depth)
+
+		// for _, cur_depth := range exchange_depth_map {
+		// 	LOG_INFO("\n===== After <<CurDepth>>: " + cur_depth.String(5))
+		// }
 	}
+
+	LOG_INFO("----- Aggregate Depth Over!------ \n")
 
 	defer a.depth_mutex.Unlock()
 
@@ -98,11 +114,15 @@ func (a *Aggregator) start_receiver(data_chan *DataChannel) {
 
 func (a *Aggregator) cache_depth(depth *DepthQuote) {
 
-	new_depth := NewDepth(depth)
-
 	a.depth_mutex.Lock()
 
-	LOG_INFO("\n cache depth: \n " + depth.String(5))
+	new_depth := NewDepth(depth)
+
+	LOG_INFO("\n******* <<Cache Depth>>: " + depth.String(5))
+
+	if _, ok := a.depth_cache[new_depth.Symbol]; ok == false {
+		a.depth_cache[new_depth.Symbol] = make(map[string]*DepthQuote)
+	}
 
 	a.depth_cache[new_depth.Symbol][new_depth.Exchange] = new_depth
 
@@ -120,7 +140,7 @@ func (a *Aggregator) cache_trade(trade *Trade) {
 }
 
 func (a *Aggregator) publish_depth(depth *DepthQuote) {
-	LOG_INFO("publish_depth: \n" + depth.String(5))
+	// LOG_INFO("publish_depth: " + depth.String(5))
 }
 
 func (a *Aggregator) publish_kline(kline *Kline) {
@@ -132,25 +152,35 @@ func (a *Aggregator) publish_trade(trade *Trade) {
 }
 
 func GetTestDepthByType(index int) *DepthQuote {
-	rst := GetTestDepth()
+	var rst DepthQuote
 
+	exchange_array := []string{"FTX", "HUOBI", "OKEX"}
 	exchange_type := index % 3
+
+	rst.Exchange = exchange_array[exchange_type]
+	rst.Symbol = "BTC_USDT"
+	rst.Time = uint64(time.Now().Unix())
+	rst.Asks = treemap.NewWith(utils.Float64Comparator)
+	rst.Bids = treemap.NewWith(utils.Float64Comparator)
+
+	rst.Asks.Put(55000.0, &InnerDepth{5.5, map[string]float64{rst.Exchange: 5.5}})
+	rst.Asks.Put(50000.0, &InnerDepth{5.0, map[string]float64{rst.Exchange: 5.0}})
+
+	rst.Bids.Put(45000.0, &InnerDepth{4.5, map[string]float64{rst.Exchange: 4.5}})
+	rst.Bids.Put(40000.0, &InnerDepth{4.0, map[string]float64{rst.Exchange: 4.0}})
 
 	switch exchange_type {
 	case 0:
-		rst.Exchange = "FTX"
-		rst.Asks.Put(60000.0, &InnerDepth{6.0, map[string]float64{"FTX": 6.0}})
-		rst.Bids.Put(35000.0, &InnerDepth{3.5, map[string]float64{"FTX": 3.5}})
+		rst.Asks.Put(60000.0, &InnerDepth{6.0, map[string]float64{rst.Exchange: 6.0}})
+		rst.Bids.Put(35000.0, &InnerDepth{3.5, map[string]float64{rst.Exchange: 3.5}})
 
 	case 1:
-		rst.Exchange = "HUOBI"
-		rst.Asks.Put(70000.0, &InnerDepth{7.0, map[string]float64{"HUOBI": 7.0}})
-		rst.Bids.Put(30000.0, &InnerDepth{3.0, map[string]float64{"HUOBI": 3.0}})
+		rst.Asks.Put(70000.0, &InnerDepth{7.0, map[string]float64{rst.Exchange: 7.0}})
+		rst.Bids.Put(30000.0, &InnerDepth{3.0, map[string]float64{rst.Exchange: 3.0}})
 
-	case 3:
-		rst.Exchange = "OKEX"
-		rst.Asks.Put(75000.0, &InnerDepth{7.0, map[string]float64{"OKEX": 7.0}})
-		rst.Bids.Put(25000.0, &InnerDepth{2.5, map[string]float64{"OKEX": 2.5}})
+	case 2:
+		rst.Asks.Put(75000.0, &InnerDepth{7.5, map[string]float64{rst.Exchange: 7.5}})
+		rst.Bids.Put(25000.0, &InnerDepth{2.5, map[string]float64{rst.Exchange: 2.5}})
 	}
 
 	return &rst
@@ -172,6 +202,9 @@ func PublishTest(data *DataChannel) {
 
 func TestAggregator() {
 	aggregator := Aggregator{
+		depth_cache:               make(map[string]map[string]*DepthQuote),
+		kline_cache:               make(map[string]map[string]*Kline),
+		trade_cache:               make(map[string]map[string]*Trade),
 		depth_aggregator_millsecs: 5000,
 	}
 

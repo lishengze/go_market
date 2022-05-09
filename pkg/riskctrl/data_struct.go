@@ -2,6 +2,7 @@ package riskctrl
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
@@ -144,7 +145,7 @@ func (d *DepthQuote) Init() {
 
 func (d *DepthQuote) String(len int) string {
 
-	res := fmt.Sprintf("%s.%s, %d\nAsks: %s\nBids: %s \n", d.Exchange, d.Symbol, d.Time, d.Asks.String(), d.Bids.String())
+	res := fmt.Sprintf("%s.%s, %v\nAsks: %s\nBids: %s \n", d.Exchange, d.Symbol, time.Unix(int64(d.Time), 0), d.Asks.String(), d.Bids.String())
 
 	return string(res)
 }
