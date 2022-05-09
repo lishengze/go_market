@@ -81,6 +81,25 @@ func TestReflection() {
 	TestDepthReflection(depth_quote)
 }
 
+func TestInnerDepth() {
+	new_depth := riskctrl.GetTestDepth()
+
+	if result, ok := new_depth.Asks.Get(41001.11111); ok {
+		// fmt.Println()
+		trans := result.(*riskctrl.InnerDepth)
+
+		// trans.
+		fmt.Printf("Original Depth:%+v \n", trans)
+
+		trans.Volume += 100
+
+		fmt.Printf("After Add Depth:%+v \n", trans)
+
+	}
+
+	fmt.Println(new_depth)
+}
+
 func main() {
 	fmt.Println("Test Risk Ctrl")
 
@@ -92,7 +111,9 @@ func main() {
 
 	// TestDepthChannel()
 
-	TestReflection()
+	// TestReflection()
+
+	TestInnerDepth()
 
 	// TestTreeMap()
 }

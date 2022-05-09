@@ -12,25 +12,6 @@ import (
 
 // type TString string
 
-func LOG_INFO(info string) {
-	fmt.Println("INFO: " + info)
-}
-
-func LOG_WARN(info string) {
-	fmt.Println("WARN: " + info)
-}
-
-func LOG_ERROR(info string) {
-	fmt.Println("Error " + info)
-}
-
-func ExceptionFunc() {
-	errMsg := recover()
-	if errMsg != nil {
-		fmt.Println(errMsg)
-	}
-}
-
 // func catch_exp() {
 // 	errMsg := recover()
 
@@ -161,14 +142,14 @@ func (w *FeeWorker) calc_depth_fee(depth *treemap.Map, config *RiskCtrlConfig, i
 
 	for iter.Begin(); iter.Next(); {
 		original_price := iter.Key().(float64)
-		inner_depth := iter.Value().(InnerDepth)
+		inner_depth := iter.Value().(*InnerDepth)
 
 		for exchange, _ := range inner_depth.ExchangeVolume {
 			new_price := get_new_fee_price(original_price, exchange, config, isAsk)
 
 			if new_inner_depth_iter, ok := result.Get(new_price); ok {
 
-				new_inner_depth := new_inner_depth_iter.(InnerDepth)
+				new_inner_depth := new_inner_depth_iter.(*InnerDepth)
 
 				new_inner_depth.ExchangeVolume[exchange] += inner_depth.Volume
 				new_inner_depth.Volume += inner_depth.Volume
@@ -179,7 +160,7 @@ func (w *FeeWorker) calc_depth_fee(depth *treemap.Map, config *RiskCtrlConfig, i
 				new_inner_depth.ExchangeVolume[exchange] = inner_depth.Volume
 				new_inner_depth.Volume = inner_depth.Volume
 
-				result.Put(new_price, new_inner_depth)
+				result.Put(new_price, &new_inner_depth)
 			}
 		}
 	}
@@ -254,7 +235,7 @@ func calc_depth_bias(depth *treemap.Map, config *RiskCtrlConfig, isAsk bool) *tr
 
 	for depth_iter.Begin(); depth_iter.Next(); {
 		original_price := depth_iter.Key().(float64)
-		inner_depth := depth_iter.Value().(InnerDepth)
+		inner_depth := depth_iter.Value().(*InnerDepth)
 
 		// var new_inner_depth InnerDepth
 
@@ -271,7 +252,7 @@ func calc_depth_bias(depth *treemap.Map, config *RiskCtrlConfig, isAsk bool) *tr
 			new_inner_depth.ExchangeVolume[exchange] = new_exchange_volume
 		}
 
-		result.Put(new_price, new_inner_depth)
+		result.Put(new_price, &new_inner_depth)
 	}
 
 	return result
@@ -378,11 +359,11 @@ func filter_depth_by_watermark(depth *treemap.Map, watermark float64, price_minu
 
 		for depth_iter.Begin(); depth_iter.Next(); {
 			cur_price := depth_iter.Key().(float64)
-			cur_innerdepth := depth_iter.Value().(InnerDepth)
+			cur_innerdepth := depth_iter.Value().(*InnerDepth)
 
 			if cur_price <= new_price {
 				crossed_price = append(crossed_price, cur_price)
-				new_inner_depth.Add(&cur_innerdepth)
+				new_inner_depth.Add(cur_innerdepth)
 			} else {
 				break
 			}
@@ -392,11 +373,11 @@ func filter_depth_by_watermark(depth *treemap.Map, watermark float64, price_minu
 
 		for depth_iter.End(); depth_iter.Prev(); {
 			cur_price := depth_iter.Key().(float64)
-			cur_innerdepth := depth_iter.Value().(InnerDepth)
+			cur_innerdepth := depth_iter.Value().(*InnerDepth)
 
 			if cur_price >= new_price {
 				crossed_price = append(crossed_price, cur_price)
-				new_inner_depth.Add(&cur_innerdepth)
+				new_inner_depth.Add(cur_innerdepth)
 			} else {
 				break
 			}
@@ -514,7 +495,7 @@ func resize_depth_precision(depth *treemap.Map, config *RiskCtrlConfig) *treemap
 
 	for depth_iter.Begin(); depth_iter.Next(); {
 		original_price := depth_iter.Key().(float64)
-		inner_depth := depth_iter.Value().(InnerDepth)
+		inner_depth := depth_iter.Value().(*InnerDepth)
 
 		new_inner_depth := InnerDepth{0, make(map[string]float64)}
 
@@ -529,7 +510,7 @@ func resize_depth_precision(depth *treemap.Map, config *RiskCtrlConfig) *treemap
 			new_inner_depth.ExchangeVolume[exchange] = new_exchange_volume
 		}
 
-		result.Put(new_price, new_inner_depth)
+		result.Put(new_price, &new_inner_depth)
 	}
 
 	return result
@@ -652,24 +633,43 @@ func GetTestDepth() DepthQuote {
 	rst.Asks = treemap.NewWith(utils.Float64Comparator)
 	rst.Bids = treemap.NewWith(utils.Float64Comparator)
 
-	rst.Asks.Put(41001.11111, InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
-	rst.Asks.Put(41002.22222, InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
+	// rst.Asks.Put(41001.11111, &InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
+	// rst.Asks.Put(41002.22222, &InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
+	// rst.Asks.Put(41003.33333, &InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
+	// rst.Asks.Put(41004.44444, &InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
+	// rst.Asks.Put(41005.55555, &InnerDepth{5.55555, map[string]float64{"FTX": 5.55555}})
 
-	rst.Asks.Put(41003.33333, InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
-	rst.Asks.Put(41004.44444, InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
-	rst.Asks.Put(41005.55555, InnerDepth{5.55555, map[string]float64{"FTX": 5.55555}})
+	// rst.Bids.Put(41004.44444, &InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
+	// rst.Bids.Put(41003.33333, &InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
+	// rst.Bids.Put(41002.22222, &InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
+	// rst.Bids.Put(41001.11111, &InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
+	// rst.Bids.Put(40009.99999, &InnerDepth{9.99999, map[string]float64{"FTX": 9.99999}})
 
-	rst.Bids.Put(41004.44444, InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
-	rst.Bids.Put(41003.33333, InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
-	rst.Bids.Put(41002.22222, InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
-	rst.Bids.Put(41001.11111, InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
-	rst.Bids.Put(40009.99999, InnerDepth{9.99999, map[string]float64{"FTX": 9.99999}})
+	rst.Asks.Put(55000, &InnerDepth{4, map[string]float64{"FTX": 5.5}})
+	rst.Asks.Put(50000, &InnerDepth{5, map[string]float64{"FTX": 5}})
+
+	rst.Bids.Put(45000, &InnerDepth{2, map[string]float64{"FTX": 4.5}})
+	rst.Bids.Put(40000, &InnerDepth{3, map[string]float64{"FTX": 4}})
 
 	// rst.Asks.Put(40002.222222].Volume = 2.222222
 	// rst.Asks.Put(40003.222222].Volume = 2.222222
 	// rst.Asks.Put(40004.222222].Volume = 2.222222
 
 	return rst
+}
+
+func GetTestDepthByType(index int) *DepthQuote {
+	rst := GetTestDepth()
+
+	exchange_type := index % 3
+
+	switch exchange_type {
+	case 0:
+		rst.Exchange = "FTX"
+		rst.Asks.Put(60000, &InnerDepth{4, map[string]float64{"FTX": 4}})
+	}
+
+	return &rst
 }
 
 func get_test_config() RiskCtrlConfigMap {
