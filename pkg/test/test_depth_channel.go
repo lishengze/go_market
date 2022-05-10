@@ -168,7 +168,7 @@ func main() {
 
 	// TestTreeMap()
 
-	// riskctrl.TestAggregator()
+	riskctrl.TestAggregator()
 
-	TestTime()
+	// TestTime()
 }

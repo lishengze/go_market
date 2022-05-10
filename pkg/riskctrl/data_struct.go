@@ -68,6 +68,25 @@ type Trade struct {
 	Volume   float64
 }
 
+func (t *Trade) String() string {
+	res := fmt.Sprintf("%s.%s, %+v, p: %f v: %f \n", t.Exchange, t.Symbol, time.Unix(int64(t.Time), 0), t.Price, t.Volume)
+	return res
+}
+
+func (k *Kline) String() string {
+	res := fmt.Sprintf("%s.%s, %+v, o: %f, h: %f, l: %f, c: %f, v: %f\n",
+		k.Exchange, k.Symbol, time.Unix(int64(k.Time), 0),
+		k.Open, k.High, k.Low, k.Close, k.Volume)
+	return res
+}
+
+func (d *DepthQuote) String(len int) string {
+
+	res := fmt.Sprintf("%s.%s, %v\nAsks: %s\nBids: %s \n", d.Exchange, d.Symbol, time.Unix(int64(d.Time), 0), d.Asks.String(), d.Bids.String())
+
+	return string(res)
+}
+
 func NewTrade(src *Trade) *Trade {
 	if src != nil {
 		rst := &Trade{
@@ -107,6 +126,7 @@ func NewKline(src *Kline) *Kline {
 func InitKlineByTrade(src *Kline, trade *Trade) {
 	src.Exchange = BCTS_EXCHANGE
 	src.Symbol = trade.Symbol
+	src.Time = trade.Time
 	src.Resolution = 60
 	src.Open = trade.Price
 	src.High = trade.Price
@@ -154,11 +174,4 @@ type DataChannel struct {
 func (d *DepthQuote) Init() {
 	d.Asks = treemap.NewWith(utils.Float64Comparator)
 	d.Bids = treemap.NewWith(utils.Float64Comparator)
-}
-
-func (d *DepthQuote) String(len int) string {
-
-	res := fmt.Sprintf("%s.%s, %v\nAsks: %s\nBids: %s \n", d.Exchange, d.Symbol, time.Unix(int64(d.Time), 0), d.Asks.String(), d.Bids.String())
-
-	return string(res)
 }

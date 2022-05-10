@@ -12,8 +12,11 @@ import (
 
 type Aggregator struct {
 	depth_cache map[string]map[string]*DepthQuote
+
 	kline_cache map[string]map[string]*Kline
 	trade_cache map[string]map[string]*Trade
+
+	kline_aggregated map[string]*Kline
 
 	depth_mutex sync.Mutex
 	kline_mutex sync.Mutex
@@ -80,7 +83,7 @@ func (a *Aggregator) start_aggregate_kline() {
 func (a *Aggregator) aggregate_depth() {
 	a.depth_mutex.Lock()
 
-	LOG_INFO("----- Aggregate Depth Start ------ ")
+	// LOG_INFO("----- Aggregate Depth Start ------ ")
 
 	for symbol, exchange_depth_map := range a.depth_cache {
 		new_depth := NewDepth(nil)
@@ -102,7 +105,7 @@ func (a *Aggregator) aggregate_depth() {
 		// }
 	}
 
-	LOG_INFO("----- Aggregate Depth Over!------ \n")
+	// LOG_INFO("----- Aggregate Depth Over!------ \n")
 
 	defer a.depth_mutex.Unlock()
 
@@ -129,13 +132,11 @@ func (a *Aggregator) aggregate_kline() {
 	defer a.kline_mutex.Unlock()
 	a.kline_mutex.Lock()
 
-	for _, exchange_kline_map := range a.kline_cache {
-		for _, kline := range exchange_kline_map {
-			new_kline := NewKline(kline)
-			kline.Time = 0
-			new_kline.Time = TimeMinute()
-			a.publish_kline(new_kline)
-		}
+	for _, kline := range a.kline_aggregated {
+		new_kline := NewKline(kline)
+		kline.Time = 0
+		new_kline.Time = TimeMinute()
+		a.publish_kline(new_kline)
 	}
 }
 
@@ -143,17 +144,14 @@ func (a *Aggregator) update_kline(trade *Trade) {
 	defer a.kline_mutex.Unlock()
 	a.kline_mutex.Lock()
 
-	if _, ok := a.kline_cache[trade.Symbol]; ok == false {
-		a.kline_cache[trade.Symbol] = make(map[string]*Kline)
+	if _, ok := a.kline_aggregated[trade.Symbol]; ok == false {
+		a.kline_aggregated[trade.Symbol] = NewKline(nil)
 	}
 
-	if _, ok := a.kline_cache[trade.Symbol][trade.Exchange]; ok == false {
-		a.kline_cache[trade.Symbol][trade.Exchange] = NewKline(nil)
-	}
-
-	cur_kline := a.kline_cache[trade.Symbol][trade.Symbol]
+	cur_kline := a.kline_aggregated[trade.Symbol]
 	if cur_kline.Time == 0 {
 		InitKlineByTrade(cur_kline, trade)
+		// fmt.Printf("\nUpdate Kline: %s\n", cur_kline.String())
 		return
 	}
 
@@ -166,6 +164,8 @@ func (a *Aggregator) update_kline(trade *Trade) {
 
 	cur_kline.Close = trade.Price
 	cur_kline.Volume += trade.Volume
+
+	// fmt.Printf("\nUpdate Kline: %s\n", cur_kline.String())
 }
 
 func (a *Aggregator) cache_depth(depth *DepthQuote) {
@@ -193,6 +193,8 @@ func (a *Aggregator) cache_trade(trade *Trade) {
 	new_trade := NewTrade(trade)
 	new_trade.Exchange = BCTS_EXCHANGE
 
+	fmt.Printf(" Recv Trade: %s\n", trade.String())
+
 	a.update_kline(trade)
 	a.publish_trade(new_trade)
 }
@@ -202,11 +204,11 @@ func (a *Aggregator) publish_depth(depth *DepthQuote) {
 }
 
 func (a *Aggregator) publish_kline(kline *Kline) {
-	fmt.Printf("Publish Kline: \n%+v\n", kline)
+	fmt.Printf("\nPub Kline: \n%s\n", kline.String())
 }
 
 func (a *Aggregator) publish_trade(trade *Trade) {
-	fmt.Printf("Publish Trade: \n%+v\n", trade)
+	fmt.Printf("Pub Trade: %s\n", trade.String())
 }
 
 func GetTestDepthByType(index int) *DepthQuote {
@@ -260,13 +262,16 @@ func GetTestTrade() *Trade {
 	new_trade.Price = trade_price
 	new_trade.Volume = trade_volume
 	new_trade.Time = time.Now().Unix()
+
+	fmt.Printf("Send Trade: %s\n", new_trade.String())
+
 	return new_trade
 }
 
 func PublishTest(data *DataChannel) {
 	timer := time.Tick(3 * time.Second)
 
-	index := 0
+	// index := 0
 	for {
 		select {
 		case <-timer:
@@ -284,6 +289,7 @@ func TestAggregator() {
 		depth_cache:               make(map[string]map[string]*DepthQuote),
 		kline_cache:               make(map[string]map[string]*Kline),
 		trade_cache:               make(map[string]map[string]*Trade),
+		kline_aggregated:          make(map[string]*Kline),
 		depth_aggregator_millsecs: 5000,
 	}
 
