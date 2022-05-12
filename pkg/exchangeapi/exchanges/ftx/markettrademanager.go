@@ -80,7 +80,7 @@ func (o *marketTradeManager) Sub(symbols ...exmodel.StdSymbol) {
 		if err != nil {
 			logx.Infof("%s not support symbol:%s", Name, s)
 		} else {
-			topics = append(topics, r.StdSymbol.String())
+			topics = append(topics, r.ExFormat)
 		}
 	}
 
