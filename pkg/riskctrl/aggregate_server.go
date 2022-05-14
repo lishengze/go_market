@@ -3,12 +3,10 @@ package riskctrl
 import (
 	"fmt"
 	"market_aggregate/pkg/datastruct"
-	"math/rand"
 	"sync"
 	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
-	"github.com/emirpasic/gods/utils"
 )
 
 type Aggregator struct {
@@ -212,63 +210,6 @@ func (a *Aggregator) publish_trade(trade *datastruct.Trade) {
 	fmt.Printf("Pub datastruct.Trade: %s\n", trade.String())
 }
 
-func GetTestDepthByType(index int) *datastruct.DepthQuote {
-	var rst datastruct.DepthQuote
-
-	exchange_array := []string{"FTX", "HUOBI", "OKEX"}
-	exchange_type := index % 3
-
-	rst.Exchange = exchange_array[exchange_type]
-	rst.Symbol = "BTC_USDT"
-	rst.Time = time.Now().Unix()
-	rst.Asks = treemap.NewWith(utils.Float64Comparator)
-	rst.Bids = treemap.NewWith(utils.Float64Comparator)
-
-	rst.Asks.Put(55000.0, &datastruct.InnerDepth{5.5, map[string]float64{rst.Exchange: 5.5}})
-	rst.Asks.Put(50000.0, &datastruct.InnerDepth{5.0, map[string]float64{rst.Exchange: 5.0}})
-
-	rst.Bids.Put(45000.0, &datastruct.InnerDepth{4.5, map[string]float64{rst.Exchange: 4.5}})
-	rst.Bids.Put(40000.0, &datastruct.InnerDepth{4.0, map[string]float64{rst.Exchange: 4.0}})
-
-	switch exchange_type {
-	case 0:
-		rst.Asks.Put(60000.0, &datastruct.InnerDepth{6.0, map[string]float64{rst.Exchange: 6.0}})
-		rst.Bids.Put(35000.0, &datastruct.InnerDepth{3.5, map[string]float64{rst.Exchange: 3.5}})
-
-	case 1:
-		rst.Asks.Put(70000.0, &datastruct.InnerDepth{7.0, map[string]float64{rst.Exchange: 7.0}})
-		rst.Bids.Put(30000.0, &datastruct.InnerDepth{3.0, map[string]float64{rst.Exchange: 3.0}})
-
-	case 2:
-		rst.Asks.Put(75000.0, &datastruct.InnerDepth{7.5, map[string]float64{rst.Exchange: 7.5}})
-		rst.Bids.Put(25000.0, &datastruct.InnerDepth{2.5, map[string]float64{rst.Exchange: 2.5}})
-	}
-
-	return &rst
-}
-
-func GetTestTrade() *datastruct.Trade {
-	rand.Seed(time.Now().UnixNano())
-	randomNum := rand.Intn(3)
-
-	exchange_array := []string{"FTX", "HUOBI", "OKEX"}
-	cur_exchange := exchange_array[randomNum%3]
-	symbol := "ETH_USDT"
-	trade_price := float64(rand.Intn(1000))
-	trade_volume := float64(rand.Intn(100))
-
-	new_trade := datastruct.NewTrade(nil)
-	new_trade.Exchange = cur_exchange
-	new_trade.Symbol = symbol
-	new_trade.Price = trade_price
-	new_trade.Volume = trade_volume
-	new_trade.Time = time.Now().Unix()
-
-	fmt.Printf("Send datastruct.Trade: %s\n", new_trade.String())
-
-	return new_trade
-}
-
 func PublishTest(data *datastruct.DataChannel) {
 	timer := time.Tick(3 * time.Second)
 
@@ -280,7 +221,7 @@ func PublishTest(data *datastruct.DataChannel) {
 			// index++
 			// data.DepthChannel <- depth_quote
 
-			data.TradeChannel <- GetTestTrade()
+			data.TradeChannel <- datastruct.GetTestTrade()
 		}
 	}
 }

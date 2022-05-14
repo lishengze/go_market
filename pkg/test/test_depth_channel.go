@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"market_aggregate/pkg/comm"
 	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/riskctrl"
 	"reflect"
@@ -169,9 +170,15 @@ func main() {
 
 	// TestTreeMap()
 
-	riskctrl.TestAggregator()
+	// riskctrl.TestAggregator()
 
 	// kafkaClient.TestConsumer()
 
 	// TestTime()
+
+	// comm.TestSeDepth()
+
+	// comm.TestSeTrade()
+
+	comm.TestSeKline()
 }

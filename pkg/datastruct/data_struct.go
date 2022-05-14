@@ -2,6 +2,7 @@ package datastruct
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
@@ -174,4 +175,84 @@ type DataChannel struct {
 func (d *DepthQuote) Init() {
 	d.Asks = treemap.NewWith(utils.Float64Comparator)
 	d.Bids = treemap.NewWith(utils.Float64Comparator)
+}
+
+func GetTestDepthByType(index int) *DepthQuote {
+	var rst DepthQuote
+
+	exchange_array := []string{"FTX", "HUOBI", "OKEX"}
+	exchange_type := index % 3
+
+	rst.Exchange = exchange_array[exchange_type]
+	rst.Symbol = "BTC_USDT"
+	rst.Time = time.Now().Unix()
+	rst.Asks = treemap.NewWith(utils.Float64Comparator)
+	rst.Bids = treemap.NewWith(utils.Float64Comparator)
+
+	rst.Asks.Put(55000.0, &InnerDepth{5.5, map[string]float64{rst.Exchange: 5.5}})
+	rst.Asks.Put(50000.0, &InnerDepth{5.0, map[string]float64{rst.Exchange: 5.0}})
+
+	rst.Bids.Put(45000.0, &InnerDepth{4.5, map[string]float64{rst.Exchange: 4.5}})
+	rst.Bids.Put(40000.0, &InnerDepth{4.0, map[string]float64{rst.Exchange: 4.0}})
+
+	switch exchange_type {
+	case 0:
+		rst.Asks.Put(60000.0, &InnerDepth{6.0, map[string]float64{rst.Exchange: 6.0}})
+		rst.Bids.Put(35000.0, &InnerDepth{3.5, map[string]float64{rst.Exchange: 3.5}})
+
+	case 1:
+		rst.Asks.Put(70000.0, &InnerDepth{7.0, map[string]float64{rst.Exchange: 7.0}})
+		rst.Bids.Put(30000.0, &InnerDepth{3.0, map[string]float64{rst.Exchange: 3.0}})
+
+	case 2:
+		rst.Asks.Put(75000.0, &InnerDepth{7.5, map[string]float64{rst.Exchange: 7.5}})
+		rst.Bids.Put(25000.0, &InnerDepth{2.5, map[string]float64{rst.Exchange: 2.5}})
+	}
+
+	return &rst
+}
+
+func GetTestTrade() *Trade {
+	rand.Seed(time.Now().UnixNano())
+	randomNum := rand.Intn(3)
+
+	exchange_array := []string{"FTX", "HUOBI", "OKEX"}
+	cur_exchange := exchange_array[randomNum%3]
+	symbol := "ETH_USDT"
+	trade_price := float64(rand.Intn(1000))
+	trade_volume := float64(rand.Intn(100))
+
+	new_trade := NewTrade(nil)
+	new_trade.Exchange = cur_exchange
+	new_trade.Symbol = symbol
+	new_trade.Price = trade_price
+	new_trade.Volume = trade_volume
+	new_trade.Time = time.Now().Unix()
+
+	// fmt.Printf("Send Trade: %s\n", new_trade.String())
+
+	return new_trade
+}
+
+func GetTestKline() *Kline {
+	rand.Seed(time.Now().UnixNano())
+	randomNum := rand.Intn(3)
+
+	exchange_array := []string{"FTX", "HUOBI", "OKEX"}
+	cur_exchange := exchange_array[randomNum%3]
+	symbol := "ETH_USDT"
+
+	new_kline := Kline{
+		Exchange:   cur_exchange,
+		Symbol:     symbol,
+		Time:       time.Now().Unix(),
+		Resolution: 60,
+		Volume:     1.1,
+		Open:       3000,
+		High:       4000,
+		Low:        2800,
+		Close:      3500,
+	}
+
+	return &new_kline
 }
