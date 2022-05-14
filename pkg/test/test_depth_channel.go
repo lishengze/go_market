@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/riskctrl"
 	"reflect"
 	"time"
 )
 
 // 测试用定时器向一个 channel 发送 depth_quote
-func send_depth(channel_depth_quote chan *riskctrl.DepthQuote) {
+func send_depth(channel_depth_quote chan *datastruct.DepthQuote) {
 
 	duration := time.Duration(3 * time.Second)
 	timer := time.Tick(duration)
@@ -23,7 +24,7 @@ func send_depth(channel_depth_quote chan *riskctrl.DepthQuote) {
 	}
 }
 
-func recev_depth(channel_depth_quote chan *riskctrl.DepthQuote) {
+func recev_depth(channel_depth_quote chan *datastruct.DepthQuote) {
 	for {
 		select {
 		case depth_quote := <-channel_depth_quote:
@@ -34,7 +35,7 @@ func recev_depth(channel_depth_quote chan *riskctrl.DepthQuote) {
 }
 
 func TestDepthChannel() {
-	channel_depth_quote := make(chan *riskctrl.DepthQuote)
+	channel_depth_quote := make(chan *datastruct.DepthQuote)
 
 	go send_depth(channel_depth_quote)
 
@@ -47,7 +48,7 @@ func TestDepthChannel() {
 type EmptyInterface interface {
 }
 
-func process_depth(depth_quote *riskctrl.DepthQuote) {
+func process_depth(depth_quote *datastruct.DepthQuote) {
 	fmt.Println(depth_quote.String(5))
 }
 
@@ -61,7 +62,7 @@ func TestDepthReflection(data EmptyInterface) {
 
 	// data_type
 
-	// if reflect.TypeOf(data) == riskctrl.DepthQuote {
+	// if reflect.TypeOf(data) == datastruct.DepthQuote {
 
 	// }
 
@@ -72,7 +73,7 @@ func TestDepthReflection(data EmptyInterface) {
 		// process_depth(data)
 	}
 
-	// reflect.ValueOf(data).(riskctrl.DepthQuote)
+	// reflect.ValueOf(data).(datastruct.DepthQuote)
 }
 
 func TestReflection() {
@@ -86,7 +87,7 @@ func TestInnerDepth() {
 
 	if result, ok := new_depth.Asks.Get(41001.11111); ok {
 		// fmt.Println()
-		trans := result.(*riskctrl.InnerDepth)
+		trans := result.(*datastruct.InnerDepth)
 
 		// trans.
 		fmt.Printf("Original Depth:%+v \n", trans)
@@ -169,6 +170,8 @@ func main() {
 	// TestTreeMap()
 
 	riskctrl.TestAggregator()
+
+	// kafkaClient.TestConsumer()
 
 	// TestTime()
 }

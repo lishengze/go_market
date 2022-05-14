@@ -2,6 +2,7 @@ package riskctrl
 
 import (
 	"fmt"
+	"market_aggregate/pkg/datastruct"
 	"math"
 	"time"
 
@@ -47,8 +48,8 @@ type RiskCtrlConfig struct {
 type RiskCtrlConfigMap map[string]RiskCtrlConfig
 
 type RiskWorkerInterface interface {
-	Process(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) bool
-	Execute(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) bool
+	Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool
+	Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool
 	SetNext(nextWorker RiskWorkerInterface)
 	GetWorkerName() string
 }
@@ -59,12 +60,12 @@ type Worker struct {
 	WorkerName string
 }
 
-func (w *Worker) Process(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) bool {
+func (w *Worker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	fmt.Println("Original Worker Process")
 	return false
 }
 
-func (w *Worker) Execute(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) bool {
+func (w *Worker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer ExceptionFunc()
 
 	fmt.Println(w)
@@ -142,20 +143,20 @@ func (w *FeeWorker) calc_depth_fee(depth *treemap.Map, config *RiskCtrlConfig, i
 
 	for iter.Begin(); iter.Next(); {
 		original_price := iter.Key().(float64)
-		inner_depth := iter.Value().(*InnerDepth)
+		inner_depth := iter.Value().(*datastruct.InnerDepth)
 
 		for exchange, _ := range inner_depth.ExchangeVolume {
 			new_price := get_new_fee_price(original_price, exchange, config, isAsk)
 
 			if new_inner_depth_iter, ok := result.Get(new_price); ok {
 
-				new_inner_depth := new_inner_depth_iter.(*InnerDepth)
+				new_inner_depth := new_inner_depth_iter.(*datastruct.InnerDepth)
 
 				new_inner_depth.ExchangeVolume[exchange] += inner_depth.Volume
 				new_inner_depth.Volume += inner_depth.Volume
 
 			} else {
-				new_inner_depth := InnerDepth{0, make(map[string]float64)}
+				new_inner_depth := datastruct.InnerDepth{0, make(map[string]float64)}
 
 				new_inner_depth.ExchangeVolume[exchange] = inner_depth.Volume
 				new_inner_depth.Volume = inner_depth.Volume
@@ -168,7 +169,7 @@ func (w *FeeWorker) calc_depth_fee(depth *treemap.Map, config *RiskCtrlConfig, i
 	return result
 }
 
-func (w *FeeWorker) Execute(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) bool {
+func (w *FeeWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer ExceptionFunc()
 
 	fmt.Println(w)
@@ -184,7 +185,7 @@ func (w *FeeWorker) Execute(depth_quote *DepthQuote, configs *RiskCtrlConfigMap)
 	return false
 }
 
-func (w *FeeWorker) Process(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) bool {
+func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer ExceptionFunc()
 
 	fmt.Println("-------- FeeWorker Process  ---------")
@@ -235,11 +236,11 @@ func calc_depth_bias(depth *treemap.Map, config *RiskCtrlConfig, isAsk bool) *tr
 
 	for depth_iter.Begin(); depth_iter.Next(); {
 		original_price := depth_iter.Key().(float64)
-		inner_depth := depth_iter.Value().(*InnerDepth)
+		inner_depth := depth_iter.Value().(*datastruct.InnerDepth)
 
-		// var new_inner_depth InnerDepth
+		// var new_inner_depth datastruct.InnerDepth
 
-		new_inner_depth := InnerDepth{0, make(map[string]float64)}
+		new_inner_depth := datastruct.InnerDepth{0, make(map[string]float64)}
 
 		new_price := get_bias_value(original_price, config.PriceBiasKind, PriceBiasValue)
 		new_volume := get_bias_value(inner_depth.Volume, config.VolumeBiasKind, VolumeBiasValue)
@@ -258,7 +259,7 @@ func calc_depth_bias(depth *treemap.Map, config *RiskCtrlConfig, isAsk bool) *tr
 	return result
 }
 
-func (w *QuotebiasWorker) Process(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) bool {
+func (w *QuotebiasWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer ExceptionFunc()
 
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
@@ -286,7 +287,7 @@ func (w *QuotebiasWorker) Process(depth_quote *DepthQuote, configs *RiskCtrlConf
 	return false
 }
 
-func (w *QuotebiasWorker) Execute(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) bool {
+func (w *QuotebiasWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer ExceptionFunc()
 
 	fmt.Println(w)
@@ -307,7 +308,7 @@ type WatermarkWorker struct {
 }
 
 // 每个交易所的买一卖一档，然后取买一卖一中位数的均值
-func calc_watermark(depth_quote *DepthQuote) float64 {
+func calc_watermark(depth_quote *datastruct.DepthQuote) float64 {
 	var rst float64
 
 	ask_iter := depth_quote.Asks.Iterator()
@@ -349,7 +350,7 @@ func calc_watermark(depth_quote *DepthQuote) float64 {
 func filter_depth_by_watermark(depth *treemap.Map, watermark float64, price_minum_change float64, isAsk bool) {
 
 	crossed_price := []float64{}
-	new_inner_depth := InnerDepth{0, make(map[string]float64)}
+	new_inner_depth := datastruct.InnerDepth{0, make(map[string]float64)}
 	depth_iter := depth.Iterator()
 	new_price := watermark + float64(price_minum_change)
 
@@ -359,7 +360,7 @@ func filter_depth_by_watermark(depth *treemap.Map, watermark float64, price_minu
 
 		for depth_iter.Begin(); depth_iter.Next(); {
 			cur_price := depth_iter.Key().(float64)
-			cur_innerdepth := depth_iter.Value().(*InnerDepth)
+			cur_innerdepth := depth_iter.Value().(*datastruct.InnerDepth)
 
 			if cur_price <= new_price {
 				crossed_price = append(crossed_price, cur_price)
@@ -373,7 +374,7 @@ func filter_depth_by_watermark(depth *treemap.Map, watermark float64, price_minu
 
 		for depth_iter.End(); depth_iter.Prev(); {
 			cur_price := depth_iter.Key().(float64)
-			cur_innerdepth := depth_iter.Value().(*InnerDepth)
+			cur_innerdepth := depth_iter.Value().(*datastruct.InnerDepth)
 
 			if cur_price >= new_price {
 				crossed_price = append(crossed_price, cur_price)
@@ -416,7 +417,7 @@ func get_sorted_key(depth *treemap.Map) []float64 {
 	return keys
 }
 
-func check_cross(depth_quote *DepthQuote) bool {
+func check_cross(depth_quote *datastruct.DepthQuote) bool {
 	if depth_quote.Asks.Size() == 0 || depth_quote.Bids.Size() == 0 {
 		return false
 	}
@@ -430,7 +431,7 @@ func check_cross(depth_quote *DepthQuote) bool {
 	return false
 }
 
-func (w *WatermarkWorker) Execute(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) bool {
+func (w *WatermarkWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer ExceptionFunc()
 
 	fmt.Println(w)
@@ -446,7 +447,7 @@ func (w *WatermarkWorker) Execute(depth_quote *DepthQuote, configs *RiskCtrlConf
 	return false
 }
 
-func (w *WatermarkWorker) Process(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) bool {
+func (w *WatermarkWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer ExceptionFunc()
 
 	if check_cross(depth_quote) == false {
@@ -495,9 +496,9 @@ func resize_depth_precision(depth *treemap.Map, config *RiskCtrlConfig) *treemap
 
 	for depth_iter.Begin(); depth_iter.Next(); {
 		original_price := depth_iter.Key().(float64)
-		inner_depth := depth_iter.Value().(*InnerDepth)
+		inner_depth := depth_iter.Value().(*datastruct.InnerDepth)
 
-		new_inner_depth := InnerDepth{0, make(map[string]float64)}
+		new_inner_depth := datastruct.InnerDepth{0, make(map[string]float64)}
 
 		new_price := resize_float64(original_price, config.PricePrecison)
 		new_volume := resize_float64(inner_depth.Volume, config.VolumePrecison)
@@ -516,7 +517,7 @@ func resize_depth_precision(depth *treemap.Map, config *RiskCtrlConfig) *treemap
 	return result
 }
 
-func (w *PrecisionWorker) Execute(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) bool {
+func (w *PrecisionWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer ExceptionFunc()
 
 	fmt.Println(w)
@@ -532,7 +533,7 @@ func (w *PrecisionWorker) Execute(depth_quote *DepthQuote, configs *RiskCtrlConf
 	return false
 }
 
-func (w *PrecisionWorker) Process(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) bool {
+func (w *PrecisionWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer ExceptionFunc()
 
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
@@ -581,7 +582,7 @@ func (r *RiskWorkerManager) Init() {
 	// r.WatermarkWorker_.SetNext(&r.PrecisionWorker_)
 }
 
-func (r *RiskWorkerManager) Execute(depth_quote *DepthQuote, configs *RiskCtrlConfigMap) {
+func (r *RiskWorkerManager) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) {
 	fmt.Printf("\n------- RiskWorkerManager  Executing -------- \n\n")
 
 	// r.FeeWorker_.Execute(depth_quote, configs)
@@ -598,14 +599,14 @@ func test_get_sorted_keys() {
 
 	test_map := treemap.NewWith(utils.Float64Comparator)
 
-	depth1 := InnerDepth{0, make(map[string]float64)}
+	depth1 := datastruct.InnerDepth{0, make(map[string]float64)}
 	depth1.Volume = 1
 	depth1.ExchangeVolume["FTX"] = 1
 
-	depth2 := InnerDepth{0, make(map[string]float64)}
+	depth2 := datastruct.InnerDepth{0, make(map[string]float64)}
 	depth2.Volume = 2
 
-	depth3 := InnerDepth{0, make(map[string]float64)}
+	depth3 := datastruct.InnerDepth{0, make(map[string]float64)}
 	depth3.Volume = 3
 
 	test_map.Put(1.1, depth1)
@@ -624,8 +625,8 @@ func test_get_sorted_keys() {
 	// fmt.Println(keys)
 }
 
-func GetTestDepth() DepthQuote {
-	var rst DepthQuote
+func GetTestDepth() datastruct.DepthQuote {
+	var rst datastruct.DepthQuote
 
 	rst.Exchange = "FTX"
 	rst.Symbol = "BTC_USDT"
@@ -633,23 +634,23 @@ func GetTestDepth() DepthQuote {
 	rst.Asks = treemap.NewWith(utils.Float64Comparator)
 	rst.Bids = treemap.NewWith(utils.Float64Comparator)
 
-	// rst.Asks.Put(41001.11111, &InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
-	// rst.Asks.Put(41002.22222, &InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
-	// rst.Asks.Put(41003.33333, &InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
-	// rst.Asks.Put(41004.44444, &InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
-	// rst.Asks.Put(41005.55555, &InnerDepth{5.55555, map[string]float64{"FTX": 5.55555}})
+	// rst.Asks.Put(41001.11111, &datastruct.InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
+	// rst.Asks.Put(41002.22222, &datastruct.InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
+	// rst.Asks.Put(41003.33333, &datastruct.InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
+	// rst.Asks.Put(41004.44444, &datastruct.InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
+	// rst.Asks.Put(41005.55555, &datastruct.InnerDepth{5.55555, map[string]float64{"FTX": 5.55555}})
 
-	// rst.Bids.Put(41004.44444, &InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
-	// rst.Bids.Put(41003.33333, &InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
-	// rst.Bids.Put(41002.22222, &InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
-	// rst.Bids.Put(41001.11111, &InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
-	// rst.Bids.Put(40009.99999, &InnerDepth{9.99999, map[string]float64{"FTX": 9.99999}})
+	// rst.Bids.Put(41004.44444, &datastruct.InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
+	// rst.Bids.Put(41003.33333, &datastruct.InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
+	// rst.Bids.Put(41002.22222, &datastruct.InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
+	// rst.Bids.Put(41001.11111, &datastruct.InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
+	// rst.Bids.Put(40009.99999, &datastruct.InnerDepth{9.99999, map[string]float64{"FTX": 9.99999}})
 
-	rst.Asks.Put(55000.0, &InnerDepth{5.5, map[string]float64{"FTX": 5.5}})
-	rst.Asks.Put(50000.0, &InnerDepth{5.0, map[string]float64{"FTX": 5.0}})
+	rst.Asks.Put(55000.0, &datastruct.InnerDepth{5.5, map[string]float64{"FTX": 5.5}})
+	rst.Asks.Put(50000.0, &datastruct.InnerDepth{5.0, map[string]float64{"FTX": 5.0}})
 
-	rst.Bids.Put(45000.0, &InnerDepth{4.5, map[string]float64{"FTX": 4.5}})
-	rst.Bids.Put(40000.0, &InnerDepth{4.0, map[string]float64{"FTX": 4.0}})
+	rst.Bids.Put(45000.0, &datastruct.InnerDepth{4.5, map[string]float64{"FTX": 4.5}})
+	rst.Bids.Put(40000.0, &datastruct.InnerDepth{4.0, map[string]float64{"FTX": 4.0}})
 
 	// rst.Asks.Put(40002.222222].Volume = 2.222222
 	// rst.Asks.Put(40003.222222].Volume = 2.222222
@@ -689,7 +690,7 @@ func TestWorker() {
 }
 
 func TestInnerDepth() {
-	// a := InnerDepth{0, make(map[string]float64)}
+	// a := datastruct.InnerDepth{0, make(map[string]float64)}
 
 	// var e1 = map[string]float64{
 	// 	"FTX": 1.1,
@@ -699,7 +700,7 @@ func TestInnerDepth() {
 	// 	"FTX": 1.1,
 	// }
 
-	a := InnerDepth{0, map[string]float64{"FTX": 1.1}}
+	a := datastruct.InnerDepth{0, map[string]float64{"FTX": 1.1}}
 
 	// fmt.Println(e)
 	// fmt.Println(e1)
@@ -712,7 +713,7 @@ func test_json() {
 }
 
 func TestImport() {
-	data := TestData{
+	data := datastruct.TestData{
 		Name: "Tom",
 	}
 
