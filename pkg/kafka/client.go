@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"fmt"
+	"market_aggregate/pkg/comm"
 	"market_aggregate/pkg/conf"
 	"market_aggregate/pkg/datastruct"
 
@@ -34,7 +35,7 @@ func TestConsumer() {
 			for msg := range pc.Messages() {
 				fmt.Printf("%+v \n", msg)
 
-				trade := Trade{}
+				trade := comm.Trade{}
 				// //data:=mpupb.Kline{}
 				// //data:=mpupb.Trade{}
 				err := proto.Unmarshal(msg.Value, &trade)

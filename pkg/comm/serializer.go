@@ -3,8 +3,11 @@ package comm
 import (
 	"fmt"
 	"market_aggregate/pkg/datastruct"
+	"market_aggregate/pkg/riskctrl"
 	"strconv"
 
+	"github.com/emirpasic/gods/maps/treemap"
+	"github.com/emirpasic/gods/utils"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -33,12 +36,49 @@ func (p *ProtobufSerializer) EncodeTrade(*datastruct.Trade) (string, error) {
 	return "", nil
 }
 
-func (p *ProtobufSerializer) DecodeDepth(raw_msg []byte) (*datastruct.DepthQuote, error) {
+func SetDepthTreeMap(src *treemap.Map, proto_depth []*PriceVolume) {
+	for _, value := range proto_depth {
+		price, err := strconv.ParseFloat(value.Price, 64)
+		if err != nil {
+			riskctrl.LOG_ERROR(err.Error())
+			continue
+		}
+		volume, err := strconv.ParseFloat(value.Volume, 64)
+		if err != nil {
+			riskctrl.LOG_ERROR(err.Error())
+			continue
+		}
+		src.Put(price, volume)
+	}
+}
 
+func (p *ProtobufSerializer) DecodeDepth(raw_msg []byte) (*datastruct.DepthQuote, error) {
+	proto_depth := Depth{}
+	err := proto.Unmarshal(raw_msg, &proto_depth)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	asks := treemap.NewWith(utils.Float64Comparator)
+	bids := treemap.NewWith(utils.Float64Comparator)
+
+	SetDepthTreeMap(asks, proto_depth.Asks)
+	SetDepthTreeMap(bids, proto_depth.Bids)
+
+	// 	// for item
+
+	return &datastruct.DepthQuote{
+		Exchange: proto_depth.Exchange,
+		Symbol:   proto_depth.Symbol,
+		Time:     int64(proto_depth.Timestamp.Nanos),
+		Asks:     asks,
+		Bids:     bids,
+	}, nil
 }
 
 func (p *ProtobufSerializer) DecodeKline(raw_msg []byte) (*datastruct.Kline, error) {
-
+	return nil, nil
 }
 
 func (p *ProtobufSerializer) DecodeTrade(raw_msg []byte) (*datastruct.Trade, error) {
