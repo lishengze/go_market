@@ -24,6 +24,12 @@ const (
 	COMM_GRPC  = "GRPC"
 )
 
+const (
+	COMM_PROTOBUF = "PROTOBUF"
+	COMM_JSON     = "JSON"
+	COMM_FLATBUF  = "FLATBUF"
+)
+
 type Comm struct {
 	RecvCommType   string // Kafka, Redis, Grpc
 	PubCommType    string //
@@ -35,11 +41,19 @@ type Comm struct {
 
 func (c *Comm) Init(config *conf.Config, recv_chan *datastruct.DataChannel) error {
 
+	if config.SerialType == COMM_PROTOBUF {
+		c.Serializer = &ProtobufSerializer{}
+	}
+
 	if config.NetServerType == COMM_KAFKA {
 		c.NetServer = &kafka.KafkaServer{
 			RecvDataChan: recv_chan,
+			Serializer:   c.Serializer,
+			Config:       config,
 		}
+		c.NetServer.Init(config, c.Serializer, recv_chan)
 	}
+
 	// c.DataChan = data_chan
 	return nil
 }

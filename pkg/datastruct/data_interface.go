@@ -17,9 +17,9 @@ type NetServerI interface {
 	// Start()
 	// SetMetaData()
 
-	PublishDepth(*DepthQuote)
-	PublishKline(*Kline)
-	PublishTrade(*Trade)
+	PublishDepth(*DepthQuote) error
+	PublishKline(*Kline) error
+	PublishTrade(*Trade) error
 
 	SendRecvedDepth(*DepthQuote)
 	SendRecvedKline(*Kline)

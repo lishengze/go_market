@@ -6,6 +6,7 @@ import (
 	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/protostruct"
 	"market_aggregate/pkg/util"
+	"sync"
 
 	"github.com/Shopify/sarama"
 	"google.golang.org/protobuf/proto"
@@ -69,28 +70,41 @@ type KafkaServer struct {
 
 	Serializer   datastruct.SerializerI
 	RecvDataChan *datastruct.DataChannel
+	Config       *conf.Config
+
+	PublishMutex sync.Mutex
+
+	PubDataChan *datastruct.DataChannel
 }
 
 // Init(*conf.Config, SerializerI, *DataChannel)
 func (k *KafkaServer) Init(config *conf.Config, serializer datastruct.SerializerI, recv_data_chan *datastruct.DataChannel) error {
-	var err error
 
 	k.Serializer = serializer
+	k.Config = config
 	k.RecvDataChan = recv_data_chan
 
-	k.Consumer, err = sarama.NewConsumer([]string{config.IP}, nil)
+	k.InitKafkaApi()
+	k.InitListenPubChan()
+
+	return nil
+}
+
+func (k *KafkaServer) InitKafkaApi() error {
+	var err error
+	k.Consumer, err = sarama.NewConsumer([]string{k.Config.IP}, nil)
 	if err != nil {
 		util.LOG_ERROR(err.Error())
 		return err
 	}
 
-	k.Producer, err = sarama.NewSyncProducer([]string{config.IP}, nil)
+	k.Producer, err = sarama.NewSyncProducer([]string{k.Config.IP}, nil)
 	if err != nil {
 		util.LOG_ERROR(err.Error())
 		return err
 	}
 
-	k.Broker = sarama.NewBroker(config.IP)
+	k.Broker = sarama.NewBroker(k.Config.IP)
 	broker_config := sarama.NewConfig()
 	err = k.Broker.Open(broker_config)
 	if err != nil {
@@ -101,26 +115,105 @@ func (k *KafkaServer) Init(config *conf.Config, serializer datastruct.Serializer
 	return nil
 }
 
-func (k *KafkaServer) PublishDepth(*datastruct.DepthQuote) {
+func (k *KafkaServer) InitListenPubChan() error {
+	// k.PubDataChan = &datastruct.DataChannel{
+	// 	TradeChannel: make(chan *datastruct.Trade),
+	// 	KlineChannel: make(chan *datastruct.Kline),
+	// 	DepthChannel: make(chan *datastruct.DepthQuote),
+	// }
 
+	// go func() {
+	// 	for {
+	// 		select {
+	// 		case local_depth := <-k.PubDataChan.DepthChannel:
+	// 			go k.publish_detpth(local_depth)
+	// 		}
+	// 	}
+	// }()
+	return nil
 }
 
-func (k *KafkaServer) PublishKline(*datastruct.Kline) {
+func (k *KafkaServer) PublishMsgs(topic string, origin_bytes []byte) error {
+	defer k.PublishMutex.Unlock()
 
+	msgs := []*sarama.ProducerMessage{{
+		Topic: topic,
+		Value: sarama.ByteEncoder(origin_bytes),
+	}}
+
+	k.PublishMutex.Lock()
+
+	err := k.Producer.SendMessages(msgs)
+
+	if err != nil {
+		util.LOG_ERROR(err.Error())
+		return err
+	}
+	return nil
 }
 
-func (k *KafkaServer) PublishTrade(*datastruct.Trade) {
+func (k *KafkaServer) PublishDepth(local_depth *datastruct.DepthQuote) error {
+	defer k.PublishMutex.Unlock()
+	serialize_str, err := k.Serializer.EncodeDepth(local_depth)
 
+	if err != nil {
+		util.LOG_ERROR(err.Error())
+		return err
+	}
+
+	topic := GetDepthTopic(local_depth.Symbol, local_depth.Exchange)
+
+	return k.PublishMsgs(topic, serialize_str)
 }
 
-func (k *KafkaServer) SendRecvedDepth(*datastruct.DepthQuote) {
+func (k *KafkaServer) PublishKline(local_kline *datastruct.Kline) error {
 
+	serialize_str, err := k.Serializer.EncodeKline(local_kline)
+
+	if err != nil {
+		util.LOG_ERROR(err.Error())
+		return err
+	}
+
+	topic := GetKlineTopic(local_kline.Symbol, local_kline.Exchange)
+
+	return k.PublishMsgs(topic, serialize_str)
 }
 
-func (k *KafkaServer) SendRecvedKline(*datastruct.Kline) {
+func (k *KafkaServer) PublishTrade(local_trade *datastruct.Trade) error {
 
+	serialize_str, err := k.Serializer.EncodeTrade(local_trade)
+
+	if err != nil {
+		util.LOG_ERROR(err.Error())
+		return err
+	}
+
+	topic := GetTradeTopic(local_trade.Symbol, local_trade.Exchange)
+
+	return k.PublishMsgs(topic, serialize_str)
 }
 
-func (k *KafkaServer) SendRedvedTrade(*datastruct.Trade) {
-
+func (k *KafkaServer) SendRecvedDepth(depth *datastruct.DepthQuote) {
+	k.RecvDataChan.DepthChannel <- depth
 }
+
+func (k *KafkaServer) SendRecvedKline(kline *datastruct.Kline) {
+	k.RecvDataChan.KlineChannel <- kline
+}
+
+func (k *KafkaServer) SendRedvedTrade(trade *datastruct.Trade) {
+	k.RecvDataChan.TradeChannel <- trade
+}
+
+// func (k *KafkaServer) publish_depth(local_depth *datastruct.DepthQuote) {
+
+// }
+
+// func (k *KafkaServer) publish_kline(local_kline *datastruct.Kline) {
+
+// }
+
+// func (k *KafkaServer) publish_trade(local_trade *datastruct.Trade) {
+
+// }
