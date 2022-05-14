@@ -5,6 +5,7 @@ import (
 	"market_aggregate/pkg/comm"
 	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/riskctrl"
+	"market_aggregate/pkg/util"
 	"reflect"
 	"time"
 )
@@ -141,7 +142,7 @@ func TestTime() {
 	// fmt.Println(time.Unix(utc_time_min_secs, 0))
 
 	for {
-		WaitForNextMinute()
+		util.WaitForNextMinute()
 
 		fmt.Println(time.Now())
 	}

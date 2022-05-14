@@ -5,6 +5,7 @@ import (
 	"market_aggregate/pkg/comm"
 	"market_aggregate/pkg/conf"
 	"market_aggregate/pkg/datastruct"
+	"market_aggregate/pkg/util"
 
 	"github.com/Shopify/sarama"
 	"google.golang.org/protobuf/proto"
@@ -62,10 +63,39 @@ func TestConsumer() {
 }
 
 type KafkaServer struct {
+	Consumer sarama.Consumer
+	Producer sarama.SyncProducer
+	Broker   *sarama.Broker
+
+	Serializer comm.SerializerI
 }
 
-func (k *KafkaServer) Init(*conf.Config) {
+func (k *KafkaServer) Init(config *conf.Config, serializer comm.SerializerI) error {
+	var err error
 
+	k.Serializer = serializer
+
+	k.Consumer, err = sarama.NewConsumer([]string{config.IP}, nil)
+	if err != nil {
+		util.LOG_ERROR(err.Error())
+		return err
+	}
+
+	k.Producer, err = sarama.NewSyncProducer([]string{config.IP}, nil)
+	if err != nil {
+		util.LOG_ERROR(err.Error())
+		return err
+	}
+
+	k.Broker = sarama.NewBroker(config.IP)
+	broker_config := sarama.NewConfig()
+	err = k.Broker.Open(broker_config)
+	if err != nil {
+		util.LOG_ERROR(err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func (k *KafkaServer) PublishDepth(*datastruct.DepthQuote) {

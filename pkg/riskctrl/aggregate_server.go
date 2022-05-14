@@ -3,6 +3,7 @@ package riskctrl
 import (
 	"fmt"
 	"market_aggregate/pkg/datastruct"
+	"market_aggregate/pkg/util"
 	"sync"
 	"time"
 
@@ -31,9 +32,9 @@ func (a *Aggregator) Start(data_chan *datastruct.DataChannel) {
 }
 
 func (a *Aggregator) start_aggregate_depth() {
-	LOG_INFO("Aggregator start_aggregate_depth!")
+	util.LOG_INFO("Aggregator start_aggregate_depth!")
 	go func() {
-		LOG_INFO("start_aggregate_depth")
+		util.LOG_INFO("start_aggregate_depth")
 		timer := time.Tick(time.Duration(a.depth_aggregator_millsecs * time.Millisecond))
 
 		for {
@@ -43,7 +44,7 @@ func (a *Aggregator) start_aggregate_depth() {
 			}
 		}
 	}()
-	LOG_INFO("Aggregator start_aggregate_depth Over!")
+	util.LOG_INFO("Aggregator start_aggregate_depth Over!")
 }
 
 func mix_depth(src *treemap.Map, other *treemap.Map, exchange string) {
@@ -68,21 +69,21 @@ func mix_depth(src *treemap.Map, other *treemap.Map, exchange string) {
 }
 
 func (a *Aggregator) start_aggregate_kline() {
-	LOG_INFO("Aggregate datastruct.Kline Start!")
+	util.LOG_INFO("Aggregate datastruct.Kline Start!")
 	go func() {
 		for {
-			WaitForNextMinute()
+			util.WaitForNextMinute()
 
 			a.aggregate_kline()
 		}
 	}()
-	LOG_INFO("Aggregate datastruct.Kline Over!")
+	util.LOG_INFO("Aggregate datastruct.Kline Over!")
 }
 
 func (a *Aggregator) aggregate_depth() {
 	a.depth_mutex.Lock()
 
-	// LOG_INFO("----- Aggregate Depth Start ------ ")
+	// util.LOG_INFO("----- Aggregate Depth Start ------ ")
 
 	for symbol, exchange_depth_map := range a.depth_cache {
 		new_depth := datastruct.NewDepth(nil)
@@ -91,27 +92,27 @@ func (a *Aggregator) aggregate_depth() {
 		new_depth.Time = time.Now().Unix()
 
 		for exchange, cur_depth := range exchange_depth_map {
-			LOG_INFO("\n===== <<CurDepth>>: " + cur_depth.String(5))
+			util.LOG_INFO("\n===== <<CurDepth>>: " + cur_depth.String(5))
 			mix_depth(new_depth.Asks, cur_depth.Asks, exchange)
 			mix_depth(new_depth.Bids, cur_depth.Bids, exchange)
 		}
 
-		LOG_INFO("\n^^^^^^^ <<aagregated_depth>>: " + new_depth.String(5))
+		util.LOG_INFO("\n^^^^^^^ <<aagregated_depth>>: " + new_depth.String(5))
 		a.publish_depth(new_depth)
 
 		// for _, cur_depth := range exchange_depth_map {
-		// 	LOG_INFO("\n===== After <<CurDepth>>: " + cur_depth.String(5))
+		// 	util.LOG_INFO("\n===== After <<CurDepth>>: " + cur_depth.String(5))
 		// }
 	}
 
-	// LOG_INFO("----- Aggregate Depth Over!------ \n")
+	// util.LOG_INFO("----- Aggregate Depth Over!------ \n")
 
 	defer a.depth_mutex.Unlock()
 
 }
 
 func (a *Aggregator) start_receiver(data_chan *datastruct.DataChannel) {
-	LOG_INFO("Aggregator start_receiver")
+	util.LOG_INFO("Aggregator start_receiver")
 	go func() {
 		for {
 			select {
@@ -124,7 +125,7 @@ func (a *Aggregator) start_receiver(data_chan *datastruct.DataChannel) {
 			}
 		}
 	}()
-	LOG_INFO("Aggregator start_receiver Over!")
+	util.LOG_INFO("Aggregator start_receiver Over!")
 }
 
 func (a *Aggregator) aggregate_kline() {
@@ -134,7 +135,7 @@ func (a *Aggregator) aggregate_kline() {
 	for _, kline := range a.kline_aggregated {
 		new_kline := datastruct.NewKline(kline)
 		kline.Time = 0
-		new_kline.Time = TimeMinute()
+		new_kline.Time = util.TimeMinute()
 		a.publish_kline(new_kline)
 	}
 }
@@ -173,7 +174,7 @@ func (a *Aggregator) cache_depth(depth *datastruct.DepthQuote) {
 
 	new_depth := datastruct.NewDepth(depth)
 
-	LOG_INFO("\n******* <<Cache Depth>>: " + depth.String(5))
+	util.LOG_INFO("\n******* <<Cache Depth>>: " + depth.String(5))
 
 	if _, ok := a.depth_cache[new_depth.Symbol]; ok == false {
 		a.depth_cache[new_depth.Symbol] = make(map[string]*datastruct.DepthQuote)
@@ -199,7 +200,7 @@ func (a *Aggregator) cache_trade(trade *datastruct.Trade) {
 }
 
 func (a *Aggregator) publish_depth(depth *datastruct.DepthQuote) {
-	// LOG_INFO("publish_depth: " + depth.String(5))
+	// util.LOG_INFO("publish_depth: " + depth.String(5))
 }
 
 func (a *Aggregator) publish_kline(kline *datastruct.Kline) {

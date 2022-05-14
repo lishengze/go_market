@@ -11,6 +11,12 @@ type DataRecvI interface {
 	SendTrade(*datastruct.Trade)
 }
 
+type DataSendI interface {
+	PublishDepth(*datastruct.DepthQuote)
+	PublishKline(*datastruct.Kline)
+	PublishTrade(*datastruct.Trade)
+}
+
 type CommI interface {
 	Init(*conf.Config, DataRecvI)
 
@@ -34,14 +40,15 @@ type Comm struct {
 	PubCommType    string //
 	SerializerType string // Protobuf, Json,
 
-	NetServer   NetServerI  //
-	SerializerI SerializerI //
+	NetServer  NetServerI  //
+	Serializer SerializerI //
 
 	DataChan DataRecvI
 }
 
-func (c *Comm) Init(config *conf.Config, data_chan DataRecvI) {
-	c.DataChan = data_chan
+func (c *Comm) Init(config *conf.Config, recv_chan DataRecvI, publish_chan DataSendI) error {
+	// c.DataChan = data_chan
+	return nil
 }
 
 func (c *Comm) PublishDepth(depth *datastruct.DepthQuote) {
