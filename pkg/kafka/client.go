@@ -2,9 +2,9 @@ package kafka
 
 import (
 	"fmt"
-	"market_aggregate/pkg/comm"
 	"market_aggregate/pkg/conf"
 	"market_aggregate/pkg/datastruct"
+	"market_aggregate/pkg/protostruct"
 	"market_aggregate/pkg/util"
 
 	"github.com/Shopify/sarama"
@@ -36,7 +36,7 @@ func TestConsumer() {
 			for msg := range pc.Messages() {
 				fmt.Printf("%+v \n", msg)
 
-				trade := comm.Trade{}
+				trade := protostruct.Trade{}
 				// //data:=mpupb.Kline{}
 				// //data:=mpupb.Trade{}
 				err := proto.Unmarshal(msg.Value, &trade)
@@ -67,13 +67,16 @@ type KafkaServer struct {
 	Producer sarama.SyncProducer
 	Broker   *sarama.Broker
 
-	Serializer comm.SerializerI
+	Serializer   datastruct.SerializerI
+	RecvDataChan *datastruct.DataChannel
 }
 
-func (k *KafkaServer) Init(config *conf.Config, serializer comm.SerializerI) error {
+// Init(*conf.Config, SerializerI, *DataChannel)
+func (k *KafkaServer) Init(config *conf.Config, serializer datastruct.SerializerI, recv_data_chan *datastruct.DataChannel) error {
 	var err error
 
 	k.Serializer = serializer
+	k.RecvDataChan = recv_data_chan
 
 	k.Consumer, err = sarama.NewConsumer([]string{config.IP}, nil)
 	if err != nil {
@@ -107,5 +110,17 @@ func (k *KafkaServer) PublishKline(*datastruct.Kline) {
 }
 
 func (k *KafkaServer) PublishTrade(*datastruct.Trade) {
+
+}
+
+func (k *KafkaServer) SendRecvedDepth(*datastruct.DepthQuote) {
+
+}
+
+func (k *KafkaServer) SendRecvedKline(*datastruct.Kline) {
+
+}
+
+func (k *KafkaServer) SendRedvedTrade(*datastruct.Trade) {
 
 }

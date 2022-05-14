@@ -3,6 +3,7 @@ package comm
 import (
 	"fmt"
 	"market_aggregate/pkg/datastruct"
+	"market_aggregate/pkg/protostruct"
 	"market_aggregate/pkg/util"
 	"strconv"
 
@@ -12,23 +13,13 @@ import (
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type SerializerI interface {
-	EncodeDepth(*datastruct.DepthQuote) ([]byte, error)
-	EncodeKline(*datastruct.Kline) ([]byte, error)
-	EncodeTrade(*datastruct.Trade) ([]byte, error)
-
-	DecodeDepth([]byte) (*datastruct.DepthQuote, error)
-	DecodeKline([]byte) (*datastruct.Kline, error)
-	DecodeTrade([]byte) (*datastruct.Trade, error)
-}
-
 type ProtobufSerializer struct {
 }
 
-func SetProtoDepth(dst *[]*PriceVolume, src *treemap.Map) {
+func SetProtoDepth(dst *[]*protostruct.PriceVolume, src *treemap.Map) {
 	iter := src.Iterator()
 	for iter.Begin(); iter.Next(); {
-		cur_pricevolume := PriceVolume{}
+		cur_pricevolume := protostruct.PriceVolume{}
 		cur_pricevolume.Price = strconv.FormatFloat(iter.Key().(float64), 'f', -1, 64)
 		cur_pricevolume.Volume = strconv.FormatFloat(iter.Value().(*datastruct.InnerDepth).Volume, 'f', -1, 64)
 		*dst = append(*dst, &cur_pricevolume)
@@ -36,7 +27,7 @@ func SetProtoDepth(dst *[]*PriceVolume, src *treemap.Map) {
 }
 
 func (p *ProtobufSerializer) EncodeDepth(local_depth *datastruct.DepthQuote) ([]byte, error) {
-	proto_depth := Depth{}
+	proto_depth := protostruct.Depth{}
 
 	proto_depth.Exchange = local_depth.Exchange
 	proto_depth.Symbol = local_depth.Symbol
@@ -56,7 +47,7 @@ func (p *ProtobufSerializer) EncodeDepth(local_depth *datastruct.DepthQuote) ([]
 
 func (p *ProtobufSerializer) EncodeKline(local_kline *datastruct.Kline) ([]byte, error) {
 
-	proto_kline := Kline{}
+	proto_kline := protostruct.Kline{}
 	proto_kline.Exchange = local_kline.Exchange
 	proto_kline.Symbol = local_kline.Symbol
 	proto_kline.Timestamp = &timestamppb.Timestamp{Nanos: int32(local_kline.Time)}
@@ -77,7 +68,7 @@ func (p *ProtobufSerializer) EncodeKline(local_kline *datastruct.Kline) ([]byte,
 }
 
 func (p *ProtobufSerializer) EncodeTrade(local_trade *datastruct.Trade) ([]byte, error) {
-	proto_trade := Trade{}
+	proto_trade := protostruct.Trade{}
 
 	proto_trade.Exchange = local_trade.Exchange
 	proto_trade.Symbol = local_trade.Symbol
@@ -92,7 +83,7 @@ func (p *ProtobufSerializer) EncodeTrade(local_trade *datastruct.Trade) ([]byte,
 	return msg, err
 }
 
-func SetDepthTreeMap(src *treemap.Map, proto_depth []*PriceVolume, exchange string) {
+func SetDepthTreeMap(src *treemap.Map, proto_depth []*protostruct.PriceVolume, exchange string) {
 	for _, value := range proto_depth {
 		price, err := strconv.ParseFloat(value.Price, 64)
 		if err != nil {
@@ -116,7 +107,7 @@ func SetDepthTreeMap(src *treemap.Map, proto_depth []*PriceVolume, exchange stri
 }
 
 func (p *ProtobufSerializer) DecodeDepth(raw_msg []byte) (*datastruct.DepthQuote, error) {
-	proto_depth := Depth{}
+	proto_depth := protostruct.Depth{}
 	err := proto.Unmarshal(raw_msg, &proto_depth)
 	if err != nil {
 		util.LOG_ERROR(err.Error())
@@ -139,7 +130,7 @@ func (p *ProtobufSerializer) DecodeDepth(raw_msg []byte) (*datastruct.DepthQuote
 }
 
 func (p *ProtobufSerializer) DecodeKline(raw_msg []byte) (*datastruct.Kline, error) {
-	proto_kline := Kline{}
+	proto_kline := protostruct.Kline{}
 	err := proto.Unmarshal(raw_msg, &proto_kline)
 	if err != nil {
 		util.LOG_ERROR(err.Error())
@@ -190,7 +181,7 @@ func (p *ProtobufSerializer) DecodeKline(raw_msg []byte) (*datastruct.Kline, err
 }
 
 func (p *ProtobufSerializer) DecodeTrade(raw_msg []byte) (*datastruct.Trade, error) {
-	proto_trade := Trade{}
+	proto_trade := protostruct.Trade{}
 	err := proto.Unmarshal(raw_msg, &proto_trade)
 	if err != nil {
 		util.LOG_ERROR(err.Error())
