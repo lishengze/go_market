@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"market_aggregate/pkg/comm"
 	"market_aggregate/pkg/datastruct"
-	"market_aggregate/pkg/riskctrl"
 	"market_aggregate/pkg/util"
 	"reflect"
 	"time"
@@ -19,9 +18,9 @@ func send_depth(channel_depth_quote chan *datastruct.DepthQuote) {
 		select {
 		case <-timer:
 			// fmt.Println(time.Now())
-			depth_quote := riskctrl.GetTestDepth()
+			depth_quote := datastruct.GetTestDepth()
 			fmt.Printf("\nSendDepth: %s\n", depth_quote.String(5))
-			channel_depth_quote <- &depth_quote
+			channel_depth_quote <- depth_quote
 		}
 	}
 }
@@ -79,13 +78,13 @@ func TestDepthReflection(data EmptyInterface) {
 }
 
 func TestReflection() {
-	depth_quote := riskctrl.GetTestDepth()
+	depth_quote := datastruct.GetTestDepth()
 
 	TestDepthReflection(depth_quote)
 }
 
 func TestInnerDepth() {
-	new_depth := riskctrl.GetTestDepth()
+	new_depth := datastruct.GetTestDepth()
 
 	if result, ok := new_depth.Asks.Get(41001.11111); ok {
 		// fmt.Println()

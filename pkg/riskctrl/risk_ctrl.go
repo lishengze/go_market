@@ -5,7 +5,6 @@ import (
 	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/util"
 	"math"
-	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
@@ -626,39 +625,39 @@ func test_get_sorted_keys() {
 	// fmt.Println(keys)
 }
 
-func GetTestDepth() datastruct.DepthQuote {
-	var rst datastruct.DepthQuote
+// func GetTestDepth() datastruct.DepthQuote {
+// 	var rst datastruct.DepthQuote
 
-	rst.Exchange = "FTX"
-	rst.Symbol = "BTC_USDT"
-	rst.Time = time.Now().Unix()
-	rst.Asks = treemap.NewWith(utils.Float64Comparator)
-	rst.Bids = treemap.NewWith(utils.Float64Comparator)
+// 	rst.Exchange = "FTX"
+// 	rst.Symbol = "BTC_USDT"
+// 	rst.Time = time.Now().Unix()
+// 	rst.Asks = treemap.NewWith(utils.Float64Comparator)
+// 	rst.Bids = treemap.NewWith(utils.Float64Comparator)
 
-	// rst.Asks.Put(41001.11111, &datastruct.InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
-	// rst.Asks.Put(41002.22222, &datastruct.InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
-	// rst.Asks.Put(41003.33333, &datastruct.InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
-	// rst.Asks.Put(41004.44444, &datastruct.InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
-	// rst.Asks.Put(41005.55555, &datastruct.InnerDepth{5.55555, map[string]float64{"FTX": 5.55555}})
+// 	// rst.Asks.Put(41001.11111, &datastruct.InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
+// 	// rst.Asks.Put(41002.22222, &datastruct.InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
+// 	// rst.Asks.Put(41003.33333, &datastruct.InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
+// 	// rst.Asks.Put(41004.44444, &datastruct.InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
+// 	// rst.Asks.Put(41005.55555, &datastruct.InnerDepth{5.55555, map[string]float64{"FTX": 5.55555}})
 
-	// rst.Bids.Put(41004.44444, &datastruct.InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
-	// rst.Bids.Put(41003.33333, &datastruct.InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
-	// rst.Bids.Put(41002.22222, &datastruct.InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
-	// rst.Bids.Put(41001.11111, &datastruct.InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
-	// rst.Bids.Put(40009.99999, &datastruct.InnerDepth{9.99999, map[string]float64{"FTX": 9.99999}})
+// 	// rst.Bids.Put(41004.44444, &datastruct.InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
+// 	// rst.Bids.Put(41003.33333, &datastruct.InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
+// 	// rst.Bids.Put(41002.22222, &datastruct.InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
+// 	// rst.Bids.Put(41001.11111, &datastruct.InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
+// 	// rst.Bids.Put(40009.99999, &datastruct.InnerDepth{9.99999, map[string]float64{"FTX": 9.99999}})
 
-	rst.Asks.Put(55000.0, &datastruct.InnerDepth{5.5, map[string]float64{"FTX": 5.5}})
-	rst.Asks.Put(50000.0, &datastruct.InnerDepth{5.0, map[string]float64{"FTX": 5.0}})
+// 	rst.Asks.Put(55000.0, &datastruct.InnerDepth{5.5, map[string]float64{"FTX": 5.5}})
+// 	rst.Asks.Put(50000.0, &datastruct.InnerDepth{5.0, map[string]float64{"FTX": 5.0}})
 
-	rst.Bids.Put(45000.0, &datastruct.InnerDepth{4.5, map[string]float64{"FTX": 4.5}})
-	rst.Bids.Put(40000.0, &datastruct.InnerDepth{4.0, map[string]float64{"FTX": 4.0}})
+// 	rst.Bids.Put(45000.0, &datastruct.InnerDepth{4.5, map[string]float64{"FTX": 4.5}})
+// 	rst.Bids.Put(40000.0, &datastruct.InnerDepth{4.0, map[string]float64{"FTX": 4.0}})
 
-	// rst.Asks.Put(40002.222222].Volume = 2.222222
-	// rst.Asks.Put(40003.222222].Volume = 2.222222
-	// rst.Asks.Put(40004.222222].Volume = 2.222222
+// 	// rst.Asks.Put(40002.222222].Volume = 2.222222
+// 	// rst.Asks.Put(40003.222222].Volume = 2.222222
+// 	// rst.Asks.Put(40004.222222].Volume = 2.222222
 
-	return rst
-}
+// 	return rst
+// }
 
 func get_test_config() RiskCtrlConfigMap {
 	rst := RiskCtrlConfigMap{
@@ -681,13 +680,13 @@ func TestWorker() {
 	risk_worker_manager := RiskWorkerManager{}
 	risk_worker_manager.Init()
 
-	depth_quote := GetTestDepth()
+	depth_quote := datastruct.GetTestDepth()
 	config := get_test_config()
 
 	// fmt.Printf("depth_quote: %v\n", depth_quote)
 	// fmt.Printf("config: %v\n", config)
 
-	risk_worker_manager.Execute(&depth_quote, &config)
+	risk_worker_manager.Execute(depth_quote, &config)
 }
 
 func TestInnerDepth() {
@@ -709,7 +708,7 @@ func TestInnerDepth() {
 }
 
 func test_json() {
-	depth_quote := GetTestDepth()
+	depth_quote := datastruct.GetTestDepth()
 	fmt.Println(depth_quote.String(5))
 }
 

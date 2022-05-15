@@ -13,9 +13,9 @@ type SerializerI interface {
 }
 
 type NetServerI interface {
-	Init(*conf.Config, SerializerI, *DataChannel) error
-	// Start()
-	// SetMetaData()
+	Init(*conf.Config, SerializerI, *DataChannel, *DataChannel, Metadata) error
+	Start()
+	UpdateMetaData(Metadata)
 
 	PublishDepth(*DepthQuote) error
 	PublishKline(*Kline) error

@@ -39,7 +39,10 @@ type Comm struct {
 	Serializer datastruct.SerializerI //
 }
 
-func (c *Comm) Init(config *conf.Config, recv_chan *datastruct.DataChannel) error {
+func (c *Comm) Init(config *conf.Config,
+	recv_chan *datastruct.DataChannel,
+	pub_chan *datastruct.DataChannel,
+	meta_data datastruct.Metadata) error {
 
 	if config.SerialType == COMM_PROTOBUF {
 		c.Serializer = &ProtobufSerializer{}
@@ -50,8 +53,9 @@ func (c *Comm) Init(config *conf.Config, recv_chan *datastruct.DataChannel) erro
 			RecvDataChan: recv_chan,
 			Serializer:   c.Serializer,
 			Config:       config,
+			IsTest:       true,
 		}
-		c.NetServer.Init(config, c.Serializer, recv_chan)
+		c.NetServer.Init(config, c.Serializer, recv_chan, pub_chan, meta_data)
 	}
 
 	// c.DataChan = data_chan

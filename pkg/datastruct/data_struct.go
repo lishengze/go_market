@@ -24,6 +24,12 @@ type TExchange string
 type TPrice float64
 type TVolume float64
 
+type Metadata struct {
+	DepthMeta map[string](map[string]struct{})
+	KlineMeta map[string](map[string]struct{})
+	TradeMeta map[string](map[string]struct{})
+}
+
 type InnerDepth struct {
 	Volume         float64
 	ExchangeVolume map[string]float64
@@ -177,9 +183,10 @@ func (d *DepthQuote) Init() {
 	d.Bids = treemap.NewWith(utils.Float64Comparator)
 }
 
-func GetTestDepthByType(index int) *DepthQuote {
+func GetTestDepth() *DepthQuote {
 	var rst DepthQuote
-
+	rand.Seed(time.Now().UnixNano())
+	index := rand.Intn(3)
 	exchange_array := []string{"FTX", "HUOBI", "OKEX"}
 	exchange_type := index % 3
 

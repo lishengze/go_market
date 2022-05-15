@@ -210,7 +210,7 @@ func (p *ProtobufSerializer) DecodeTrade(raw_msg []byte) (*datastruct.Trade, err
 }
 
 func TestSeDepth() {
-	test_depth := datastruct.GetTestDepthByType(0)
+	test_depth := datastruct.GetTestDepth()
 	fmt.Printf("OriginalDepth: %+v\n", test_depth)
 
 	PS := ProtobufSerializer{}
