@@ -9,7 +9,11 @@ package main
 
 // 	// riskctrl.TestWorker()
 
-// 	TestDepthChannel()
+// 	// TestDepthChannel()
 
 // 	// TestTreeMap()
+
+// 	// comm.TestSeKline()
+
+// 	TestKafka()
 // }

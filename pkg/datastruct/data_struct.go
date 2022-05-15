@@ -13,6 +13,10 @@ const (
 	BCTS_EXCHANGE = "_bcts_"
 )
 
+const (
+	NANO_PER_SECS = 1000000000
+)
+
 type TestData struct {
 	Name string
 }
@@ -76,20 +80,23 @@ type Trade struct {
 }
 
 func (t *Trade) String() string {
-	res := fmt.Sprintf("%s.%s, %+v, p: %f v: %f \n", t.Exchange, t.Symbol, time.Unix(int64(t.Time), 0), t.Price, t.Volume)
+	res := fmt.Sprintf("%s.%s, %+v, p: %f v: %f \n", t.Exchange, t.Symbol,
+		time.Unix(int64(t.Time/NANO_PER_SECS), t.Time%NANO_PER_SECS), t.Price, t.Volume)
 	return res
 }
 
 func (k *Kline) String() string {
 	res := fmt.Sprintf("%s.%s, %+v, o: %f, h: %f, l: %f, c: %f, v: %f\n",
-		k.Exchange, k.Symbol, time.Unix(int64(k.Time), 0),
+		k.Exchange, k.Symbol, time.Unix(int64(k.Time/NANO_PER_SECS), k.Time%NANO_PER_SECS),
 		k.Open, k.High, k.Low, k.Close, k.Volume)
 	return res
 }
 
 func (d *DepthQuote) String(len int) string {
 
-	res := fmt.Sprintf("%s.%s, %v\nAsks: %s\nBids: %s \n", d.Exchange, d.Symbol, time.Unix(int64(d.Time), 0), d.Asks.String(), d.Bids.String())
+	res := fmt.Sprintf("%s.%s, %v\nAsks: %s\nBids: %s \n", d.Exchange, d.Symbol,
+		time.Unix(int64(d.Time/NANO_PER_SECS), d.Time%NANO_PER_SECS),
+		d.Asks.String(), d.Bids.String())
 
 	return string(res)
 }

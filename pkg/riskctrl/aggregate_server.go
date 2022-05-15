@@ -2,6 +2,7 @@ package riskctrl
 
 import (
 	"fmt"
+	"market_aggregate/pkg/conf"
 	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/util"
 	"sync"
@@ -22,11 +23,38 @@ type Aggregator struct {
 	kline_mutex sync.Mutex
 	trade_mutex sync.Mutex
 
-	depth_aggregator_millsecs time.Duration
+	AggConfig conf.AggregateConfig
+
+	RecvDataChan *datastruct.DataChannel
+	SendDataChan *datastruct.DataChannel
 }
 
-func (a *Aggregator) Start(data_chan *datastruct.DataChannel) {
-	a.start_receiver(data_chan)
+func (a *Aggregator) Init(RecvDataChan *datastruct.DataChannel, SendDataChan *datastruct.DataChannel,
+	AggConfig conf.AggregateConfig) {
+	a.RecvDataChan = RecvDataChan
+	a.SendDataChan = SendDataChan
+	a.AggConfig = AggConfig
+
+	if a.depth_cache == nil {
+		a.depth_cache = make(map[string]map[string]*datastruct.DepthQuote)
+	}
+
+	if a.kline_cache == nil {
+		a.kline_cache = make(map[string]map[string]*datastruct.Kline)
+	}
+
+	if a.trade_cache == nil {
+		a.trade_cache = make(map[string]map[string]*datastruct.Trade)
+	}
+
+	if a.kline_aggregated == nil {
+		a.kline_aggregated = make(map[string]*datastruct.Kline)
+	}
+
+}
+
+func (a *Aggregator) Start() {
+	a.start_listen_recvdata()
 	a.start_aggregate_depth()
 	a.start_aggregate_kline()
 }
@@ -35,13 +63,17 @@ func (a *Aggregator) start_aggregate_depth() {
 	util.LOG_INFO("Aggregator start_aggregate_depth!")
 	go func() {
 		util.LOG_INFO("start_aggregate_depth")
-		timer := time.Tick(time.Duration(a.depth_aggregator_millsecs * time.Millisecond))
+		// timer := time.Tick(time.Duration(a.depth_aggregator_millsecs * time.Millisecond))
+		// timeout := time.After(time.Millisecond * a.depth_aggregator_millsecs)
 
 		for {
-			select {
-			case <-timer:
-				a.aggregate_depth()
-			}
+			a.aggregate_depth()
+			time.Sleep(time.Millisecond * a.AggConfig.DepthAggregatorMillsecs)
+
+			// select {
+			// case <-timer:
+			// 	a.aggregate_depth()
+			// }
 		}
 	}()
 	util.LOG_INFO("Aggregator start_aggregate_depth Over!")
@@ -89,7 +121,7 @@ func (a *Aggregator) aggregate_depth() {
 		new_depth := datastruct.NewDepth(nil)
 		new_depth.Symbol = symbol
 		new_depth.Exchange = datastruct.BCTS_EXCHANGE
-		new_depth.Time = time.Now().Unix()
+		new_depth.Time = int64(util.UTCNanoTime())
 
 		for exchange, cur_depth := range exchange_depth_map {
 			util.LOG_INFO("\n===== <<CurDepth>>: " + cur_depth.String(5))
@@ -108,19 +140,18 @@ func (a *Aggregator) aggregate_depth() {
 	// util.LOG_INFO("----- Aggregate Depth Over!------ \n")
 
 	defer a.depth_mutex.Unlock()
-
 }
 
-func (a *Aggregator) start_receiver(data_chan *datastruct.DataChannel) {
-	util.LOG_INFO("Aggregator start_receiver")
+func (a *Aggregator) start_listen_recvdata() {
+	util.LOG_INFO("Aggregator start_listen_recvdata")
 	go func() {
 		for {
 			select {
-			case new_depth := <-data_chan.DepthChannel:
+			case new_depth := <-a.RecvDataChan.DepthChannel:
 				a.cache_depth(new_depth)
-			case new_kline := <-data_chan.KlineChannel:
+			case new_kline := <-a.RecvDataChan.KlineChannel:
 				a.cache_kline(new_kline)
-			case new_trade := <-data_chan.TradeChannel:
+			case new_trade := <-a.RecvDataChan.TradeChannel:
 				a.cache_trade(new_trade)
 			}
 		}
@@ -135,7 +166,7 @@ func (a *Aggregator) aggregate_kline() {
 	for _, kline := range a.kline_aggregated {
 		new_kline := datastruct.NewKline(kline)
 		kline.Time = 0
-		new_kline.Time = util.TimeMinute()
+		new_kline.Time = int64(util.UTCNanoTime())
 		a.publish_kline(new_kline)
 	}
 }
@@ -205,10 +236,14 @@ func (a *Aggregator) publish_depth(depth *datastruct.DepthQuote) {
 
 func (a *Aggregator) publish_kline(kline *datastruct.Kline) {
 	fmt.Printf("\nPub datastruct.Kline: \n%s\n", kline.String())
+
+	a.SendDataChan.KlineChannel <- kline
 }
 
 func (a *Aggregator) publish_trade(trade *datastruct.Trade) {
 	fmt.Printf("Pub datastruct.Trade: %s\n", trade.String())
+
+	a.SendDataChan.TradeChannel <- trade
 }
 
 func PublishTest(data *datastruct.DataChannel) {
@@ -228,22 +263,29 @@ func PublishTest(data *datastruct.DataChannel) {
 }
 
 func TestAggregator() {
-	aggregator := Aggregator{
-		depth_cache:               make(map[string]map[string]*datastruct.DepthQuote),
-		kline_cache:               make(map[string]map[string]*datastruct.Kline),
-		trade_cache:               make(map[string]map[string]*datastruct.Trade),
-		kline_aggregated:          make(map[string]*datastruct.Kline),
-		depth_aggregator_millsecs: 5000,
-	}
+	aggregator := Aggregator{}
 
-	data_chan := datastruct.DataChannel{
+	RecvDataChan := &datastruct.DataChannel{
 		DepthChannel: make(chan *datastruct.DepthQuote),
 		KlineChannel: make(chan *datastruct.Kline),
 		TradeChannel: make(chan *datastruct.Trade),
 	}
-	aggregator.Start(&data_chan)
 
-	go PublishTest(&data_chan)
+	PubDataChan := &datastruct.DataChannel{
+		DepthChannel: make(chan *datastruct.DepthQuote),
+		KlineChannel: make(chan *datastruct.Kline),
+		TradeChannel: make(chan *datastruct.Trade),
+	}
+
+	AggConfig := conf.AggregateConfig{
+		DepthAggregatorMillsecs: 5,
+	}
+
+	aggregator.Init(RecvDataChan, PubDataChan, AggConfig)
+
+	aggregator.Start()
+
+	go PublishTest(RecvDataChan)
 
 	time.Sleep(time.Hour)
 }

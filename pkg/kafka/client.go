@@ -13,57 +13,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func TestConsumer() {
-	fmt.Println("------- TestConsumer-------")
-	consumer, err := sarama.NewConsumer([]string{"43.154.179.47:9117"}, nil)
-
-	topic := "TRADEx-BTC_USDT"
-
-	partitionList, err := consumer.Partitions(topic) // 根据topic取到所有的分区
-	if err != nil {
-		fmt.Printf("fail to get list of partition:err%v\n", err)
-		return
-	}
-	fmt.Println("partitionList: ", partitionList)
-	for partition := range partitionList { // 遍历所有的分区
-		// 针对每个分区创建一个对应的分区消费者
-		pc, err := consumer.ConsumePartition(topic, int32(partition), sarama.OffsetNewest)
-		if err != nil {
-			fmt.Printf("failed to start consumer for partition %d,err:%v\n", partition, err)
-			return
-		}
-		defer pc.AsyncClose()
-		// 异步从每个分区消费信息
-		go func(sarama.PartitionConsumer) {
-			for msg := range pc.Messages() {
-				fmt.Printf("%+v \n", msg)
-
-				trade := protostruct.Trade{}
-				// //data:=mpupb.Kline{}
-				// //data:=mpupb.Trade{}
-				err := proto.Unmarshal(msg.Value, &trade)
-				if err != nil {
-					fmt.Println(err)
-					continue
-				}
-
-				fmt.Printf("%+v \n", trade)
-
-				// fmt.Println(
-				// 	data.Timestamp.AsTime().Format(time.RFC3339Nano),
-				// 	data.MpuTimestamp.AsTime().Format(time.RFC3339Nano),
-				// 	data.Symbol,
-				// 	//data.String(),
-				// )
-				//fmt.Printf("Partition:%d Offset:%d Key:%v Value:%v", msg.Partition, msg.Offset, msg.Key, msg.Value)
-			}
-		}(pc)
-	}
-
-	select {}
-
-}
-
 type ConsumeItem struct {
 	Topic      string
 	Ctx        context.Context
@@ -103,7 +52,14 @@ func (k *KafkaServer) Init(config *conf.Config, serializer datastruct.Serializer
 	k.PubDataChan = pub_data_chan
 	k.MetaData = meta_data
 
+	util.LOG_INFO("KafkaServer.Init")
+
 	var err error
+
+	err = k.InitTopicSet()
+	if err != nil {
+		return err
+	}
 
 	err = k.InitKafkaApi()
 	if err != nil {
@@ -119,6 +75,8 @@ func (k *KafkaServer) Init(config *conf.Config, serializer datastruct.Serializer
 }
 
 func (k *KafkaServer) InitKafkaApi() error {
+	util.LOG_INFO("KafkaServer.InitKafkaApi")
+
 	var err error
 
 	k.Producer, err = sarama.NewSyncProducer([]string{k.Config.IP}, nil)
@@ -145,6 +103,8 @@ func (k *KafkaServer) InitListenPubChan() error {
 	// 	DepthChannel: make(chan *datastruct.DepthQuote),
 	// }
 
+	util.LOG_INFO("KafkaServer.InitListenPubChan")
+
 	go func() {
 		for {
 			select {
@@ -170,19 +130,20 @@ func (k *KafkaServer) InitTopicSet() error {
 
 func (k *KafkaServer) Start() {
 	if k.IsTest {
-		k.StartTest()
+		k.start_test()
 		return
 	}
 
+	k.start_consume()
 }
 
-func (k *KafkaServer) StartConsume() {
+func (k *KafkaServer) start_consume() {
 	for _, consume_item := range k.ConsumeSet {
 		go k.ConsumeSingleTopic(consume_item)
 	}
 }
 
-func (k *KafkaServer) StartTest() {
+func (k *KafkaServer) start_test() {
 
 }
 
@@ -193,6 +154,8 @@ func (k *KafkaServer) UpdateMetaData(meta_data datastruct.Metadata) {
 
 func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 	consumer, err := sarama.NewConsumer([]string{k.Config.IP}, nil)
+
+	util.LOG_INFO("ConsumeSingleTopic: " + consume_item.Topic)
 
 	if err != nil {
 		util.LOG_ERROR(err.Error())
@@ -208,15 +171,10 @@ func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 			k.ConsumeAtom(consume_item.Topic, consumer)
 		}
 	}
-
-	if err != nil {
-		util.LOG_ERROR(err.Error())
-		return
-	}
-
 }
 
 func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
+	util.LOG_INFO("ConsumeAtom: " + topic)
 	partitionList, err := consumer.Partitions(topic) // 根据topic取到所有的分区
 	if err != nil {
 		util.LOG_ERROR(err.Error())
@@ -234,22 +192,22 @@ func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
 
 		for msg := range pc.Messages() {
 
-			// msg.Topic
-			// data := mpupb.Depth{}
-			// //data:=mpupb.Kline{}
-			// //data:=mpupb.Trade{}
-			// err := proto.Unmarshal(msg.Value, &data)
-			// if err != nil {
-			// 	fmt.Println(err)
-			// 	continue
-			// }
-			// fmt.Println(
-			// 	data.Timestamp.AsTime().Format(time.RFC3339Nano),
-			// 	data.MpuTimestamp.AsTime().Format(time.RFC3339Nano),
-			// 	data.Symbol,
-			// 	//data.String(),
-			// )
-			// //fmt.Printf("Partition:%d Offset:%d Key:%v Value:%v", msg.Partition, msg.Offset, msg.Key, msg.Value)
+			// util.LOG_INFO(msg.Topic)
+
+			topic_type := GetTopicType(msg.Topic)
+
+			// util.LOG_INFO(topic_type)
+
+			switch topic_type {
+			case DEPTH_TYPE:
+				go k.ProcessDepthBytes(msg.Value)
+			case KLINE_TYPE:
+				go k.ProcessKlineBytes(msg.Value)
+			case TRADE_TYPE:
+				go k.ProcessTradeBytes(msg.Value)
+			default:
+				util.LOG_ERROR("Unknown Topic " + topic_type)
+			}
 		}
 	}
 }
@@ -312,6 +270,46 @@ func (k *KafkaServer) PublishTrade(local_trade *datastruct.Trade) error {
 	return k.PublishMsg(topic, serialize_str)
 }
 
+func (k *KafkaServer) ProcessDepthBytes(depth_bytes []byte) error {
+
+	local_depth, err := k.Serializer.DecodeDepth(depth_bytes)
+
+	if err != nil {
+		util.LOG_ERROR(err.Error())
+		return err
+	}
+
+	k.SendRecvedDepth(local_depth)
+
+	return nil
+}
+
+func (k *KafkaServer) ProcessKlineBytes(kline_bytes []byte) error {
+	local_kline, err := k.Serializer.DecodeKline(kline_bytes)
+
+	if err != nil {
+		util.LOG_ERROR(err.Error())
+		return err
+	}
+
+	k.SendRecvedKline(local_kline)
+
+	return nil
+}
+
+func (k *KafkaServer) ProcessTradeBytes(trade_bytes []byte) error {
+	local_trade, err := k.Serializer.DecodeTrade(trade_bytes)
+
+	if err != nil {
+		util.LOG_ERROR(err.Error())
+		return err
+	}
+
+	k.SendRecvedTrade(local_trade)
+
+	return nil
+}
+
 func (k *KafkaServer) SendRecvedDepth(depth *datastruct.DepthQuote) {
 	k.RecvDataChan.DepthChannel <- depth
 }
@@ -320,18 +318,57 @@ func (k *KafkaServer) SendRecvedKline(kline *datastruct.Kline) {
 	k.RecvDataChan.KlineChannel <- kline
 }
 
-func (k *KafkaServer) SendRedvedTrade(trade *datastruct.Trade) {
+func (k *KafkaServer) SendRecvedTrade(trade *datastruct.Trade) {
 	k.RecvDataChan.TradeChannel <- trade
 }
 
-// func (k *KafkaServer) publish_depth(local_depth *datastruct.DepthQuote) {
+func TestConsumer() {
+	fmt.Println("------- TestConsumer-------")
+	consumer, err := sarama.NewConsumer([]string{"43.154.179.47:9117"}, nil)
 
-// }
+	topic := "TRADEx-BTC_USDT"
 
-// func (k *KafkaServer) publish_kline(local_kline *datastruct.Kline) {
+	partitionList, err := consumer.Partitions(topic) // 根据topic取到所有的分区
+	if err != nil {
+		fmt.Printf("fail to get list of partition:err%v\n", err)
+		return
+	}
+	fmt.Println("partitionList: ", partitionList)
+	for partition := range partitionList { // 遍历所有的分区
+		// 针对每个分区创建一个对应的分区消费者
+		pc, err := consumer.ConsumePartition(topic, int32(partition), sarama.OffsetNewest)
+		if err != nil {
+			fmt.Printf("failed to start consumer for partition %d,err:%v\n", partition, err)
+			return
+		}
+		defer pc.AsyncClose()
+		// 异步从每个分区消费信息
+		go func(sarama.PartitionConsumer) {
+			for msg := range pc.Messages() {
+				fmt.Printf("%+v \n", msg)
 
-// }
+				trade := protostruct.Trade{}
+				// //data:=mpupb.Kline{}
+				// //data:=mpupb.Trade{}
+				err := proto.Unmarshal(msg.Value, &trade)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
 
-// func (k *KafkaServer) publish_trade(local_trade *datastruct.Trade) {
+				fmt.Printf("%+v \n", trade)
 
-// }
+				// fmt.Println(
+				// 	data.Timestamp.AsTime().Format(time.RFC3339Nano),
+				// 	data.MpuTimestamp.AsTime().Format(time.RFC3339Nano),
+				// 	data.Symbol,
+				// 	//data.String(),
+				// )
+				//fmt.Printf("Partition:%d Offset:%d Key:%v Value:%v", msg.Partition, msg.Offset, msg.Key, msg.Value)
+			}
+		}(pc)
+	}
+
+	select {}
+
+}

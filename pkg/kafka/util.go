@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"market_aggregate/pkg/datastruct"
+	"strings"
 )
 
 // DEPTH_TYPE + TYPE_SEPARATOR + symbol + SYMBOL_EXCHANGE_SEPARATOR  + exchange
@@ -113,4 +114,15 @@ func GetConsumeSet(MetaData datastruct.Metadata) map[string](*ConsumeItem) {
 		}
 	}
 	return rst
+}
+
+func GetTopicType(topic string) string {
+	if strings.Contains(topic, DEPTH_TYPE) {
+		return DEPTH_TYPE
+	} else if strings.Contains(topic, KLINE_TYPE) {
+		return KLINE_TYPE
+	} else if strings.Contains(topic, TRADE_TYPE) {
+		return TRADE_TYPE
+	}
+	return ""
 }

@@ -23,5 +23,5 @@ type NetServerI interface {
 
 	SendRecvedDepth(*DepthQuote)
 	SendRecvedKline(*Kline)
-	SendRedvedTrade(*Trade)
+	SendRecvedTrade(*Trade)
 }

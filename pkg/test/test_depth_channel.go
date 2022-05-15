@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"market_aggregate/pkg/comm"
 	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/util"
 	"reflect"
@@ -153,32 +152,31 @@ func TestTime() {
 	// fmt.Println(time)
 }
 
-func main() {
-	// fmt.Println("Test Risk Ctrl")
+// func main() {
+// 	// fmt.Println("Test Risk Ctrl")
 
-	// riskctrl.TestInnerDepth()
+// 	// riskctrl.TestInnerDepth()
 
-	// riskctrl.TestImport()
+// 	// riskctrl.TestImport()
 
-	// riskctrl.TestWorker()
+// 	// riskctrl.TestWorker()
 
-	// TestDepthChannel()
+// 	// TestDepthChannel()
 
-	// TestReflection()
+// 	// TestReflection()
 
-	// TestInnerDepth()
+// 	// TestInnerDepth()
 
-	// TestTreeMap()
+// 	// TestTreeMap()
 
-	// riskctrl.TestAggregator()
+// 	// riskctrl.TestAggregator()
 
-	// kafkaClient.TestConsumer()
+// 	// kafkaClient.TestConsumer()
 
-	// TestTime()
+// 	// TestTime()
 
-	// comm.TestSeDepth()
+// 	// comm.TestSeDepth()
 
-	// comm.TestSeTrade()
+// 	// comm.TestSeTrade()
 
-	comm.TestSeKline()
-}
+// }

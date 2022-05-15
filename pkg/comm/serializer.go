@@ -123,7 +123,7 @@ func (p *ProtobufSerializer) DecodeDepth(raw_msg []byte) (*datastruct.DepthQuote
 	return &datastruct.DepthQuote{
 		Exchange: proto_depth.Exchange,
 		Symbol:   proto_depth.Symbol,
-		Time:     int64(proto_depth.Timestamp.Nanos),
+		Time:     int64(proto_depth.Timestamp.Seconds*datastruct.NANO_PER_SECS + int64(proto_depth.Timestamp.Nanos)),
 		Asks:     asks,
 		Bids:     bids,
 	}, nil
@@ -170,7 +170,7 @@ func (p *ProtobufSerializer) DecodeKline(raw_msg []byte) (*datastruct.Kline, err
 	return &datastruct.Kline{
 		Exchange:   proto_kline.Exchange,
 		Symbol:     proto_kline.Symbol,
-		Time:       int64(proto_kline.Timestamp.Nanos),
+		Time:       int64(proto_kline.Timestamp.Seconds*datastruct.NANO_PER_SECS + int64(proto_kline.Timestamp.Nanos)),
 		Resolution: int(proto_kline.Resolution),
 		Open:       open,
 		High:       high,
@@ -200,12 +200,14 @@ func (p *ProtobufSerializer) DecodeTrade(raw_msg []byte) (*datastruct.Trade, err
 		return nil, err
 	}
 
+	// fmt.Printf("proto_trade.Timestamp: %+v\n\n", proto_trade.Timestamp)
+
 	return &datastruct.Trade{
 		Exchange: proto_trade.Exchange,
 		Symbol:   proto_trade.Symbol,
 		Price:    price,
 		Volume:   volume,
-		Time:     int64(proto_trade.Timestamp.Nanos),
+		Time:     int64(proto_trade.Timestamp.Seconds*datastruct.NANO_PER_SECS + int64(proto_trade.Timestamp.Nanos)),
 	}, nil
 }
 
