@@ -155,11 +155,11 @@ func TestTime() {
 // func main() {
 // 	// fmt.Println("Test Risk Ctrl")
 
-// 	// riskctrl.TestInnerDepth()
+// 	// aggregate.TestInnerDepth()
 
-// 	// riskctrl.TestImport()
+// 	// aggregate.TestImport()
 
-// 	// riskctrl.TestWorker()
+// 	// aggregate.TestWorker()
 
 // 	// TestDepthChannel()
 
@@ -169,7 +169,7 @@ func TestTime() {
 
 // 	// TestTreeMap()
 
-// 	// riskctrl.TestAggregator()
+// 	// aggregate.TestAggregator()
 
 // 	// kafkaClient.TestConsumer()
 

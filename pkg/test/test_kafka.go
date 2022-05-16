@@ -72,11 +72,11 @@ func TestKafka() {
 func main() {
 	fmt.Println("---- Test Kafka ----")
 
-	// riskctrl.TestInnerDepth()
+	// aggregate.TestInnerDepth()
 
-	// riskctrl.TestImport()
+	// aggregate.TestImport()
 
-	// riskctrl.TestWorker()
+	// aggregate.TestWorker()
 
 	// TestDepthChannel()
 

@@ -1,4 +1,4 @@
-package riskctrl
+package aggregate
 
 import (
 	"market_aggregate/pkg/comm"
@@ -18,7 +18,7 @@ type ServerEngine struct {
 	AggConfig conf.AggregateConfig
 }
 
-func (s *ServerEngine) Init(config *conf.Config, meta_data datastruct.Metadata) {
+func (s *ServerEngine) Init(config *conf.Config) {
 	s.RecvDataChan = &datastruct.DataChannel{
 		DepthChannel: make(chan *datastruct.DepthQuote),
 		KlineChannel: make(chan *datastruct.Kline),
@@ -31,15 +31,11 @@ func (s *ServerEngine) Init(config *conf.Config, meta_data datastruct.Metadata) 
 		TradeChannel: make(chan *datastruct.Trade),
 	}
 
-	s.AggConfig = conf.AggregateConfig{
-		DepthAggregatorMillsecs: 5,
-	}
-
 	s.Commer = comm.Comm{}
-	s.Commer.Init(config, s.RecvDataChan, s.PubDataChan, meta_data)
+	s.Commer.Init(config, s.RecvDataChan, s.PubDataChan)
 
 	s.AggregateWorkr = Aggregator{}
-	s.AggregateWorkr.Init(s.RecvDataChan, s.PubDataChan, s.AggConfig)
+	s.AggregateWorkr.Init(s.RecvDataChan, s.PubDataChan)
 
 }
 

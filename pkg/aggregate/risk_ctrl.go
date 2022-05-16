@@ -1,10 +1,12 @@
-package riskctrl
+package aggregate
 
 import (
 	"fmt"
+	"market_aggregate/pkg/conf"
 	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/util"
 	"math"
+	"sync"
 
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
@@ -25,27 +27,7 @@ import (
 
 // }
 
-type HedgeConfig struct {
-	FeeKind  int
-	FeeValue float64
-}
-
-type RiskCtrlConfig struct {
-	HedgeConfigMap map[string]HedgeConfig
-
-	PricePrecison  uint32
-	VolumePrecison uint32
-
-	PriceBiasValue float64
-	PriceBiasKind  int
-
-	VolumeBiasValue float64
-	VolumeBiasKind  int
-
-	PriceMinumChange float64
-}
-
-type RiskCtrlConfigMap map[string]RiskCtrlConfig
+type RiskCtrlConfigMap map[string]conf.RiskCtrlConfig
 
 type RiskWorkerInterface interface {
 	Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool
@@ -118,7 +100,7 @@ func get_bias_value(original_value float64, bias_kind int, bias_value float64) f
 	return rst_float
 }
 
-func get_new_fee_price(original_price float64, exchange string, hedge_config *RiskCtrlConfig, isAsk bool) float64 {
+func get_new_fee_price(original_price float64, exchange string, hedge_config *conf.RiskCtrlConfig, isAsk bool) float64 {
 	defer util.ExceptionFunc()
 
 	new_price := original_price
@@ -134,7 +116,7 @@ func get_new_fee_price(original_price float64, exchange string, hedge_config *Ri
 }
 
 // 根据每个交易所的手续费率，计算手续费
-func (w *FeeWorker) calc_depth_fee(depth *treemap.Map, config *RiskCtrlConfig, isAsk bool) *treemap.Map {
+func (w *FeeWorker) calc_depth_fee(depth *treemap.Map, config *conf.RiskCtrlConfig, isAsk bool) *treemap.Map {
 	defer util.ExceptionFunc()
 
 	result := treemap.NewWith(utils.Float64Comparator)
@@ -219,7 +201,7 @@ type QuotebiasWorker struct {
 	Worker
 }
 
-func calc_depth_bias(depth *treemap.Map, config *RiskCtrlConfig, isAsk bool) *treemap.Map {
+func calc_depth_bias(depth *treemap.Map, config *conf.RiskCtrlConfig, isAsk bool) *treemap.Map {
 	defer util.ExceptionFunc()
 
 	result := treemap.NewWith(utils.Float64Comparator)
@@ -488,7 +470,7 @@ func resize_float64(src float64, presion uint32) float64 {
 	return math.Trunc(src*x) / x
 }
 
-func resize_depth_precision(depth *treemap.Map, config *RiskCtrlConfig) *treemap.Map {
+func resize_depth_precision(depth *treemap.Map, config *conf.RiskCtrlConfig) *treemap.Map {
 	defer util.ExceptionFunc()
 
 	result := treemap.NewWith(utils.Float64Comparator)
@@ -569,6 +551,8 @@ type RiskWorkerManager struct {
 	QuotebiasWorker_ QuotebiasWorker
 	WatermarkWorker_ WatermarkWorker
 	PrecisionWorker_ PrecisionWorker
+	RiskConfig       RiskCtrlConfigMap
+	ConfigMutex      *sync.RWMutex
 }
 
 func (r *RiskWorkerManager) Init() {
@@ -577,19 +561,36 @@ func (r *RiskWorkerManager) Init() {
 	r.WatermarkWorker_.WorkerName = "WatermarkWorker"
 	r.PrecisionWorker_.WorkerName = "PrecisionWorker"
 
+	r.ConfigMutex = new(sync.RWMutex)
+	r.RiskConfig = make(map[string]conf.RiskCtrlConfig)
+
 	// r.FeeWorker_.SetNext(&r.QuotebiasWorker_)
 	// r.QuotebiasWorker_.SetNext(&r.WatermarkWorker_)
 	// r.WatermarkWorker_.SetNext(&r.PrecisionWorker_)
 }
 
-func (r *RiskWorkerManager) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) {
+func (r *RiskWorkerManager) UpdateConfig(RiskConfig *RiskCtrlConfigMap) {
+	defer r.ConfigMutex.Unlock()
+	r.ConfigMutex.Lock()
+
+	for symbol, value := range *RiskConfig {
+		r.RiskConfig[symbol] = value
+	}
+
+}
+
+func (r *RiskWorkerManager) Execute(depth_quote *datastruct.DepthQuote) {
+	defer r.ConfigMutex.RUnlock()
+
 	fmt.Printf("\n------- RiskWorkerManager  Executing -------- \n\n")
+
+	r.ConfigMutex.RLock()
 
 	// r.FeeWorker_.Execute(depth_quote, configs)
 
 	// r.QuotebiasWorker_.Execute(depth_quote, configs)
 
-	r.WatermarkWorker_.Execute(depth_quote, configs)
+	r.WatermarkWorker_.Execute(depth_quote, &r.RiskConfig)
 
 	// r.PrecisionWorker_.Execute(depth_quote, configs)
 }
@@ -662,7 +663,7 @@ func test_get_sorted_keys() {
 func get_test_config() RiskCtrlConfigMap {
 	rst := RiskCtrlConfigMap{
 		"BTC_USDT": {
-			HedgeConfigMap:   map[string]HedgeConfig{"FTX": {1, 0.1}},
+			HedgeConfigMap:   map[string]conf.HedgeConfig{"FTX": {1, 0.1}},
 			PricePrecison:    2,
 			VolumePrecison:   3,
 			PriceBiasValue:   0.1,
@@ -677,16 +678,18 @@ func get_test_config() RiskCtrlConfigMap {
 }
 
 func TestWorker() {
+	depth_quote := datastruct.GetTestDepth()
+	config := get_test_config()
+
 	risk_worker_manager := RiskWorkerManager{}
 	risk_worker_manager.Init()
 
-	depth_quote := datastruct.GetTestDepth()
-	config := get_test_config()
+	risk_worker_manager.UpdateConfig(&config)
 
 	// fmt.Printf("depth_quote: %v\n", depth_quote)
 	// fmt.Printf("config: %v\n", config)
 
-	risk_worker_manager.Execute(depth_quote, &config)
+	risk_worker_manager.Execute(depth_quote)
 }
 
 func TestInnerDepth() {

@@ -13,7 +13,7 @@ type SerializerI interface {
 }
 
 type NetServerI interface {
-	Init(*conf.Config, SerializerI, *DataChannel, *DataChannel, Metadata) error
+	Init(*conf.Config, SerializerI, *DataChannel, *DataChannel) error
 	Start()
 	UpdateMetaData(Metadata)
 

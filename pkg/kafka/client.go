@@ -43,23 +43,16 @@ type KafkaServer struct {
 // Init(*conf.Config, SerializerI, *DataChannel)
 func (k *KafkaServer) Init(config *conf.Config, serializer datastruct.SerializerI,
 	recv_data_chan *datastruct.DataChannel,
-	pub_data_chan *datastruct.DataChannel,
-	meta_data datastruct.Metadata) error {
+	pub_data_chan *datastruct.DataChannel) error {
 
 	k.Serializer = serializer
 	k.Config = config
 	k.RecvDataChan = recv_data_chan
 	k.PubDataChan = pub_data_chan
-	k.MetaData = meta_data
 
 	util.LOG_INFO("KafkaServer.Init")
 
 	var err error
-
-	err = k.InitTopicSet()
-	if err != nil {
-		return err
-	}
 
 	err = k.InitKafkaApi()
 	if err != nil {
@@ -120,14 +113,6 @@ func (k *KafkaServer) InitListenPubChan() error {
 	return nil
 }
 
-func (k *KafkaServer) InitTopicSet() error {
-	k.ConsumeSet = GetConsumeSet(k.MetaData)
-
-	util.LOG_INFO(fmt.Sprintf("InitedTopicSet: %+v", k.ConsumeSet))
-
-	return nil
-}
-
 func (k *KafkaServer) Start() {
 	if k.IsTest {
 		k.start_test()
@@ -148,8 +133,24 @@ func (k *KafkaServer) start_test() {
 }
 
 func (k *KafkaServer) UpdateMetaData(meta_data datastruct.Metadata) {
-	k.ConsumeSet = GetConsumeSet(k.MetaData)
+	NewConsumeSet := GetConsumeSet(k.MetaData)
 	util.LOG_INFO(fmt.Sprintf("UpdatedTopicSet: %+v", k.ConsumeSet))
+
+	for new_topic, consume_item := range NewConsumeSet {
+		if _, ok := k.ConsumeSet[new_topic]; ok == false {
+			util.LOG_INFO("Start Consume Topic: " + new_topic)
+			go k.ConsumeSingleTopic(consume_item)
+			k.ConsumeSet[new_topic] = consume_item
+		}
+	}
+
+	for old_topic, consume_item := range k.ConsumeSet {
+		if _, ok := NewConsumeSet[old_topic]; ok == false {
+			util.LOG_INFO("Stop Consume Topic: " + old_topic)
+			consume_item.CancelFunc()
+			delete(k.ConsumeSet, old_topic)
+		}
+	}
 }
 
 func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {

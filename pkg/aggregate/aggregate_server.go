@@ -1,4 +1,4 @@
-package riskctrl
+package aggregate
 
 import (
 	"fmt"
@@ -23,17 +23,24 @@ type Aggregator struct {
 	kline_mutex sync.Mutex
 	trade_mutex sync.Mutex
 
-	AggConfig conf.AggregateConfig
+	AggConfig      conf.AggregateConfig
+	AggConfigMutex sync.RWMutex
 
 	RecvDataChan *datastruct.DataChannel
 	SendDataChan *datastruct.DataChannel
+
+	RiskWorker *RiskWorkerManager
 }
 
-func (a *Aggregator) Init(RecvDataChan *datastruct.DataChannel, SendDataChan *datastruct.DataChannel,
-	AggConfig conf.AggregateConfig) {
+func (a *Aggregator) Init(RecvDataChan *datastruct.DataChannel, SendDataChan *datastruct.DataChannel) {
 	a.RecvDataChan = RecvDataChan
 	a.SendDataChan = SendDataChan
-	a.AggConfig = AggConfig
+	a.AggConfig = conf.AggregateConfig{
+		DepthAggregatorMillsecs: 5,
+	}
+	a.RiskWorker = &RiskWorkerManager{}
+
+	a.RiskWorker.Init()
 
 	if a.depth_cache == nil {
 		a.depth_cache = make(map[string]map[string]*datastruct.DepthQuote)
@@ -50,7 +57,14 @@ func (a *Aggregator) Init(RecvDataChan *datastruct.DataChannel, SendDataChan *da
 	if a.kline_aggregated == nil {
 		a.kline_aggregated = make(map[string]*datastruct.Kline)
 	}
+}
 
+func (a *Aggregator) UpdateConfig(config conf.AggregateConfig) {
+	defer a.AggConfigMutex.Unlock()
+
+	a.AggConfigMutex.Lock()
+
+	a.AggConfig = config
 }
 
 func (a *Aggregator) Start() {
@@ -68,7 +82,10 @@ func (a *Aggregator) start_aggregate_depth() {
 
 		for {
 			a.aggregate_depth()
+
+			a.AggConfigMutex.RLock()
 			time.Sleep(time.Millisecond * a.AggConfig.DepthAggregatorMillsecs)
+			a.AggConfigMutex.RUnlock()
 
 			// select {
 			// case <-timer:
@@ -195,7 +212,6 @@ func (a *Aggregator) update_kline(trade *datastruct.Trade) {
 
 	cur_kline.Close = trade.Price
 	cur_kline.Volume += trade.Volume
-
 	// fmt.Printf("\nUpdate datastruct.Kline: %s\n", cur_kline.String())
 }
 
@@ -281,7 +297,9 @@ func TestAggregator() {
 		DepthAggregatorMillsecs: 5,
 	}
 
-	aggregator.Init(RecvDataChan, PubDataChan, AggConfig)
+	aggregator.Init(RecvDataChan, PubDataChan)
+
+	aggregator.UpdateConfig(AggConfig)
 
 	aggregator.Start()
 
