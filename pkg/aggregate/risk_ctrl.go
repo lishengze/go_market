@@ -582,7 +582,7 @@ func (r *RiskWorkerManager) Init() {
 		Worker{WorkerName: "WatermarkWorker"},
 	}
 
-	precision_worker_ := &PrecisionWorker{
+	precision_worker := &PrecisionWorker{
 		Worker{WorkerName: "PrecisionWorker"},
 	}
 
@@ -593,7 +593,7 @@ func (r *RiskWorkerManager) Init() {
 	r.AddWorker(fee_worker)
 	r.AddWorker(quotebias_worker)
 	r.AddWorker(watermark_worker)
-	r.AddWorker(precision_worker_)
+	r.AddWorker(precision_worker)
 
 	// r.FeeWorker_.SetNext(&r.QuotebiasWorker_)
 	// r.QuotebiasWorker_.SetNext(&r.WatermarkWorker_)
@@ -627,20 +627,24 @@ func (r *RiskWorkerManager) UpdateConfig(RiskConfig *RiskCtrlConfigMap) {
 }
 
 func (r *RiskWorkerManager) AddWorker(NewWorker RiskWorkerInterface) {
+	util.LOG_INFO("Try Add Worker " + NewWorker.GetWorkerName())
 	if r.Worker == nil {
 		r.Worker = NewWorker
+		util.LOG_INFO("Add Worker " + NewWorker.GetWorkerName() + "\n")
 		return
 	}
 
 	var tmp RiskWorkerInterface
 	for tmp = r.Worker; tmp.GetNextWoker() != nil; tmp = r.Worker.GetNextWoker() {
+		util.LOG_INFO("Stored Worker " + tmp.GetWorkerName())
+
 		if tmp.GetWorkerName() == NewWorker.GetWorkerName() {
 			util.LOG_WARN("Repeated Worker : " + tmp.GetWorkerName())
 			return
 		}
 	}
 	tmp.SetNext(NewWorker)
-	util.LOG_INFO("Add Worker " + tmp.GetWorkerName())
+	util.LOG_INFO("Add Worker " + NewWorker.GetWorkerName() + "\n")
 }
 
 func (r *RiskWorkerManager) Execute(depth_quote *datastruct.DepthQuote) {
