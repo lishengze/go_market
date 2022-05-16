@@ -2,6 +2,7 @@ package datastruct
 
 import (
 	"fmt"
+	"market_aggregate/pkg/util"
 	"math/rand"
 	"time"
 
@@ -193,13 +194,15 @@ func (d *DepthQuote) Init() {
 func GetTestDepth() *DepthQuote {
 	var rst DepthQuote
 	rand.Seed(time.Now().UnixNano())
-	index := rand.Intn(3)
+	exchange_type := rand.Intn(3)
 	exchange_array := []string{"FTX", "HUOBI", "OKEX"}
-	exchange_type := index % 3
+
+	symbol_index := rand.Intn(3)
+	symbol_array := []string{"BTC_USDT", "ETH_USDT", "DOT_USDT"}
 
 	rst.Exchange = exchange_array[exchange_type]
-	rst.Symbol = "BTC_USDT"
-	rst.Time = time.Now().Unix()
+	rst.Symbol = symbol_array[symbol_index]
+	rst.Time = util.UTCNanoTime()
 	rst.Asks = treemap.NewWith(utils.Float64Comparator)
 	rst.Bids = treemap.NewWith(utils.Float64Comparator)
 

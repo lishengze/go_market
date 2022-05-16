@@ -7,8 +7,8 @@ import (
 )
 
 type ServerEngine struct {
-	AggregateWorkr Aggregator
-	Riskworker     RiskWorkerManager
+	AggregateWorkr *Aggregator
+	Riskworker     *RiskWorkerManager
 	Commer         comm.Comm
 
 	RecvDataChan *datastruct.DataChannel
@@ -34,11 +34,20 @@ func (s *ServerEngine) Init(config *conf.Config) {
 	s.Commer = comm.Comm{}
 	s.Commer.Init(config, s.RecvDataChan, s.PubDataChan)
 
-	s.AggregateWorkr = Aggregator{}
-	s.AggregateWorkr.Init(s.RecvDataChan, s.PubDataChan)
+	s.Riskworker = &RiskWorkerManager{}
+	s.Riskworker.Init()
+
+	s.AggregateWorkr = &Aggregator{}
+	s.AggregateWorkr.Init(s.RecvDataChan, s.PubDataChan, s.Riskworker)
 
 }
 
-func (*ServerEngine) Start() {
+func (s *ServerEngine) Start() {
+	risk_config := GetTestRiskConfig()
+	s.Riskworker.UpdateConfig(&risk_config)
 
+	AggConfig := GetTestAggConfig()
+	s.AggregateWorkr.UpdateConfig(AggConfig)
+
+	s.AggregateWorkr.Start()
 }

@@ -24,9 +24,9 @@ func ExceptionFunc() {
 	}
 }
 
-func UTCNanoTime() int {
+func UTCNanoTime() int64 {
 
-	return time.Now().UTC().Nanosecond()
+	return time.Now().UTC().UnixNano()
 }
 
 func TimeMinute() int64 {

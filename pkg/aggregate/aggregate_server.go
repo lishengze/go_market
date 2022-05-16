@@ -32,15 +32,15 @@ type Aggregator struct {
 	RiskWorker *RiskWorkerManager
 }
 
-func (a *Aggregator) Init(RecvDataChan *datastruct.DataChannel, SendDataChan *datastruct.DataChannel) {
+func (a *Aggregator) Init(RecvDataChan *datastruct.DataChannel, SendDataChan *datastruct.DataChannel, RiskWorker *RiskWorkerManager) {
 	a.RecvDataChan = RecvDataChan
 	a.SendDataChan = SendDataChan
 	a.AggConfig = conf.AggregateConfig{
-		DepthAggregatorMillsecs: 5,
+		DepthAggregatorMillsecsMap: make(map[string]time.Duration),
 	}
-	a.RiskWorker = &RiskWorkerManager{}
+	a.RiskWorker = RiskWorker
 
-	a.RiskWorker.Init()
+	// a.RiskWorker.Init()
 
 	if a.depth_cache == nil {
 		a.depth_cache = make(map[string]map[string]*datastruct.DepthQuote)
@@ -84,8 +84,11 @@ func (a *Aggregator) get_wait_millsecs(curr_time int, fre int) int {
 }
 
 func (a *Aggregator) get_sleep_millsecs(curr_time int) (int, []string) {
+
 	publish_list := make([]string, 10)
 	sleep_millsecs := 0
+
+	a.AggConfigMutex.RLock()
 
 	if a.AggConfig.DepthAggregatorMillsecsMap == nil || len(a.AggConfig.DepthAggregatorMillsecsMap) == 0 {
 		sleep_millsecs = 3 * 1000
@@ -112,6 +115,8 @@ func (a *Aggregator) get_sleep_millsecs(curr_time int) (int, []string) {
 		}
 	}
 
+	defer a.AggConfigMutex.RUnlock()
+
 	return sleep_millsecs, publish_list
 }
 
@@ -125,6 +130,9 @@ func (a *Aggregator) start_aggregate_depth() {
 		curr_time := 0
 		for {
 			sleep_millsecs, aggregate_symbol_list := a.get_sleep_millsecs(curr_time)
+
+			util.LOG_INFO(fmt.Sprintf("curr_time:%+v, sleep_millsecs: %+v, aggregate_symbol_list%+v",
+				curr_time, sleep_millsecs, aggregate_symbol_list))
 
 			a.aggregate_depth(aggregate_symbol_list)
 
@@ -150,7 +158,7 @@ func mix_depth(src *treemap.Map, other *treemap.Map, exchange string) {
 			cur_innerdepth.Volume += other_iter.Value().(*datastruct.InnerDepth).Volume
 			cur_innerdepth.ExchangeVolume[exchange] = other_iter.Value().(*datastruct.InnerDepth).Volume
 		} else {
-			src_inner_depth := datastruct.InnerDepth{0, make(map[string]float64)}
+			src_inner_depth := datastruct.InnerDepth{Volume: 0, ExchangeVolume: make(map[string]float64)}
 
 			other_inner_depth := other_iter.Value().(*datastruct.InnerDepth)
 			src_inner_depth.Volume = other_inner_depth.Volume
@@ -176,7 +184,7 @@ func (a *Aggregator) start_aggregate_kline() {
 
 func (a *Aggregator) aggregate_depth(symbol_list []string) {
 
-	// util.LOG_INFO("----- Aggregate Depth Start ------ ")
+	util.LOG_INFO("----- Aggregate Depth Start ------ ")
 
 	for _, symbol := range symbol_list {
 
@@ -209,9 +217,9 @@ func (a *Aggregator) aggregate_depth(symbol_list []string) {
 	// 	// }
 	// }
 
-	// util.LOG_INFO("----- Aggregate Depth Over!------ \n")
+	util.LOG_INFO("----- Aggregate Depth Over!------ \n")
 
-	defer a.depth_mutex.Unlock()
+	// defer a.depth_mutex.Unlock()
 }
 
 func (a *Aggregator) start_listen_recvdata() {
@@ -302,6 +310,10 @@ func (a *Aggregator) cache_trade(trade *datastruct.Trade) {
 }
 
 func (a *Aggregator) publish_depth(depth *datastruct.DepthQuote) {
+	if a.RiskWorker != nil {
+		a.RiskWorker.Execute(depth)
+	}
+
 	// util.LOG_INFO("publish_depth: " + depth.String(5))
 }
 
@@ -318,18 +330,23 @@ func (a *Aggregator) publish_trade(trade *datastruct.Trade) {
 }
 
 func PublishTest(data *datastruct.DataChannel) {
-	timer := time.Tick(3 * time.Second)
+	timer := time.Tick(1 * time.Second)
 
 	// index := 0
 	for {
 		select {
 		case <-timer:
-			// depth_quote := GetTestDepthByType(index)
+			depth_quote := datastruct.GetTestDepth()
 			// index++
-			// data.DepthChannel <- depth_quote
-
-			data.TradeChannel <- datastruct.GetTestTrade()
+			data.DepthChannel <- depth_quote
+			// data.TradeChannel <- datastruct.GetTestTrade()
 		}
+	}
+}
+
+func GetTestAggConfig() conf.AggregateConfig {
+	return conf.AggregateConfig{
+		DepthAggregatorMillsecsMap: map[string]time.Duration{"BTC_USDT": 4000, "ETH_USDT": 6000},
 	}
 }
 
@@ -348,15 +365,17 @@ func TestAggregator() {
 		TradeChannel: make(chan *datastruct.Trade),
 	}
 
-	AggConfig := conf.AggregateConfig{
-		DepthAggregatorMillsecs: 5,
-	}
+	risk_config := GetTestRiskConfig()
+	risk_worker := &RiskWorkerManager{}
+	risk_worker.Init()
+	risk_worker.UpdateConfig(&risk_config)
 
-	aggregator.Init(RecvDataChan, PubDataChan)
-
+	AggConfig := GetTestAggConfig()
+	aggregator.Init(RecvDataChan, PubDataChan, risk_worker)
 	aggregator.UpdateConfig(AggConfig)
-
 	aggregator.Start()
+
+	util.LOG_INFO(fmt.Sprintf("\n------- risk_worker.RiskConfig: %+v\n\n", risk_worker.RiskConfig))
 
 	go PublishTest(RecvDataChan)
 

@@ -171,10 +171,11 @@ func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtr
 	defer util.ExceptionFunc()
 
 	fmt.Println("-------- FeeWorker Process  ---------")
+	util.LOG_INFO(fmt.Sprintf("\n------- configs: %+v\n\n", *configs))
 
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
+		fmt.Printf("Symbol:%s, Config:%+v \n", depth_quote.Symbol, config)
 
-		fmt.Printf("\nConfig:%v \n", configs)
 		util.LOG_INFO("\nBefore FeeCtrl: \n" + depth_quote.String(5))
 		// fmt.Println(depth_quote)
 
@@ -194,7 +195,7 @@ func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtr
 	}
 
 	fmt.Println("FeeWorker Process")
-	return false
+	return true
 }
 
 type QuotebiasWorker struct {
@@ -266,7 +267,7 @@ func (w *QuotebiasWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 	}
 
 	fmt.Println("QuotebiasWorker Process")
-	return false
+	return true
 }
 
 func (w *QuotebiasWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
@@ -433,6 +434,7 @@ func (w *WatermarkWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 	defer util.ExceptionFunc()
 
 	if check_cross(depth_quote) == false {
+		util.LOG_INFO("++++++ WatermarkWorker:Process Has No Cross Depth! +++++\n\n")
 		return true
 	}
 
@@ -539,7 +541,7 @@ func (w *PrecisionWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 
 	fmt.Println("PrecisionWorker Process")
 
-	return false
+	return true
 }
 
 type PrecisionWorker struct {
@@ -564,9 +566,9 @@ func (r *RiskWorkerManager) Init() {
 	r.ConfigMutex = new(sync.RWMutex)
 	r.RiskConfig = make(map[string]conf.RiskCtrlConfig)
 
-	// r.FeeWorker_.SetNext(&r.QuotebiasWorker_)
-	// r.QuotebiasWorker_.SetNext(&r.WatermarkWorker_)
-	// r.WatermarkWorker_.SetNext(&r.PrecisionWorker_)
+	r.FeeWorker_.SetNext(&r.QuotebiasWorker_)
+	r.QuotebiasWorker_.SetNext(&r.WatermarkWorker_)
+	r.WatermarkWorker_.SetNext(&r.PrecisionWorker_)
 }
 
 func (r *RiskWorkerManager) UpdateConfig(RiskConfig *RiskCtrlConfigMap) {
@@ -574,9 +576,25 @@ func (r *RiskWorkerManager) UpdateConfig(RiskConfig *RiskCtrlConfigMap) {
 	r.ConfigMutex.Lock()
 
 	for symbol, value := range *RiskConfig {
-		r.RiskConfig[symbol] = value
+		// r.RiskConfig[symbol] = value
+
+		r.RiskConfig[symbol] = conf.RiskCtrlConfig{
+			HedgeConfigMap: value.HedgeConfigMap,
+
+			PricePrecison:  value.PricePrecison,
+			VolumePrecison: value.VolumePrecison,
+
+			PriceBiasValue: value.PriceBiasValue,
+			PriceBiasKind:  value.PriceBiasKind,
+
+			VolumeBiasValue: value.VolumeBiasValue,
+			VolumeBiasKind:  value.VolumeBiasKind,
+
+			PriceMinumChange: value.PriceMinumChange,
+		}
 	}
 
+	util.LOG_INFO(fmt.Sprintf("\n------- r.RiskConfig: %+v\n\n", r.RiskConfig))
 }
 
 func (r *RiskWorkerManager) Execute(depth_quote *datastruct.DepthQuote) {
@@ -586,13 +604,15 @@ func (r *RiskWorkerManager) Execute(depth_quote *datastruct.DepthQuote) {
 
 	r.ConfigMutex.RLock()
 
-	// r.FeeWorker_.Execute(depth_quote, configs)
+	// util.LOG_INFO(fmt.Sprintf("\n------- Execute r.RiskConfig: %+v\n\n", r.RiskConfig))
 
-	// r.QuotebiasWorker_.Execute(depth_quote, configs)
+	r.FeeWorker_.Execute(depth_quote, &r.RiskConfig)
 
-	r.WatermarkWorker_.Execute(depth_quote, &r.RiskConfig)
+	// r.QuotebiasWorker_.Execute(depth_quote,  &r.RiskConfig)
 
-	// r.PrecisionWorker_.Execute(depth_quote, configs)
+	// r.WatermarkWorker_.Execute(depth_quote, &r.RiskConfig)
+
+	// r.PrecisionWorker_.Execute(depth_quote,  &r.RiskConfig)
 }
 
 func test_get_sorted_keys() {
@@ -660,10 +680,30 @@ func test_get_sorted_keys() {
 // 	return rst
 // }
 
-func get_test_config() RiskCtrlConfigMap {
+func GetTestRiskConfig() RiskCtrlConfigMap {
 	rst := RiskCtrlConfigMap{
 		"BTC_USDT": {
-			HedgeConfigMap:   map[string]conf.HedgeConfig{"FTX": {1, 0.1}},
+			HedgeConfigMap:   map[string]conf.HedgeConfig{"FTX": {1, 0.1}, "OKEX": {1, 0.2}, "HUOBI": {1, 0.3}},
+			PricePrecison:    2,
+			VolumePrecison:   3,
+			PriceBiasValue:   0.1,
+			PriceBiasKind:    1,
+			VolumeBiasValue:  0.1,
+			VolumeBiasKind:   1,
+			PriceMinumChange: 1.0,
+		},
+		"ETH_USDT": {
+			HedgeConfigMap:   map[string]conf.HedgeConfig{"FTX": {1, 0.1}, "OKEX": {1, 0.2}, "HUOBI": {1, 0.3}},
+			PricePrecison:    2,
+			VolumePrecison:   3,
+			PriceBiasValue:   0.1,
+			PriceBiasKind:    1,
+			VolumeBiasValue:  0.1,
+			VolumeBiasKind:   1,
+			PriceMinumChange: 1.0,
+		},
+		"DOT_USDT": {
+			HedgeConfigMap:   map[string]conf.HedgeConfig{"FTX": {1, 0.1}, "OKEX": {1, 0.2}, "HUOBI": {1, 0.3}},
 			PricePrecison:    2,
 			VolumePrecison:   3,
 			PriceBiasValue:   0.1,
@@ -679,7 +719,7 @@ func get_test_config() RiskCtrlConfigMap {
 
 func TestWorker() {
 	depth_quote := datastruct.GetTestDepth()
-	config := get_test_config()
+	config := GetTestRiskConfig()
 
 	risk_worker_manager := RiskWorkerManager{}
 	risk_worker_manager.Init()
