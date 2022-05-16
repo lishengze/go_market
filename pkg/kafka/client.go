@@ -123,6 +123,11 @@ func (k *KafkaServer) Start() {
 }
 
 func (k *KafkaServer) start_consume() {
+	if len(k.ConsumeSet) == 0 {
+		util.LOG_INFO("ConsumeSet is Empty!")
+		return
+	}
+
 	for _, consume_item := range k.ConsumeSet {
 		go k.ConsumeSingleTopic(consume_item)
 	}
@@ -133,8 +138,14 @@ func (k *KafkaServer) start_test() {
 }
 
 func (k *KafkaServer) UpdateMetaData(meta_data datastruct.Metadata) {
-	NewConsumeSet := GetConsumeSet(k.MetaData)
-	util.LOG_INFO(fmt.Sprintf("UpdatedTopicSet: %+v", k.ConsumeSet))
+	util.LOG_INFO("UpdateMetaData: " + fmt.Sprintf("%+v", meta_data))
+
+	NewConsumeSet := GetConsumeSet(meta_data)
+	util.LOG_INFO(fmt.Sprintf("NewTopicSet: %+v", NewConsumeSet))
+
+	if k.ConsumeSet == nil {
+		k.ConsumeSet = make(map[string](*ConsumeItem))
+	}
 
 	for new_topic, consume_item := range NewConsumeSet {
 		if _, ok := k.ConsumeSet[new_topic]; ok == false {

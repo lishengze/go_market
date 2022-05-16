@@ -10,7 +10,7 @@ type Config struct {
 }
 
 type AggregateConfig struct {
-	DepthAggregatorMillsecs time.Duration
+	DepthAggregatorMillsecsMap map[string]time.Duration
 }
 
 type HedgeConfig struct {

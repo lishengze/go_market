@@ -60,11 +60,13 @@ func TestKafka() {
 
 	go ListenRecvData(RecvDataChan)
 
-	kafka_server.Init(Config, Serializer, RecvDataChan, PubDataChan, MetaData)
+	kafka_server.Init(Config, Serializer, RecvDataChan, PubDataChan)
 
 	kafka_server.IsTest = false
 
 	kafka_server.Start()
+
+	kafka_server.UpdateMetaData(MetaData)
 
 	time.Sleep(time.Hour)
 }

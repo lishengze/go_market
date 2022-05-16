@@ -73,6 +73,48 @@ func (a *Aggregator) Start() {
 	a.start_aggregate_kline()
 }
 
+func (a *Aggregator) get_wait_millsecs(curr_time int, fre int) int {
+	if curr_time == 0 {
+		return fre
+	} else if curr_time%fre == 0 {
+		return 0
+	} else {
+		return fre - curr_time%fre
+	}
+}
+
+func (a *Aggregator) get_sleep_millsecs(curr_time int) (int, []string) {
+	publish_list := make([]string, 10)
+	sleep_millsecs := 0
+
+	if a.AggConfig.DepthAggregatorMillsecsMap == nil || len(a.AggConfig.DepthAggregatorMillsecsMap) == 0 {
+		sleep_millsecs = 3 * 1000
+	} else {
+		min_sleep_secs := time.Hour
+
+		for symbol, cur_publish_millsecs := range a.AggConfig.DepthAggregatorMillsecsMap {
+			cur_sleep_millsecs := a.get_wait_millsecs(curr_time, int(cur_publish_millsecs))
+
+			if cur_sleep_millsecs == 0 {
+				publish_list = append(publish_list, symbol)
+			} else if sleep_millsecs == 0 || sleep_millsecs > cur_sleep_millsecs {
+				sleep_millsecs = cur_sleep_millsecs
+			}
+
+			if min_sleep_secs > cur_publish_millsecs {
+				min_sleep_secs = cur_publish_millsecs
+			}
+		}
+
+		// 所有币对当前都需要处理，下次处理的时间就是发布等待时间最短的那个币对
+		if sleep_millsecs == 0 {
+			sleep_millsecs = int(min_sleep_secs)
+		}
+	}
+
+	return sleep_millsecs, publish_list
+}
+
 func (a *Aggregator) start_aggregate_depth() {
 	util.LOG_INFO("Aggregator start_aggregate_depth!")
 	go func() {
@@ -80,17 +122,20 @@ func (a *Aggregator) start_aggregate_depth() {
 		// timer := time.Tick(time.Duration(a.depth_aggregator_millsecs * time.Millisecond))
 		// timeout := time.After(time.Millisecond * a.depth_aggregator_millsecs)
 
+		curr_time := 0
 		for {
-			a.aggregate_depth()
+			sleep_millsecs, aggregate_symbol_list := a.get_sleep_millsecs(curr_time)
 
-			a.AggConfigMutex.RLock()
-			time.Sleep(time.Millisecond * a.AggConfig.DepthAggregatorMillsecs)
-			a.AggConfigMutex.RUnlock()
+			a.aggregate_depth(aggregate_symbol_list)
 
-			// select {
-			// case <-timer:
-			// 	a.aggregate_depth()
-			// }
+			curr_time += sleep_millsecs
+
+			if curr_time > 24*60*60*1000 {
+				curr_time = 0
+			}
+
+			time.Sleep(time.Millisecond * time.Duration(sleep_millsecs))
+
 		}
 	}()
 	util.LOG_INFO("Aggregator start_aggregate_depth Over!")
@@ -129,30 +174,40 @@ func (a *Aggregator) start_aggregate_kline() {
 	util.LOG_INFO("Aggregate datastruct.Kline Over!")
 }
 
-func (a *Aggregator) aggregate_depth() {
-	a.depth_mutex.Lock()
+func (a *Aggregator) aggregate_depth(symbol_list []string) {
 
 	// util.LOG_INFO("----- Aggregate Depth Start ------ ")
 
-	for symbol, exchange_depth_map := range a.depth_cache {
-		new_depth := datastruct.NewDepth(nil)
-		new_depth.Symbol = symbol
-		new_depth.Exchange = datastruct.BCTS_EXCHANGE
-		new_depth.Time = int64(util.UTCNanoTime())
+	for _, symbol := range symbol_list {
 
-		for exchange, cur_depth := range exchange_depth_map {
-			util.LOG_INFO("\n===== <<CurDepth>>: " + cur_depth.String(5))
-			mix_depth(new_depth.Asks, cur_depth.Asks, exchange)
-			mix_depth(new_depth.Bids, cur_depth.Bids, exchange)
+		a.depth_mutex.Lock()
+
+		if exchange_depth_map, ok := a.depth_cache[symbol]; ok == true {
+			new_depth := datastruct.NewDepth(nil)
+			new_depth.Symbol = symbol
+			new_depth.Exchange = datastruct.BCTS_EXCHANGE
+			new_depth.Time = int64(util.UTCNanoTime())
+
+			for exchange, cur_depth := range exchange_depth_map {
+				util.LOG_INFO("\n===== <<CurDepth>>: " + cur_depth.String(5))
+				mix_depth(new_depth.Asks, cur_depth.Asks, exchange)
+				mix_depth(new_depth.Bids, cur_depth.Bids, exchange)
+			}
+
+			util.LOG_INFO("\n^^^^^^^ <<aagregated_depth>>: " + new_depth.String(5))
+
+			a.publish_depth(new_depth)
 		}
 
-		util.LOG_INFO("\n^^^^^^^ <<aagregated_depth>>: " + new_depth.String(5))
-		a.publish_depth(new_depth)
-
-		// for _, cur_depth := range exchange_depth_map {
-		// 	util.LOG_INFO("\n===== After <<CurDepth>>: " + cur_depth.String(5))
-		// }
+		a.depth_mutex.Unlock()
 	}
+
+	// for symbol, exchange_depth_map := range a.depth_cache {
+
+	// 	// for _, cur_depth := range exchange_depth_map {
+	// 	// 	util.LOG_INFO("\n===== After <<CurDepth>>: " + cur_depth.String(5))
+	// 	// }
+	// }
 
 	// util.LOG_INFO("----- Aggregate Depth Over!------ \n")
 
