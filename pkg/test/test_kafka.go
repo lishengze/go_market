@@ -89,5 +89,7 @@ func main() {
 
 	// TestKafka()
 
-	aggregate.TestAggregator()
+	// aggregate.TestAggregator()
+
+	aggregate.TestAddWorker()
 }

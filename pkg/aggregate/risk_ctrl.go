@@ -34,6 +34,7 @@ type RiskWorkerInterface interface {
 	Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool
 	SetNext(nextWorker RiskWorkerInterface)
 	GetWorkerName() string
+	GetNextWoker() RiskWorkerInterface
 }
 
 type Worker struct {
@@ -71,6 +72,10 @@ func (w *Worker) SetNext(next RiskWorkerInterface) {
 
 func (w *Worker) GetWorkerName() string {
 	return w.WorkerName
+}
+
+func (w *Worker) GetNextWoker() RiskWorkerInterface {
+	return w.nextWorker
 }
 
 type FeeWorker struct {
@@ -553,22 +558,46 @@ type RiskWorkerManager struct {
 	QuotebiasWorker_ QuotebiasWorker
 	WatermarkWorker_ WatermarkWorker
 	PrecisionWorker_ PrecisionWorker
-	RiskConfig       RiskCtrlConfigMap
-	ConfigMutex      *sync.RWMutex
+
+	Worker      RiskWorkerInterface
+	RiskConfig  RiskCtrlConfigMap
+	ConfigMutex *sync.RWMutex
 }
 
 func (r *RiskWorkerManager) Init() {
-	r.FeeWorker_.WorkerName = "FeeWorker"
-	r.QuotebiasWorker_.WorkerName = "QuotebiasWorker"
-	r.WatermarkWorker_.WorkerName = "WatermarkWorker"
-	r.PrecisionWorker_.WorkerName = "PrecisionWorker"
+	// r.FeeWorker_.WorkerName = "FeeWorker"
+	// r.QuotebiasWorker_.WorkerName = "QuotebiasWorker"
+	// r.WatermarkWorker_.WorkerName = "WatermarkWorker"
+	// r.PrecisionWorker_.WorkerName = "PrecisionWorker"
+
+	fee_worker := &FeeWorker{
+		Worker{WorkerName: "FeeWorker"},
+	}
+
+	quotebias_worker := &QuotebiasWorker{
+		Worker{WorkerName: "QuotebiasWorker"},
+	}
+
+	watermark_worker := &WatermarkWorker{
+		Worker{WorkerName: "WatermarkWorker"},
+	}
+
+	precision_worker_ := &PrecisionWorker{
+		Worker{WorkerName: "PrecisionWorker"},
+	}
 
 	r.ConfigMutex = new(sync.RWMutex)
 	r.RiskConfig = make(map[string]conf.RiskCtrlConfig)
+	r.Worker = nil
 
-	r.FeeWorker_.SetNext(&r.QuotebiasWorker_)
-	r.QuotebiasWorker_.SetNext(&r.WatermarkWorker_)
-	r.WatermarkWorker_.SetNext(&r.PrecisionWorker_)
+	r.AddWorker(fee_worker)
+	r.AddWorker(quotebias_worker)
+	r.AddWorker(watermark_worker)
+	r.AddWorker(precision_worker_)
+
+	// r.FeeWorker_.SetNext(&r.QuotebiasWorker_)
+	// r.QuotebiasWorker_.SetNext(&r.WatermarkWorker_)
+	// r.WatermarkWorker_.SetNext(&r.PrecisionWorker_)
 }
 
 func (r *RiskWorkerManager) UpdateConfig(RiskConfig *RiskCtrlConfigMap) {
@@ -597,6 +626,23 @@ func (r *RiskWorkerManager) UpdateConfig(RiskConfig *RiskCtrlConfigMap) {
 	util.LOG_INFO(fmt.Sprintf("\n------- r.RiskConfig: %+v\n\n", r.RiskConfig))
 }
 
+func (r *RiskWorkerManager) AddWorker(NewWorker RiskWorkerInterface) {
+	if r.Worker == nil {
+		r.Worker = NewWorker
+		return
+	}
+
+	var tmp RiskWorkerInterface
+	for tmp = r.Worker; tmp.GetNextWoker() != nil; tmp = r.Worker.GetNextWoker() {
+		if tmp.GetWorkerName() == NewWorker.GetWorkerName() {
+			util.LOG_WARN("Repeated Worker : " + tmp.GetWorkerName())
+			return
+		}
+	}
+	tmp.SetNext(NewWorker)
+	util.LOG_INFO("Add Worker " + tmp.GetWorkerName())
+}
+
 func (r *RiskWorkerManager) Execute(depth_quote *datastruct.DepthQuote) {
 	defer r.ConfigMutex.RUnlock()
 
@@ -604,9 +650,13 @@ func (r *RiskWorkerManager) Execute(depth_quote *datastruct.DepthQuote) {
 
 	r.ConfigMutex.RLock()
 
+	if r.Worker != nil {
+		r.Worker.Execute(depth_quote, &r.RiskConfig)
+	}
+
 	// util.LOG_INFO(fmt.Sprintf("\n------- Execute r.RiskConfig: %+v\n\n", r.RiskConfig))
 
-	r.FeeWorker_.Execute(depth_quote, &r.RiskConfig)
+	// r.FeeWorker_.Execute(depth_quote, &r.RiskConfig)
 
 	// r.QuotebiasWorker_.Execute(depth_quote,  &r.RiskConfig)
 
@@ -761,6 +811,11 @@ func TestImport() {
 	}
 
 	fmt.Println(data)
+}
+
+func TestAddWorker() {
+	risk_work := RiskWorkerManager{}
+	risk_work.Init()
 }
 
 // func main() {
