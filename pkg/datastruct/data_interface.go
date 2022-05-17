@@ -13,7 +13,7 @@ type SerializerI interface {
 type NetServerI interface {
 	Init(SerializerI, *DataChannel, *DataChannel) error
 	Start()
-	UpdateMetaData(Metadata)
+	UpdateMetaData(*Metadata)
 
 	PublishDepth(*DepthQuote) error
 	PublishKline(*Kline) error

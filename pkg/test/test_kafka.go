@@ -54,19 +54,6 @@ func TestKafka() {
 
 	util.LOG_INFO(fmt.Sprintf("CONFIG: %+v", *config.NATIVE_CONFIG()))
 
-	// return
-
-	symbol_set := make(map[string](map[string]struct{}))
-	exchange_set := make(map[string]struct{})
-	exchange_set["FTX"] = struct{}{}
-	symbol_set["BTC_USDT"] = exchange_set
-
-	MetaData := datastruct.Metadata{}
-
-	// MetaData.DepthMeta = symbol_set
-
-	MetaData.TradeMeta = symbol_set
-
 	Serializer := &comm.ProtobufSerializer{}
 
 	kafka_server := kafka.KafkaServer{}
@@ -92,7 +79,6 @@ func TestKafka() {
 	kafka_server.Start()
 
 	go StartPubData(PubDataChan)
-	// kafka_server.UpdateMetaData(MetaData)
 
 	time.Sleep(time.Hour)
 }

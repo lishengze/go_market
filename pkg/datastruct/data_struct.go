@@ -191,6 +191,20 @@ func (d *DepthQuote) Init() {
 	d.Bids = treemap.NewWith(utils.Float64Comparator)
 }
 
+func GetTestMetadata() *Metadata {
+	symbol_set := make(map[string](map[string]struct{}))
+	exchange_set := make(map[string]struct{})
+	exchange_set["FTX"] = struct{}{}
+	symbol_set["BTC_USDT"] = exchange_set
+
+	MetaData := Metadata{}
+
+	// MetaData.DepthMeta = symbol_set
+	MetaData.TradeMeta = symbol_set
+
+	return &MetaData
+}
+
 func GetTestDepth() *DepthQuote {
 	var rst DepthQuote
 	rand.Seed(time.Now().UnixNano())

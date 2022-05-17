@@ -91,7 +91,7 @@ func (a *Aggregator) get_sleep_millsecs(curr_time int) (int, []string) {
 	a.AggConfigMutex.RLock()
 
 	if a.AggConfig.DepthAggregatorMillsecsMap == nil || len(a.AggConfig.DepthAggregatorMillsecsMap) == 0 {
-		sleep_millsecs = 3 * 1000
+		sleep_millsecs = 3 * 1000 // 还未获取配置信息;
 	} else {
 		min_sleep_secs := time.Hour
 

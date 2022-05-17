@@ -667,56 +667,18 @@ func (r *RiskWorkerManager) Execute(depth_quote *datastruct.DepthQuote) {
 
 	r.ConfigMutex.RLock()
 
-	if r.Worker != nil {
-		r.Worker.Execute(depth_quote, &r.RiskConfig)
-	} else {
-		util.LOG_INFO("No Worker Available")
+	if r.Worker == nil {
+		util.LOG_ERROR("No Worker Available")
+		return
 	}
 
-	// util.LOG_INFO(fmt.Sprintf("\n------- Execute r.RiskConfig: %+v\n\n", r.RiskConfig))
+	if len(r.RiskConfig) == 0 {
+		util.LOG_ERROR("RiskConfig Not Available")
+		return
+	}
 
-	// r.FeeWorker_.Execute(depth_quote, &r.RiskConfig)
-
-	// r.QuotebiasWorker_.Execute(depth_quote,  &r.RiskConfig)
-
-	// r.WatermarkWorker_.Execute(depth_quote, &r.RiskConfig)
-
-	// r.PrecisionWorker_.Execute(depth_quote,  &r.RiskConfig)
+	r.Worker.Execute(depth_quote, &r.RiskConfig)
 }
-
-// func GetTestDepth() datastruct.DepthQuote {
-// 	var rst datastruct.DepthQuote
-
-// 	rst.Exchange = "FTX"
-// 	rst.Symbol = "BTC_USDT"
-// 	rst.Time = time.Now().Unix()
-// 	rst.Asks = treemap.NewWith(utils.Float64Comparator)
-// 	rst.Bids = treemap.NewWith(utils.Float64Comparator)
-
-// 	// rst.Asks.Put(41001.11111, &datastruct.InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
-// 	// rst.Asks.Put(41002.22222, &datastruct.InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
-// 	// rst.Asks.Put(41003.33333, &datastruct.InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
-// 	// rst.Asks.Put(41004.44444, &datastruct.InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
-// 	// rst.Asks.Put(41005.55555, &datastruct.InnerDepth{5.55555, map[string]float64{"FTX": 5.55555}})
-
-// 	// rst.Bids.Put(41004.44444, &datastruct.InnerDepth{4.44444, map[string]float64{"FTX": 4.44444}})
-// 	// rst.Bids.Put(41003.33333, &datastruct.InnerDepth{3.33333, map[string]float64{"FTX": 3.33333}})
-// 	// rst.Bids.Put(41002.22222, &datastruct.InnerDepth{2.22222, map[string]float64{"FTX": 2.22222}})
-// 	// rst.Bids.Put(41001.11111, &datastruct.InnerDepth{1.11111, map[string]float64{"FTX": 1.11111}})
-// 	// rst.Bids.Put(40009.99999, &datastruct.InnerDepth{9.99999, map[string]float64{"FTX": 9.99999}})
-
-// 	rst.Asks.Put(55000.0, &datastruct.InnerDepth{5.5, map[string]float64{"FTX": 5.5}})
-// 	rst.Asks.Put(50000.0, &datastruct.InnerDepth{5.0, map[string]float64{"FTX": 5.0}})
-
-// 	rst.Bids.Put(45000.0, &datastruct.InnerDepth{4.5, map[string]float64{"FTX": 4.5}})
-// 	rst.Bids.Put(40000.0, &datastruct.InnerDepth{4.0, map[string]float64{"FTX": 4.0}})
-
-// 	// rst.Asks.Put(40002.222222].Volume = 2.222222
-// 	// rst.Asks.Put(40003.222222].Volume = 2.222222
-// 	// rst.Asks.Put(40004.222222].Volume = 2.222222
-
-// 	return rst
-// }
 
 func GetTestRiskConfig() RiskCtrlConfigMap {
 	rst := RiskCtrlConfigMap{

@@ -56,6 +56,19 @@ func (c *Comm) Init(
 	return nil
 }
 
+func (c *Comm) Start() {
+	if c.NetServer != nil {
+		c.NetServer.Start()
+	}
+
+}
+
+func (c *Comm) UpdateMetaData(meta *datastruct.Metadata) {
+	if c.NetServer != nil {
+		c.NetServer.UpdateMetaData(meta)
+	}
+}
+
 func (c *Comm) PublishDepth(depth *datastruct.DepthQuote) {
 	c.NetServer.PublishDepth(depth)
 }

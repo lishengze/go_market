@@ -53,6 +53,7 @@ func (n *NativeConfig) ParseFile(file_name string) error {
 
 type AggregateConfig struct {
 	DepthAggregatorMillsecsMap map[string]time.Duration
+	DepthPublishMap            map[string]bool
 }
 
 type HedgeConfig struct {
