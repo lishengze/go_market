@@ -2,7 +2,7 @@ package aggregate
 
 import (
 	"market_aggregate/pkg/comm"
-	"market_aggregate/pkg/conf"
+	config "market_aggregate/pkg/conf"
 	"market_aggregate/pkg/datastruct"
 )
 
@@ -15,10 +15,10 @@ type ServerEngine struct {
 	PubDataChan  *datastruct.DataChannel
 
 	MetaData  datastruct.Metadata
-	AggConfig conf.AggregateConfig
+	AggConfig config.AggregateConfig
 }
 
-func (s *ServerEngine) Init(config *conf.Config) {
+func (s *ServerEngine) Init() {
 	s.RecvDataChan = &datastruct.DataChannel{
 		DepthChannel: make(chan *datastruct.DepthQuote),
 		KlineChannel: make(chan *datastruct.Kline),
@@ -32,7 +32,7 @@ func (s *ServerEngine) Init(config *conf.Config) {
 	}
 
 	s.Commer = comm.Comm{}
-	s.Commer.Init(config, s.RecvDataChan, s.PubDataChan)
+	s.Commer.Init(s.RecvDataChan, s.PubDataChan)
 
 	s.Riskworker = &RiskWorkerManager{}
 	s.Riskworker.Init()

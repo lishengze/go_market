@@ -3,7 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
-	"market_aggregate/pkg/conf"
+	config "market_aggregate/pkg/conf"
 	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/protostruct"
 	"market_aggregate/pkg/util"
@@ -25,7 +25,6 @@ type KafkaServer struct {
 	Producer sarama.SyncProducer
 	Broker   *sarama.Broker
 
-	Config   *conf.Config
 	MetaData datastruct.Metadata
 
 	Serializer datastruct.SerializerI
@@ -40,13 +39,12 @@ type KafkaServer struct {
 	IsTest bool
 }
 
-// Init(*conf.Config, SerializerI, *DataChannel)
-func (k *KafkaServer) Init(config *conf.Config, serializer datastruct.SerializerI,
+// Init(*config.Config, SerializerI, *DataChannel)
+func (k *KafkaServer) Init(serializer datastruct.SerializerI,
 	recv_data_chan *datastruct.DataChannel,
 	pub_data_chan *datastruct.DataChannel) error {
 
 	k.Serializer = serializer
-	k.Config = config
 	k.RecvDataChan = recv_data_chan
 	k.PubDataChan = pub_data_chan
 
@@ -72,13 +70,13 @@ func (k *KafkaServer) InitKafkaApi() error {
 
 	var err error
 
-	k.Producer, err = sarama.NewSyncProducer([]string{k.Config.IP}, nil)
+	k.Producer, err = sarama.NewSyncProducer([]string{config.NATIVE_CONFIG().IP}, nil)
 	if err != nil {
 		util.LOG_ERROR(err.Error())
 		return err
 	}
 
-	k.Broker = sarama.NewBroker(k.Config.IP)
+	k.Broker = sarama.NewBroker(config.NATIVE_CONFIG().IP)
 	broker_config := sarama.NewConfig()
 	err = k.Broker.Open(broker_config)
 	if err != nil {
@@ -165,7 +163,7 @@ func (k *KafkaServer) UpdateMetaData(meta_data datastruct.Metadata) {
 }
 
 func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
-	consumer, err := sarama.NewConsumer([]string{k.Config.IP}, nil)
+	consumer, err := sarama.NewConsumer([]string{config.NATIVE_CONFIG().IP}, nil)
 
 	util.LOG_INFO("ConsumeSingleTopic: " + consume_item.Topic)
 
@@ -243,6 +241,7 @@ func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
 }
 
 func (k *KafkaServer) PublishDepth(local_depth *datastruct.DepthQuote) error {
+	util.LOG_INFO(fmt.Sprintf("Pub Depth %+v", local_depth))
 	serialize_str, err := k.Serializer.EncodeDepth(local_depth)
 
 	if err != nil {
@@ -256,6 +255,8 @@ func (k *KafkaServer) PublishDepth(local_depth *datastruct.DepthQuote) error {
 }
 
 func (k *KafkaServer) PublishKline(local_kline *datastruct.Kline) error {
+	util.LOG_INFO(fmt.Sprintf("Pub kline %+v", local_kline))
+
 	serialize_str, err := k.Serializer.EncodeKline(local_kline)
 
 	if err != nil {
@@ -269,6 +270,7 @@ func (k *KafkaServer) PublishKline(local_kline *datastruct.Kline) error {
 }
 
 func (k *KafkaServer) PublishTrade(local_trade *datastruct.Trade) error {
+	util.LOG_INFO(fmt.Sprintf("Pub Trade %+v", local_trade))
 
 	serialize_str, err := k.Serializer.EncodeTrade(local_trade)
 

@@ -1,13 +1,13 @@
 package comm
 
 import (
-	"market_aggregate/pkg/conf"
+	config "market_aggregate/pkg/conf"
 	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/kafka"
 )
 
 type CommI interface {
-	Init(*conf.Config, *datastruct.DataChannel)
+	Init(*datastruct.DataChannel, *datastruct.DataChannel)
 
 	PublishDepth(*datastruct.DepthQuote)
 	PublishKline(*datastruct.Kline)
@@ -39,22 +39,17 @@ type Comm struct {
 	Serializer datastruct.SerializerI //
 }
 
-func (c *Comm) Init(config *conf.Config,
+func (c *Comm) Init(
 	recv_chan *datastruct.DataChannel,
 	pub_chan *datastruct.DataChannel) error {
 
-	if config.SerialType == COMM_PROTOBUF {
+	if config.NATIVE_CONFIG().SerialType == COMM_PROTOBUF {
 		c.Serializer = &ProtobufSerializer{}
 	}
 
-	if config.NetServerType == COMM_KAFKA {
-		c.NetServer = &kafka.KafkaServer{
-			RecvDataChan: recv_chan,
-			Serializer:   c.Serializer,
-			Config:       config,
-			IsTest:       true,
-		}
-		c.NetServer.Init(config, c.Serializer, recv_chan, pub_chan)
+	if config.NATIVE_CONFIG().NetServerType == COMM_KAFKA {
+		c.NetServer = &kafka.KafkaServer{}
+		c.NetServer.Init(c.Serializer, recv_chan, pub_chan)
 	}
 
 	// c.DataChan = data_chan

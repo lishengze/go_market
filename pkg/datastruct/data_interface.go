@@ -1,7 +1,5 @@
 package datastruct
 
-import "market_aggregate/pkg/conf"
-
 type SerializerI interface {
 	EncodeDepth(*DepthQuote) ([]byte, error)
 	EncodeKline(*Kline) ([]byte, error)
@@ -13,7 +11,7 @@ type SerializerI interface {
 }
 
 type NetServerI interface {
-	Init(*conf.Config, SerializerI, *DataChannel, *DataChannel) error
+	Init(SerializerI, *DataChannel, *DataChannel) error
 	Start()
 	UpdateMetaData(Metadata)
 

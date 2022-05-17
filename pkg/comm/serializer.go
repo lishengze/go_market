@@ -31,8 +31,8 @@ func (p *ProtobufSerializer) EncodeDepth(local_depth *datastruct.DepthQuote) ([]
 
 	proto_depth.Exchange = local_depth.Exchange
 	proto_depth.Symbol = local_depth.Symbol
-	proto_depth.Timestamp = &timestamppb.Timestamp{Nanos: int32(local_depth.Time)}
-	proto_depth.MpuTimestamp = &timestamppb.Timestamp{Nanos: int32(local_depth.Time)}
+	proto_depth.Timestamp = &timestamppb.Timestamp{Seconds: local_depth.Time / datastruct.NANO_PER_SECS, Nanos: int32(local_depth.Time % datastruct.NANO_PER_SECS)}
+	proto_depth.MpuTimestamp = &timestamppb.Timestamp{Seconds: local_depth.Time / datastruct.NANO_PER_SECS, Nanos: int32(local_depth.Time % datastruct.NANO_PER_SECS)}
 
 	SetProtoDepth(&proto_depth.Asks, local_depth.Asks)
 	SetProtoDepth(&proto_depth.Bids, local_depth.Bids)
@@ -50,7 +50,7 @@ func (p *ProtobufSerializer) EncodeKline(local_kline *datastruct.Kline) ([]byte,
 	proto_kline := protostruct.Kline{}
 	proto_kline.Exchange = local_kline.Exchange
 	proto_kline.Symbol = local_kline.Symbol
-	proto_kline.Timestamp = &timestamppb.Timestamp{Nanos: int32(local_kline.Time)}
+	proto_kline.Timestamp = &timestamppb.Timestamp{Seconds: local_kline.Time / datastruct.NANO_PER_SECS, Nanos: int32(local_kline.Time % datastruct.NANO_PER_SECS)}
 	proto_kline.Resolution = uint32(local_kline.Resolution)
 
 	proto_kline.Open = strconv.FormatFloat(local_kline.Open, 'f', -1, 64)
@@ -60,7 +60,7 @@ func (p *ProtobufSerializer) EncodeKline(local_kline *datastruct.Kline) ([]byte,
 
 	proto_kline.Volume = strconv.FormatFloat(local_kline.Volume, 'f', -1, 64)
 
-	fmt.Printf("proto_kline: %+v \n", proto_kline)
+	// fmt.Printf("proto_kline: %+v \n", proto_kline)
 
 	msg, err := proto.Marshal(&proto_kline)
 
@@ -72,13 +72,13 @@ func (p *ProtobufSerializer) EncodeTrade(local_trade *datastruct.Trade) ([]byte,
 
 	proto_trade.Exchange = local_trade.Exchange
 	proto_trade.Symbol = local_trade.Symbol
-	proto_trade.Timestamp = &timestamppb.Timestamp{Nanos: int32(local_trade.Time)}
+	proto_trade.Timestamp = &timestamppb.Timestamp{Seconds: local_trade.Time / datastruct.NANO_PER_SECS, Nanos: int32(local_trade.Time % datastruct.NANO_PER_SECS)}
 	proto_trade.Price = strconv.FormatFloat(local_trade.Price, 'f', -1, 64)
 	proto_trade.Volume = strconv.FormatFloat(local_trade.Volume, 'f', -1, 64)
 
 	msg, err := proto.Marshal(&proto_trade)
 
-	fmt.Printf("\nproto_trade: %+v \n", proto_trade)
+	// fmt.Printf("\nproto_trade: %+v \n", proto_trade)
 
 	return msg, err
 }

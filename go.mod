@@ -6,6 +6,7 @@ require (
 	github.com/Shopify/sarama v1.33.0
 	github.com/emirpasic/gods v1.18.1
 	github.com/shopspring/decimal v1.3.1
+	github.com/zeromicro/go-zero v1.3.3
 	google.golang.org/grpc v1.46.0
 	google.golang.org/protobuf v1.28.0
 )
@@ -29,8 +30,9 @@ require (
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
-	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
+	golang.org/x/net v0.0.0-20220421235706-1d1ef9303861 // indirect
+	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
+	google.golang.org/genproto v0.0.0-20220422154200-b37d22cd5731 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

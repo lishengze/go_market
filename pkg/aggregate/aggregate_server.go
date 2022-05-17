@@ -2,7 +2,7 @@ package aggregate
 
 import (
 	"fmt"
-	"market_aggregate/pkg/conf"
+	config "market_aggregate/pkg/conf"
 	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/util"
 	"sync"
@@ -23,19 +23,19 @@ type Aggregator struct {
 	kline_mutex sync.Mutex
 	trade_mutex sync.Mutex
 
-	AggConfig      conf.AggregateConfig
+	AggConfig      config.AggregateConfig
 	AggConfigMutex sync.RWMutex
 
 	RecvDataChan *datastruct.DataChannel
-	SendDataChan *datastruct.DataChannel
+	PubDataChan  *datastruct.DataChannel
 
 	RiskWorker *RiskWorkerManager
 }
 
-func (a *Aggregator) Init(RecvDataChan *datastruct.DataChannel, SendDataChan *datastruct.DataChannel, RiskWorker *RiskWorkerManager) {
+func (a *Aggregator) Init(RecvDataChan *datastruct.DataChannel, PubDataChan *datastruct.DataChannel, RiskWorker *RiskWorkerManager) {
 	a.RecvDataChan = RecvDataChan
-	a.SendDataChan = SendDataChan
-	a.AggConfig = conf.AggregateConfig{
+	a.PubDataChan = PubDataChan
+	a.AggConfig = config.AggregateConfig{
 		DepthAggregatorMillsecsMap: make(map[string]time.Duration),
 	}
 	a.RiskWorker = RiskWorker
@@ -59,7 +59,7 @@ func (a *Aggregator) Init(RecvDataChan *datastruct.DataChannel, SendDataChan *da
 	}
 }
 
-func (a *Aggregator) UpdateConfig(config conf.AggregateConfig) {
+func (a *Aggregator) UpdateConfig(config config.AggregateConfig) {
 	defer a.AggConfigMutex.Unlock()
 
 	a.AggConfigMutex.Lock()
@@ -243,6 +243,8 @@ func (a *Aggregator) aggregate_kline() {
 	defer a.kline_mutex.Unlock()
 	a.kline_mutex.Lock()
 
+	util.LOG_INFO(fmt.Sprintf("------ Start aggregate_kline time: %v", time.Now().UTC()))
+
 	for _, kline := range a.kline_aggregated {
 		new_kline := datastruct.NewKline(kline)
 		kline.Time = 0
@@ -303,49 +305,64 @@ func (a *Aggregator) cache_trade(trade *datastruct.Trade) {
 	new_trade := datastruct.NewTrade(trade)
 	new_trade.Exchange = datastruct.BCTS_EXCHANGE
 
-	fmt.Printf(" Recv datastruct.Trade: %s\n", trade.String())
+	util.LOG_INFO(fmt.Sprintf(" Recv datastruct.Trade: %s\n", trade.String()))
 
 	a.update_kline(trade)
 	a.publish_trade(new_trade)
 }
 
 func (a *Aggregator) publish_depth(depth *datastruct.DepthQuote) {
+	new_depth := datastruct.NewDepth(depth)
 	if a.RiskWorker != nil {
-		a.RiskWorker.Execute(depth)
+		a.RiskWorker.Execute(new_depth)
 	}
+
+	a.PubDataChan.DepthChannel <- new_depth
 
 	// util.LOG_INFO("publish_depth: " + depth.String(5))
 }
 
 func (a *Aggregator) publish_kline(kline *datastruct.Kline) {
 	fmt.Printf("\nPub datastruct.Kline: \n%s\n", kline.String())
-
-	a.SendDataChan.KlineChannel <- kline
+	a.PubDataChan.KlineChannel <- kline
 }
 
 func (a *Aggregator) publish_trade(trade *datastruct.Trade) {
 	fmt.Printf("Pub datastruct.Trade: %s\n", trade.String())
 
-	a.SendDataChan.TradeChannel <- trade
+	a.PubDataChan.TradeChannel <- trade
 }
 
-func PublishTest(data *datastruct.DataChannel) {
+func StartRecvDataChannel(RecvDataChan *datastruct.DataChannel) {
 	timer := time.Tick(1 * time.Second)
 
 	// index := 0
 	for {
 		select {
 		case <-timer:
-			depth_quote := datastruct.GetTestDepth()
+			// depth_quote := datastruct.GetTestDepth()
 			// index++
-			data.DepthChannel <- depth_quote
-			// data.TradeChannel <- datastruct.GetTestTrade()
+			// RecvDataChan.DepthChannel <- depth_quote
+			RecvDataChan.TradeChannel <- datastruct.GetTestTrade()
 		}
 	}
 }
 
-func GetTestAggConfig() conf.AggregateConfig {
-	return conf.AggregateConfig{
+func StartPubDataChannel(PubDataChan *datastruct.DataChannel) {
+	for {
+		select {
+		case depth := <-PubDataChan.DepthChannel:
+			util.LOG_INFO(fmt.Sprintf("\n~~~~~~~~Processed Depth %+v \n", depth))
+		case trade := <-PubDataChan.TradeChannel:
+			util.LOG_INFO(fmt.Sprintf("\n~~~~~~~~Processed Trade %+v \n", trade))
+		case kline := <-PubDataChan.KlineChannel:
+			util.LOG_INFO(fmt.Sprintf("\n~~~~~~~~Processed Kline %+v \n", kline))
+		}
+	}
+}
+
+func GetTestAggConfig() config.AggregateConfig {
+	return config.AggregateConfig{
 		DepthAggregatorMillsecsMap: map[string]time.Duration{"BTC_USDT": 4000, "ETH_USDT": 6000},
 	}
 }
@@ -370,6 +387,8 @@ func TestAggregator() {
 	risk_worker.Init()
 	risk_worker.UpdateConfig(&risk_config)
 
+	config.TESTCONFIG().Init()
+
 	AggConfig := GetTestAggConfig()
 	aggregator.Init(RecvDataChan, PubDataChan, risk_worker)
 	aggregator.UpdateConfig(AggConfig)
@@ -377,7 +396,9 @@ func TestAggregator() {
 
 	util.LOG_INFO(fmt.Sprintf("\n------- risk_worker.RiskConfig: %+v\n\n", risk_worker.RiskConfig))
 
-	go PublishTest(RecvDataChan)
+	go StartRecvDataChannel(RecvDataChan)
+
+	go StartPubDataChannel(PubDataChan)
 
 	time.Sleep(time.Hour)
 }

@@ -1,0 +1,23 @@
+IP: "43.154.179.47:9117"
+NetServerType: "KAFKA"
+SerialType: "PROTOBUF"
+
+Nacos:
+  IpAddr: "127.0.0.1"
+  Port: 8848
+  NamespaceId: "bcts"
+  TimeoutMs: 5000
+  NotLoadCacheAtStart: true
+  LogDir: "logs/nacos/log"
+  CacheDir: "logs/nacos/cache"
+  RotateTime: "24h"
+  MaxAge: 3
+  LogLevel: "debug"
+
+
+
+RiskTestConfig:
+  FeeRiskctrlOpen: true
+  BiasRiskctrlOpen: true
+  WatermarkRiskctrlOpen: true
+  PricesionRiskctrlOpen: true

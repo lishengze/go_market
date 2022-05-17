@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"market_aggregate/pkg/aggregate"
 	"market_aggregate/pkg/comm"
-	"market_aggregate/pkg/conf"
+	config "market_aggregate/pkg/conf"
 	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/kafka"
 	"market_aggregate/pkg/util"
@@ -25,12 +24,37 @@ func ListenRecvData(RecvDataChan *datastruct.DataChannel) {
 	}
 }
 
-func TestKafka() {
-	Config := &conf.Config{
-		IP:            "43.154.179.47:9117",
-		NetServerType: "KAFKA",
-		SerialType:    "PROTOBUF",
+func StartPubData(PubDataChan *datastruct.DataChannel) {
+	timer := time.Tick(3 * time.Second)
+
+	// index := 0
+	for {
+		select {
+		case <-timer:
+			depth_quote := datastruct.GetTestDepth()
+			depth_quote.Exchange = datastruct.BCTS_EXCHANGE
+			depth_quote.Symbol = "BTC_USDT"
+			PubDataChan.DepthChannel <- depth_quote
+
+			local_kline := datastruct.GetTestKline()
+			local_kline.Exchange = datastruct.BCTS_EXCHANGE
+			local_kline.Symbol = "BTC_USDT"
+			PubDataChan.KlineChannel <- local_kline
+
+			local_trade := datastruct.GetTestTrade()
+			local_trade.Exchange = datastruct.BCTS_EXCHANGE
+			local_trade.Symbol = "BTC_USDT"
+			PubDataChan.TradeChannel <- local_trade
+		}
 	}
+}
+
+func TestKafka() {
+	config.NATIVE_CONFIG_INIT("client.yaml")
+
+	util.LOG_INFO(fmt.Sprintf("CONFIG: %+v", *config.NATIVE_CONFIG()))
+
+	// return
 
 	symbol_set := make(map[string](map[string]struct{}))
 	exchange_set := make(map[string]struct{})
@@ -61,13 +85,14 @@ func TestKafka() {
 
 	go ListenRecvData(RecvDataChan)
 
-	kafka_server.Init(Config, Serializer, RecvDataChan, PubDataChan)
+	kafka_server.Init(Serializer, RecvDataChan, PubDataChan)
 
 	kafka_server.IsTest = false
 
 	kafka_server.Start()
 
-	kafka_server.UpdateMetaData(MetaData)
+	go StartPubData(PubDataChan)
+	// kafka_server.UpdateMetaData(MetaData)
 
 	time.Sleep(time.Hour)
 }
@@ -87,9 +112,11 @@ func main() {
 
 	// comm.TestSeKline()
 
-	// TestKafka()
+	TestKafka()
 
 	// aggregate.TestAggregator()
 
-	aggregate.TestAddWorker()
+	// aggregate.TestAddWorker()
+
+	// config.TestConf()
 }

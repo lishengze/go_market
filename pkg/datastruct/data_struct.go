@@ -235,7 +235,7 @@ func GetTestTrade() *Trade {
 
 	exchange_array := []string{"FTX", "HUOBI", "OKEX"}
 	cur_exchange := exchange_array[randomNum%3]
-	symbol := "ETH_USDT"
+	symbol := "BTC_USDT"
 	trade_price := float64(rand.Intn(1000))
 	trade_volume := float64(rand.Intn(100))
 
@@ -244,7 +244,7 @@ func GetTestTrade() *Trade {
 	new_trade.Symbol = symbol
 	new_trade.Price = trade_price
 	new_trade.Volume = trade_volume
-	new_trade.Time = time.Now().Unix()
+	new_trade.Time = util.UTCNanoTime()
 
 	// fmt.Printf("Send Trade: %s\n", new_trade.String())
 
@@ -257,12 +257,12 @@ func GetTestKline() *Kline {
 
 	exchange_array := []string{"FTX", "HUOBI", "OKEX"}
 	cur_exchange := exchange_array[randomNum%3]
-	symbol := "ETH_USDT"
+	symbol := "BTC_USDT"
 
 	new_kline := Kline{
 		Exchange:   cur_exchange,
 		Symbol:     symbol,
-		Time:       time.Now().Unix(),
+		Time:       util.UTCNanoTime(),
 		Resolution: 60,
 		Volume:     1.1,
 		Open:       3000,

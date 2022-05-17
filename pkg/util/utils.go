@@ -50,10 +50,10 @@ func WaitForNextMinute() {
 
 	delta_secs := utc_time_secs - utc_time_min_secs
 
-	fmt.Printf("\nutc_time_secs: %d, utc_time_min_secs: %d, delta_secs: %d\n",
-		utc_time_secs, utc_time_min_secs, delta_secs)
-	fmt.Println(time.Unix(utc_time_secs, 0))
-	fmt.Println(time.Unix(utc_time_min_secs, 0))
+	// fmt.Printf("\nutc_time_secs: %d, utc_time_min_secs: %d, delta_secs: %d\n",
+	// 	utc_time_secs, utc_time_min_secs, delta_secs)
+	// fmt.Println(time.Unix(utc_time_secs, 0))
+	// fmt.Println(time.Unix(utc_time_min_secs, 0))
 
 	time.Sleep(time.Duration(60-delta_secs) * time.Second)
 }

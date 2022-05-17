@@ -31,7 +31,7 @@ func GetTopics(MetaData datastruct.Metadata) map[string]struct{} {
 	rst := make(map[string]struct{})
 
 	for symbol, exchange_map := range MetaData.DepthMeta {
-		for exchange, _ := range exchange_map {
+		for exchange := range exchange_map {
 			topic := GetDepthTopic(symbol, exchange)
 			if _, ok := rst[topic]; ok == false {
 				rst[topic] = struct{}{}
