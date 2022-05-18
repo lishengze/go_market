@@ -84,6 +84,13 @@ func (s *ServerEngine) StartNacosClient() {
 
 	util.LOG_INFO("Connect Nacos Successfully!")
 
+	MarketRiskConfigStr, err := s.NacosClientWorker.GetConfigContent("MarketRisk", datastruct.BCTS_GROUP)
+
+	if err != nil {
+		util.LOG_ERROR(err.Error())
+	}
+	util.LOG_INFO(MarketRiskConfigStr)
+
 	s.NacosClientWorker.ListenConfig("MarketRisk", datastruct.BCTS_GROUP, s.MarketRiskChanged)
 
 	s.NacosClientWorker.ListenConfig("HedgeParams", datastruct.BCTS_GROUP, s.HedgeParamsChanged)

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"market_aggregate/pkg/util"
+
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/clients/config_client"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
@@ -68,6 +70,7 @@ func NewNacosClient(c *NacosConfig) *NacosClient {
 	)
 
 	if err != nil {
+		util.LOG_ERROR(err.Error())
 		panic(err)
 	}
 	return &NacosClient{
