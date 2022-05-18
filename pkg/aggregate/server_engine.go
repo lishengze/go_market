@@ -61,7 +61,7 @@ func (s *ServerEngine) Init() {
 	s.AggregateWorker = &Aggregator{}
 	s.AggregateWorker.Init(s.RecvDataChan, s.PubDataChan, s.Riskworker)
 
-	go s.StartNacosClient()
+	// go s.StartNacosClient()
 }
 
 func (s *ServerEngine) Start() {
@@ -69,7 +69,7 @@ func (s *ServerEngine) Start() {
 	s.Commer.Start()
 	s.AggregateWorker.Start()
 
-	// go s.StartNacosClient()
+	go s.StartNacosClient()
 }
 
 func (s *ServerEngine) InitConfig() {
@@ -86,11 +86,25 @@ func (s *ServerEngine) StartNacosClient() {
 	util.LOG_INFO("Connect Nacos Successfully!")
 
 	MarketRiskConfigStr, err := s.NacosClientWorker.GetConfigContent("MarketRisk", datastruct.BCTS_GROUP)
-
 	if err != nil {
 		util.LOG_ERROR(err.Error())
 	}
 	util.LOG_INFO("Requested MarketRisk: " + MarketRiskConfigStr)
+	s.ProcessMarketriskConfigStr(MarketRiskConfigStr)
+
+	HedgeConfigStr, err := s.NacosClientWorker.GetConfigContent("HedgeParams", datastruct.BCTS_GROUP)
+	if err != nil {
+		util.LOG_ERROR(err.Error())
+	}
+	util.LOG_INFO("Requested HedgeConfigStr: " + HedgeConfigStr)
+	s.ProcsssHedgeConfigStr(HedgeConfigStr)
+
+	SymbolConfigStr, err := s.NacosClientWorker.GetConfigContent("SymbolParams", datastruct.BCTS_GROUP)
+	if err != nil {
+		util.LOG_ERROR(err.Error())
+	}
+	util.LOG_INFO("Requested SymbolConfigStr: " + SymbolConfigStr)
+	s.ProcessSymbolConfigStr(SymbolConfigStr)
 
 	s.NacosClientWorker.ListenConfig("MarketRisk", datastruct.BCTS_GROUP, s.MarketRiskChanged)
 
@@ -101,7 +115,11 @@ func (s *ServerEngine) StartNacosClient() {
 
 func (s *ServerEngine) HedgeParamsChanged(namespace, group, dataId, hedgingContent string) {
 	util.LOG_INFO(fmt.Sprintf("hedgingContent: %s\n", hedgingContent))
-	hedge_configs, err := config.ParseJsonHedgerConfig(hedgingContent)
+	s.ProcsssHedgeConfigStr(hedgingContent)
+}
+
+func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
+	hedge_configs, err := config.ParseJsonHedgerConfig(data)
 	if err != nil {
 		util.LOG_ERROR(err.Error())
 		return
@@ -124,7 +142,7 @@ func (s *ServerEngine) HedgeParamsChanged(namespace, group, dataId, hedgingConte
 	NewMeta.TradeMeta = symbol_exchange_set
 	NewMeta.KlineMeta = symbol_exchange_set
 
-	// s.Commer.UpdateMetaData(&NewMeta)
+	s.Commer.UpdateMetaData(&NewMeta)
 
 	util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged: NewMeta:%+v \n", NewMeta))
 
@@ -133,7 +151,10 @@ func (s *ServerEngine) HedgeParamsChanged(namespace, group, dataId, hedgingConte
 
 func (s *ServerEngine) MarketRiskChanged(namespace, group, dataId, data string) {
 	util.LOG_INFO(fmt.Sprintf("MarketRiskContent: %s\n", data))
+	s.ProcessMarketriskConfigStr(data)
+}
 
+func (s *ServerEngine) ProcessMarketriskConfigStr(data string) {
 	market_risk_configs, err := config.ParseJsonMarketRiskConfig(data)
 
 	if err != nil {
@@ -155,14 +176,17 @@ func (s *ServerEngine) MarketRiskChanged(namespace, group, dataId, data string) 
 
 	util.LOG_INFO(fmt.Sprintf("MarketRiskChanged:%+v \n", NewAggConfig))
 
-	// s.AggregateWorker.UpdateConfig(NewAggConfig)
+	s.AggregateWorker.UpdateConfig(NewAggConfig)
 
 	s.UpdateRiskConfigRiskPart(market_risk_configs)
 }
 
 func (s *ServerEngine) SymbolParamsChanged(namespace, group, dataId, data string) {
 	util.LOG_INFO(fmt.Sprintf("SymbolContent: %s\n", data))
+	s.ProcessSymbolConfigStr(data)
+}
 
+func (s *ServerEngine) ProcessSymbolConfigStr(data string) {
 	symbol_configs, err := config.ParseJsonSymbolConfig(data)
 
 	if err != nil {
@@ -264,7 +288,7 @@ func (s *ServerEngine) UpdateRiskConfigSymbolPart(SymbolConfigs []*config.Symbol
 func (s *ServerEngine) UpdateRiskConfig() {
 	if s.HedgingConfigs != nil && s.MarketRiskConfigs != nil && s.SymbolConfigs != nil {
 		util.LOG_INFO(fmt.Sprintf("%+v", s.RiskCtrlConfigMaps))
-		// s.Riskworker.UpdateConfig(&s.RiskCtrlConfigMaps)
+		s.Riskworker.UpdateConfig(&s.RiskCtrlConfigMaps)
 	}
 }
 
