@@ -36,7 +36,7 @@ func (a *Aggregator) Init(RecvDataChan *datastruct.DataChannel, PubDataChan *dat
 	a.RecvDataChan = RecvDataChan
 	a.PubDataChan = PubDataChan
 	a.AggConfig = config.AggregateConfig{
-		DepthAggregatorMillsecsMap: make(map[string]time.Duration),
+		DepthAggregatorConfigMap: make(map[string]config.AggregateConfigAtom),
 	}
 	a.RiskWorker = RiskWorker
 
@@ -90,13 +90,13 @@ func (a *Aggregator) get_sleep_millsecs(curr_time int) (int, []string) {
 
 	a.AggConfigMutex.RLock()
 
-	if a.AggConfig.DepthAggregatorMillsecsMap == nil || len(a.AggConfig.DepthAggregatorMillsecsMap) == 0 {
+	if a.AggConfig.DepthAggregatorConfigMap == nil || len(a.AggConfig.DepthAggregatorConfigMap) == 0 {
 		sleep_millsecs = 3 * 1000 // 还未获取配置信息;
 	} else {
 		min_sleep_secs := time.Hour
 
-		for symbol, cur_publish_millsecs := range a.AggConfig.DepthAggregatorMillsecsMap {
-			cur_sleep_millsecs := a.get_wait_millsecs(curr_time, int(cur_publish_millsecs))
+		for symbol, publish_config := range a.AggConfig.DepthAggregatorConfigMap {
+			cur_sleep_millsecs := a.get_wait_millsecs(curr_time, int(publish_config.AggregateFreq))
 
 			if cur_sleep_millsecs == 0 {
 				publish_list = append(publish_list, symbol)
@@ -104,8 +104,8 @@ func (a *Aggregator) get_sleep_millsecs(curr_time int) (int, []string) {
 				sleep_millsecs = cur_sleep_millsecs
 			}
 
-			if min_sleep_secs > cur_publish_millsecs {
-				min_sleep_secs = cur_publish_millsecs
+			if min_sleep_secs > publish_config.AggregateFreq {
+				min_sleep_secs = publish_config.AggregateFreq
 			}
 		}
 
@@ -363,7 +363,7 @@ func StartPubDataChannel(PubDataChan *datastruct.DataChannel) {
 
 func GetTestAggConfig() config.AggregateConfig {
 	return config.AggregateConfig{
-		DepthAggregatorMillsecsMap: map[string]time.Duration{"BTC_USDT": 4000, "ETH_USDT": 6000},
+		DepthAggregatorConfigMap: map[string]config.AggregateConfigAtom{"BTC_USDT": config.AggregateConfigAtom{4000, 30, true}, "ETH_USDT": config.AggregateConfigAtom{6000, 40, true}},
 	}
 }
 

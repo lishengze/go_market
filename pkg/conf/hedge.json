@@ -1,0 +1,20 @@
+{
+    "platform_id":"B2C2",
+    "instrument":"BTC_USDT",
+    "switch":true,
+    "buy_fund_ratio":0.3,
+    "sell_fund_ratio":0.3,
+    "price_precision":2,
+    "amount_precision":4,
+    "sum_precision":2,
+    "min_unit":0.0001,
+    "min_change_price":0.01,
+    "max_margin":1,
+    "max_order":100,
+    "buy_price_limit":10000,
+    "sell_price_limit":5000,
+    "max_match_level":5,
+    "fee_kind":1,
+    "taker_fee":0,
+    "maker_fee":0
+}

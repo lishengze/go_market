@@ -28,7 +28,7 @@ import (
 
 // }
 
-type RiskCtrlConfigMap map[string]config.RiskCtrlConfig
+type RiskCtrlConfigMap map[string]*config.RiskCtrlConfig
 
 type RiskWorkerInterface interface {
 	Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool
@@ -184,10 +184,10 @@ func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtr
 		util.LOG_INFO("\nBefore FeeCtrl: \n" + depth_quote.String(5))
 		// fmt.Println(depth_quote)
 
-		new_asks := w.calc_depth_fee(depth_quote.Asks, &config, true)
+		new_asks := w.calc_depth_fee(depth_quote.Asks, config, true)
 		depth_quote.Asks = new_asks
 
-		new_bids := w.calc_depth_fee(depth_quote.Bids, &config, false)
+		new_bids := w.calc_depth_fee(depth_quote.Bids, config, false)
 		depth_quote.Bids = new_bids
 
 		util.LOG_INFO("\nAfter FeeCtrl: \n" + depth_quote.String(5))
@@ -256,10 +256,10 @@ func (w *QuotebiasWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 		util.LOG_INFO("\nBefore QuotebiasCtrl: \n" + depth_quote.String(5))
 		// fmt.Println(depth_quote)
 
-		new_asks := calc_depth_bias(depth_quote.Asks, &config, true)
+		new_asks := calc_depth_bias(depth_quote.Asks, config, true)
 		depth_quote.Asks = new_asks
 
-		new_bids := calc_depth_bias(depth_quote.Bids, &config, false)
+		new_bids := calc_depth_bias(depth_quote.Bids, config, false)
 		depth_quote.Bids = new_bids
 
 		util.LOG_INFO("\nAfter QuotebiasCtrl: \n" + depth_quote.String(5))
@@ -530,10 +530,10 @@ func (w *PrecisionWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 		fmt.Printf("\nconfig:%v \n", configs)
 		util.LOG_INFO("\nBefore PrecisionWorker: \n" + depth_quote.String(5))
 
-		new_asks := resize_depth_precision(depth_quote.Asks, &config)
+		new_asks := resize_depth_precision(depth_quote.Asks, config)
 		depth_quote.Asks = new_asks
 
-		new_bids := resize_depth_precision(depth_quote.Bids, &config)
+		new_bids := resize_depth_precision(depth_quote.Bids, config)
 		depth_quote.Bids = new_bids
 
 		util.LOG_INFO("\nAfter PrecisionWorker: \n" + depth_quote.String(5))
@@ -587,7 +587,7 @@ func (r *RiskWorkerManager) Init() {
 	}
 
 	r.ConfigMutex = new(sync.RWMutex)
-	r.RiskConfig = make(map[string]config.RiskCtrlConfig)
+	r.RiskConfig = make(map[string]*config.RiskCtrlConfig)
 	r.Worker = nil
 
 	if config.TESTCONFIG().FeeRiskctrlOpen {
@@ -618,7 +618,7 @@ func (r *RiskWorkerManager) UpdateConfig(RiskConfig *RiskCtrlConfigMap) {
 	for symbol, value := range *RiskConfig {
 		// r.RiskConfig[symbol] = value
 
-		r.RiskConfig[symbol] = config.RiskCtrlConfig{
+		r.RiskConfig[symbol] = &config.RiskCtrlConfig{
 			HedgeConfigMap: value.HedgeConfigMap,
 
 			PricePrecison:  value.PricePrecison,
@@ -683,7 +683,7 @@ func (r *RiskWorkerManager) Execute(depth_quote *datastruct.DepthQuote) {
 func GetTestRiskConfig() RiskCtrlConfigMap {
 	rst := RiskCtrlConfigMap{
 		"BTC_USDT": {
-			HedgeConfigMap: map[string]config.HedgeConfig{"FTX": {FeeKind: 1, FeeValue: 0.1},
+			HedgeConfigMap: map[string]*config.HedgeConfig{"FTX": &config.HedgeConfig{FeeKind: 1, FeeValue: 0.1},
 				"OKEX":  {FeeKind: 1, FeeValue: 0.2},
 				"HUOBI": {FeeKind: 1, FeeValue: 0.3}},
 			PricePrecison:    2,
@@ -695,7 +695,7 @@ func GetTestRiskConfig() RiskCtrlConfigMap {
 			PriceMinumChange: 1.0,
 		},
 		"ETH_USDT": {
-			HedgeConfigMap:   map[string]config.HedgeConfig{"FTX": {FeeKind: 1, FeeValue: 0.1}, "OKEX": {FeeKind: 1, FeeValue: 0.2}, "HUOBI": {FeeKind: 1, FeeValue: 0.3}},
+			HedgeConfigMap:   map[string]*config.HedgeConfig{"FTX": {FeeKind: 1, FeeValue: 0.1}, "OKEX": {FeeKind: 1, FeeValue: 0.2}, "HUOBI": {FeeKind: 1, FeeValue: 0.3}},
 			PricePrecison:    2,
 			VolumePrecison:   3,
 			PriceBiasValue:   0.1,
@@ -705,7 +705,7 @@ func GetTestRiskConfig() RiskCtrlConfigMap {
 			PriceMinumChange: 1.0,
 		},
 		"DOT_USDT": {
-			HedgeConfigMap:   map[string]config.HedgeConfig{"FTX": {FeeKind: 1, FeeValue: 0.1}, "OKEX": {FeeKind: 1, FeeValue: 0.2}, "HUOBI": {FeeKind: 1, FeeValue: 0.3}},
+			HedgeConfigMap:   map[string]*config.HedgeConfig{"FTX": {FeeKind: 1, FeeValue: 0.1}, "OKEX": {FeeKind: 1, FeeValue: 0.2}, "HUOBI": {FeeKind: 1, FeeValue: 0.3}},
 			PricePrecison:    2,
 			VolumePrecison:   3,
 			PriceBiasValue:   0.1,

@@ -41,17 +41,17 @@ func ParseJsonSymbolConfig(symbolContent string) ([]*SymbolConfig, error) {
 	return retSymbols, nil
 }
 
-func ParseJsonCurrencyConfig(currencyContent string) ([]*CurrencyConfig, error) {
-	var currencies []*CurrencyConfig
-	err := json.Unmarshal([]byte(currencyContent), &currencies)
+func ParseJsonMarketRiskConfig(currencyContent string) ([]*MarketRiskConfig, error) {
+	var market_risk_configs []*MarketRiskConfig
+	err := json.Unmarshal([]byte(currencyContent), &market_risk_configs)
 	if err != nil {
 		logx.Error(err)
 		return nil, err
 	}
 
-	var retCurrencies []*CurrencyConfig
-	for _, currency := range currencies {
-		retCurrencies = append(retCurrencies, currency)
+	var ret_market_risk_configs []*MarketRiskConfig
+	for _, market_risk_config := range market_risk_configs {
+		ret_market_risk_configs = append(ret_market_risk_configs, market_risk_config)
 	}
-	return retCurrencies, nil
+	return ret_market_risk_configs, nil
 }

@@ -39,9 +39,13 @@ func (n *NativeConfig) ParseFile(file_name string) error {
 	return nil
 }
 
+type AggregateConfigAtom struct {
+	AggregateFreq time.Duration
+	PublishLevel  int
+	IsPublish     bool
+}
 type AggregateConfig struct {
-	DepthAggregatorMillsecsMap map[string]time.Duration
-	DepthPublishMap            map[string]bool
+	DepthAggregatorConfigMap map[string]AggregateConfigAtom
 }
 
 type HedgeConfig struct {
@@ -50,7 +54,7 @@ type HedgeConfig struct {
 }
 
 type RiskCtrlConfig struct {
-	HedgeConfigMap map[string]HedgeConfig
+	HedgeConfigMap map[string]*HedgeConfig
 
 	PricePrecison  uint32
 	VolumePrecison uint32
