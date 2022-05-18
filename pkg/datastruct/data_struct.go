@@ -12,6 +12,8 @@ import (
 
 const (
 	BCTS_EXCHANGE = "_bcts_"
+
+	BCTS_GROUP = "BCTS"
 )
 
 const (
