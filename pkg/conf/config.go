@@ -48,6 +48,16 @@ type AggregateConfig struct {
 	DepthAggregatorConfigMap map[string]AggregateConfigAtom
 }
 
+func (a *AggregateConfig) String() string {
+	result := ""
+
+	for symbol, aggregate_atom := range a.DepthAggregatorConfigMap {
+		result += symbol + " " + fmt.Sprintf(", %+v", aggregate_atom)
+	}
+
+	return result
+}
+
 type HedgeConfig struct {
 	FeeKind  int
 	FeeValue float64
@@ -66,6 +76,25 @@ type RiskCtrlConfig struct {
 	VolumeBiasKind  int
 
 	PriceMinumChange float64
+}
+
+func (r *RiskCtrlConfig) String() string {
+
+	hedge_info := ""
+	for symbol, hedge_config := range r.HedgeConfigMap {
+		hedge_info += fmt.Sprintf("%s: %+v\n", symbol, *hedge_config)
+	}
+
+	return fmt.Sprintf("HedgeConfigMap: %s \nPricePrecison: %v, VolumePrecison: %v \nPriceBiasValue: %v, PriceBiasKind: %v \nVolumeBiasValue: %v, VolumeBiasKind: %v\nPriceMinumChange:%v \n",
+		hedge_info,
+		r.PricePrecison, r.VolumePrecison,
+		r.PriceBiasValue, r.PriceBiasKind,
+		r.VolumeBiasValue, r.VolumeBiasKind,
+		r.PriceMinumChange)
+
+	// return fmt.Sprintf("HedgeConfigMap: %s\nPricePrecison: %v",
+	// 	hedge_info, r.PricePrecison)
+
 }
 
 func (t *RiskCtlTestConfig) Init() {

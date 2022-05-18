@@ -29,6 +29,14 @@ import (
 
 type RiskCtrlConfigMap map[string]*config.RiskCtrlConfig
 
+func GetRiskCtrlConfigMapString(r *RiskCtrlConfigMap) string {
+	result := ""
+	for symbol, risk_config := range *r {
+		result += symbol + ":\n" + risk_config.String()
+	}
+	return result
+}
+
 type RiskWorkerInterface interface {
 	Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool
 	Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool

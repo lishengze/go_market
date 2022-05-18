@@ -142,9 +142,9 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 	NewMeta.TradeMeta = symbol_exchange_set
 	NewMeta.KlineMeta = symbol_exchange_set
 
-	s.Commer.UpdateMetaData(&NewMeta)
+	// s.Commer.UpdateMetaData(&NewMeta)
 
-	util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged: NewMeta:%+v \n", NewMeta))
+	util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%s \n", NewMeta.String()))
 
 	s.UpdateRiskConfigHedgePart(hedge_configs)
 }
@@ -174,7 +174,7 @@ func (s *ServerEngine) ProcessMarketriskConfigStr(data string) {
 			IsPublish:     bool(market_risk_config.Switch)}
 	}
 
-	util.LOG_INFO(fmt.Sprintf("MarketRiskChanged:%+v \n", NewAggConfig))
+	util.LOG_INFO(fmt.Sprintf("MarketRiskChanged:\n%s \n", NewAggConfig.String()))
 
 	s.AggregateWorker.UpdateConfig(NewAggConfig)
 
@@ -287,7 +287,9 @@ func (s *ServerEngine) UpdateRiskConfigSymbolPart(SymbolConfigs []*config.Symbol
 
 func (s *ServerEngine) UpdateRiskConfig() {
 	if s.HedgingConfigs != nil && s.MarketRiskConfigs != nil && s.SymbolConfigs != nil {
-		util.LOG_INFO(fmt.Sprintf("%+v", s.RiskCtrlConfigMaps))
+
+		util.LOG_INFO(fmt.Sprintf("s.RiskCtrlConfigMaps: \n%s", GetRiskCtrlConfigMapString(&s.RiskCtrlConfigMaps)))
+
 		s.Riskworker.UpdateConfig(&s.RiskCtrlConfigMaps)
 	}
 }

@@ -37,6 +37,25 @@ type Metadata struct {
 	TradeMeta map[string](map[string]struct{})
 }
 
+func get_meta_string(meta *map[string](map[string]struct{})) string {
+	result := ""
+
+	for symbol, exchange_set := range *meta {
+		result += symbol + " \n"
+		for exchange := range exchange_set {
+			result += exchange + " \n"
+		}
+	}
+
+	return result
+}
+
+func (m *Metadata) String() string {
+	result := fmt.Sprintf("DepthMetaInfo: %s\nKlineMeta: %s\nTradeMeta: %s\n",
+		get_meta_string(&m.DepthMeta), get_meta_string(&m.KlineMeta), get_meta_string(&m.TradeMeta))
+	return result
+}
+
 type InnerDepth struct {
 	Volume         float64
 	ExchangeVolume map[string]float64
