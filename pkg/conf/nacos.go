@@ -240,8 +240,8 @@ type SymbolConfig struct {
 	SingleMaxOrderVolume float64 `json:"max_order"`        //单次最大下单量
 	SingleMinOrderAmount float64 `json:"min_money"`        //单次最小下单金额
 	SingleMaxOrderAmount float64 `json:"max_money"`        //单次最大下单金额
-	BuyPriceLimit        string  `json:"buy_price_limit"`  //买委托价格限制
-	SellPriceLimit       string  `json:"sell_price_limit"` //卖委托价格限制
+	BuyPriceLimit        int     `json:"buy_price_limit"`  //买委托价格限制
+	SellPriceLimit       int     `json:"sell_price_limit"` //卖委托价格限制
 	MaxMatchLevel        int     `json:"max_match_level"`  //最大成交档位,不得超过20
 	OtcMinOrderVolume    float64 `json:"otc_min_order"`    //OTC最小量
 	OtcMaxOrderVolume    float64 `json:"otc_max_order"`    //OTC最大量

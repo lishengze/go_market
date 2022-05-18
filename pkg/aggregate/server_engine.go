@@ -50,6 +50,7 @@ func (s *ServerEngine) Init() {
 	s.RiskCtrlConfigMaps = make(map[string]*config.RiskCtrlConfig)
 
 	s.InitConfig()
+	// go s.StartNacosClient()
 
 	s.Commer = comm.Comm{}
 	s.Commer.Init(s.RecvDataChan, s.PubDataChan)
