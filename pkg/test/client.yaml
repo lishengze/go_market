@@ -8,8 +8,8 @@ Nacos:
   NamespaceId: "bcts"
   TimeoutMs: 5000
   NotLoadCacheAtStart: true
-  LogDir: "logs/nacos/log"
-  CacheDir: "logs/nacos/cache"
+  LogDir: ""
+  CacheDir: ""
   RotateTime: "24h"
   MaxAge: 3
   LogLevel: "debug"
