@@ -7,7 +7,6 @@ import (
 	"market_aggregate/pkg/util"
 	"math"
 	"sync"
-	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
@@ -648,7 +647,7 @@ func (r *RiskWorkerManager) AddWorker(NewWorker RiskWorkerInterface) {
 	var tmp RiskWorkerInterface
 	for tmp = r.Worker; tmp.GetNextWoker() != nil; tmp = tmp.GetNextWoker() {
 
-		time.Sleep(time.Second * 3)
+		// time.Sleep(time.Second * 3)
 		util.LOG_INFO("Stored Worker " + tmp.GetWorkerName())
 
 		if tmp.GetWorkerName() == NewWorker.GetWorkerName() {

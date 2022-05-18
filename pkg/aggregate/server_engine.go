@@ -50,7 +50,6 @@ func (s *ServerEngine) Init() {
 	s.RiskCtrlConfigMaps = make(map[string]*config.RiskCtrlConfig)
 
 	s.InitConfig()
-	go s.InitNacosClient()
 
 	s.Commer = comm.Comm{}
 	s.Commer.Init(s.RecvDataChan, s.PubDataChan)
@@ -71,6 +70,7 @@ func (s *ServerEngine) Start() {
 
 	s.Commer.Start()
 	s.AggregateWorker.Start()
+	s.StartNacosClient()
 }
 
 func (s *ServerEngine) InitConfig() {
@@ -78,7 +78,7 @@ func (s *ServerEngine) InitConfig() {
 	util.LOG_INFO(fmt.Sprintf("CONFIG: %+v", *config.NATIVE_CONFIG()))
 }
 
-func (s *ServerEngine) InitNacosClient() {
+func (s *ServerEngine) StartNacosClient() {
 	s.NacosClientWorker = config.NewNacosClient(&config.NATIVE_CONFIG().Nacos)
 
 	s.NacosClientWorker.ListenConfig("MarketRisk", datastruct.BCTS_GROUP, s.MarketRiskChanged)
