@@ -78,4 +78,6 @@ func TestServerEngine() {
 	util.LOG_INFO(fmt.Sprintf("meta_data: %+v", meta_data))
 
 	server_engine.Commer.UpdateMetaData(meta_data)
+
+	select {}
 }

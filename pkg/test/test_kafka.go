@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"market_aggregate/pkg/aggregate"
 	"market_aggregate/pkg/comm"
 	config "market_aggregate/pkg/conf"
 	"market_aggregate/pkg/datastruct"
@@ -98,11 +99,13 @@ func main() {
 
 	// comm.TestSeKline()
 
-	TestKafka()
+	// TestKafka()
 
 	// aggregate.TestAggregator()
 
 	// aggregate.TestAddWorker()
 
 	// config.TestConf()
+
+	aggregate.TestServerEngine()
 }
