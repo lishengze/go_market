@@ -90,7 +90,7 @@ func (s *ServerEngine) StartNacosClient() {
 	if err != nil {
 		util.LOG_ERROR(err.Error())
 	}
-	util.LOG_INFO(MarketRiskConfigStr)
+	util.LOG_INFO("Requested MarketRisk: " + MarketRiskConfigStr)
 
 	s.NacosClientWorker.ListenConfig("MarketRisk", datastruct.BCTS_GROUP, s.MarketRiskChanged)
 
