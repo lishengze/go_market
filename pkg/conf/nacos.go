@@ -169,7 +169,7 @@ HedgeParams
 */
 type HedgingConfig struct {
 	Exchange        string  `json:"platform_id"`     //交易平台，如 binance
-	Symbol          string  `json:"symbol"`          //品种
+	Symbol          string  `json:"instrument"`      //品种
 	Switch          bool    `json:"switch"`          //充值开关
 	BuyFundRatio    float64 `json:"buy_fund_ratio"`  //买盘资金占用比例
 	SellFundRatio   float64 `json:"sell_fund_ratio"` //卖盘资金占用比例
