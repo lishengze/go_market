@@ -70,7 +70,7 @@ func (s *ServerEngine) Start() {
 
 	s.Commer.Start()
 	s.AggregateWorker.Start()
-	s.StartNacosClient()
+	go s.StartNacosClient()
 }
 
 func (s *ServerEngine) InitConfig() {
@@ -79,6 +79,7 @@ func (s *ServerEngine) InitConfig() {
 }
 
 func (s *ServerEngine) StartNacosClient() {
+	util.LOG_INFO("****************** StartNacosClient *****************")
 	s.NacosClientWorker = config.NewNacosClient(&config.NATIVE_CONFIG().Nacos)
 
 	s.NacosClientWorker.ListenConfig("MarketRisk", datastruct.BCTS_GROUP, s.MarketRiskChanged)
