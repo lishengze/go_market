@@ -82,6 +82,8 @@ func (s *ServerEngine) StartNacosClient() {
 	util.LOG_INFO("****************** StartNacosClient *****************")
 	s.NacosClientWorker = config.NewNacosClient(&config.NATIVE_CONFIG().Nacos)
 
+	util.LOG_INFO("Connect Nacos Successfully!")
+
 	s.NacosClientWorker.ListenConfig("MarketRisk", datastruct.BCTS_GROUP, s.MarketRiskChanged)
 
 	s.NacosClientWorker.ListenConfig("HedgeParams", datastruct.BCTS_GROUP, s.HedgeParamsChanged)
