@@ -140,7 +140,7 @@ type MarketRiskConfig struct {
 	AmountOffsetKind int     `json:"amount_offset_kind"` //数量偏移种类
 	AmountOffset     float64 `json:"amount_offset"`      //数量偏移值
 	OTCOffsetKind    int     `json:"poll_offset_kind"`   //OTC 询价偏移种类
-	OTCOffset        string  `json:"poll_offset"`        //OTC 询价偏移值
+	OTCOffset        float64 `json:"poll_offset"`        //OTC 询价偏移值
 	User             string  `json:"admin"`              //大额提现阈值
 	Time             string  `json:"time"`               //提现手续费算法 1:百比分，2:绝对值。默认为1.
 }
