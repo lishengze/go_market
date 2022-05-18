@@ -183,7 +183,7 @@ func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtr
 	defer util.ExceptionFunc()
 
 	fmt.Println("-------- FeeWorker Process  ---------")
-	util.LOG_INFO(fmt.Sprintf("\n------- configs: %+v\n\n", *configs))
+	// util.LOG_INFO(fmt.Sprintf("\n------- configs: %+v\n\n", *configs))
 
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 		fmt.Printf("Symbol:%s, Config:%+v \n", depth_quote.Symbol, config)
@@ -259,7 +259,7 @@ func (w *QuotebiasWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 
-		fmt.Printf("config:%v \n", configs)
+		// fmt.Printf("config:%v \n", configs)
 		util.LOG_INFO("\nBefore QuotebiasCtrl: \n" + depth_quote.String(5))
 		// fmt.Println(depth_quote)
 
@@ -534,7 +534,7 @@ func (w *PrecisionWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 
-		fmt.Printf("\nconfig:%v \n", configs)
+		// fmt.Printf("\nconfig:%v \n", configs)
 		util.LOG_INFO("\nBefore PrecisionWorker: \n" + depth_quote.String(5))
 
 		new_asks := resize_depth_precision(depth_quote.Asks, config)
