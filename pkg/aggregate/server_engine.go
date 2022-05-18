@@ -52,14 +52,14 @@ func (s *ServerEngine) Init() {
 	s.InitConfig()
 	go s.StartNacosClient()
 
-	s.Commer = comm.Comm{}
-	s.Commer.Init(s.RecvDataChan, s.PubDataChan)
+	// s.Commer = comm.Comm{}
+	// s.Commer.Init(s.RecvDataChan, s.PubDataChan)
 
-	s.Riskworker = &RiskWorkerManager{}
-	s.Riskworker.Init()
+	// s.Riskworker = &RiskWorkerManager{}
+	// s.Riskworker.Init()
 
-	s.AggregateWorker = &Aggregator{}
-	s.AggregateWorker.Init(s.RecvDataChan, s.PubDataChan, s.Riskworker)
+	// s.AggregateWorker = &Aggregator{}
+	// s.AggregateWorker.Init(s.RecvDataChan, s.PubDataChan, s.Riskworker)
 
 	// go s.StartNacosClient()
 }
