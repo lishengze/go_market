@@ -59,6 +59,8 @@ func (s *ServerEngine) Init() {
 
 	s.AggregateWorker = &Aggregator{}
 	s.AggregateWorker.Init(s.RecvDataChan, s.PubDataChan, s.Riskworker)
+
+	go s.StartNacosClient()
 }
 
 func (s *ServerEngine) Start() {
@@ -70,7 +72,7 @@ func (s *ServerEngine) Start() {
 
 	s.Commer.Start()
 	s.AggregateWorker.Start()
-	go s.StartNacosClient()
+	// go s.StartNacosClient()
 }
 
 func (s *ServerEngine) InitConfig() {
