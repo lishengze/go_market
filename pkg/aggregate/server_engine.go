@@ -114,7 +114,7 @@ func (s *ServerEngine) StartNacosClient() {
 }
 
 func (s *ServerEngine) HedgeParamsChanged(namespace, group, dataId, hedgingContent string) {
-	util.LOG_INFO(fmt.Sprintf("hedgingContent: %s\n", hedgingContent))
+	util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged hedgingContent: %s\n", hedgingContent))
 	s.ProcsssHedgeConfigStr(hedgingContent)
 }
 
@@ -143,11 +143,11 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 	NewMeta.TradeMeta = symbol_exchange_set
 	NewMeta.KlineMeta = symbol_exchange_set
 
-	// s.Commer.UpdateMetaData(&NewMeta)
+	util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%s \n", NewMeta.String()))
 
-	// util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%s \n", NewMeta.String()))
+	s.Commer.UpdateMetaData(&NewMeta)
 
-	util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%+v \n", NewMeta))
+	// util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%+v \n", NewMeta))
 
 	s.UpdateRiskConfigHedgePart(hedge_configs)
 }

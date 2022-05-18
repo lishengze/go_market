@@ -52,7 +52,7 @@ func (a *AggregateConfig) String() string {
 	result := ""
 
 	for symbol, aggregate_atom := range a.DepthAggregatorConfigMap {
-		result += symbol + " " + fmt.Sprintf(", %+v", aggregate_atom)
+		result += symbol + " " + fmt.Sprintf(", %+v\n", aggregate_atom)
 	}
 
 	return result
