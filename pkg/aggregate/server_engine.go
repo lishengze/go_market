@@ -136,6 +136,7 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 		}
 
 		symbol_exchange_set[hedge_config.Symbol][hedge_config.Exchange] = struct{}{}
+		util.LOG_INFO(fmt.Sprintf("New Meta: %s.%s", hedge_config.Symbol, hedge_config.Exchange))
 	}
 
 	NewMeta.DepthMeta = symbol_exchange_set
@@ -144,7 +145,9 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 
 	// s.Commer.UpdateMetaData(&NewMeta)
 
-	util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%s \n", NewMeta.String()))
+	// util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%s \n", NewMeta.String()))
+
+	util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%+v \n", NewMeta))
 
 	s.UpdateRiskConfigHedgePart(hedge_configs)
 }

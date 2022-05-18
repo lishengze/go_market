@@ -93,6 +93,7 @@ func (a *Aggregator) get_sleep_millsecs(curr_time int) (int, []string) {
 	if a.AggConfig.DepthAggregatorConfigMap == nil || len(a.AggConfig.DepthAggregatorConfigMap) == 0 {
 		sleep_millsecs = 3 * 1000 // 还未获取配置信息;
 	} else {
+		util.LOG_INFO(a.AggConfig.String())
 		min_sleep_secs := time.Hour
 
 		for symbol, publish_config := range a.AggConfig.DepthAggregatorConfigMap {
