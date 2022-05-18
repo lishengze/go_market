@@ -3,7 +3,7 @@ NetServerType: "KAFKA"
 SerialType: "PROTOBUF"
 
 Nacos:
-  IpAddr: "127.0.0.1"
+  IpAddr: "36.255.220.139"
   Port: 8848
   NamespaceId: "bcts"
   TimeoutMs: 5000

@@ -116,5 +116,6 @@ func TestConf() {
 	var c NativeConfig
 	configFile := "client.yaml"
 	conf.MustLoad(configFile, &c)
+	fmt.Println(c.Nacos.IpAddr, ": ", c.Nacos.Port)
 	fmt.Printf("%+v\n", c)
 }
