@@ -50,7 +50,7 @@ func (s *ServerEngine) Init() {
 	s.RiskCtrlConfigMaps = make(map[string]*config.RiskCtrlConfig)
 
 	s.InitConfig()
-	go s.StartNacosClient()
+	// go s.StartNacosClient()
 
 	s.Commer = comm.Comm{}
 	s.Commer.Init(s.RecvDataChan, s.PubDataChan)
@@ -73,12 +73,14 @@ func (s *ServerEngine) Start() {
 
 	s.Commer.Start()
 	s.AggregateWorker.Start()
-	// go s.StartNacosClient()
+	go s.StartNacosClient()
 }
 
 func (s *ServerEngine) InitConfig() {
 	config.NATIVE_CONFIG_INIT("client.yaml")
 	util.LOG_INFO(fmt.Sprintf("CONFIG: %+v", *config.NATIVE_CONFIG()))
+	util.LOG_INFO(fmt.Sprintf("NacoIP: %s:%d", config.NATIVE_CONFIG().Nacos.IpAddr, config.NATIVE_CONFIG().Nacos.Port))
+
 }
 
 func (s *ServerEngine) StartNacosClient() {
