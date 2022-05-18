@@ -90,13 +90,20 @@ func (a *Aggregator) get_sleep_millsecs(curr_time int) (int, []string) {
 
 	a.AggConfigMutex.RLock()
 
+	default_sleep_millsecs := 10 * 1000
+
 	if a.AggConfig.DepthAggregatorConfigMap == nil || len(a.AggConfig.DepthAggregatorConfigMap) == 0 {
-		sleep_millsecs = 3 * 1000 // 还未获取配置信息;
+		sleep_millsecs = default_sleep_millsecs // 还未获取配置信息;
 	} else {
 		util.LOG_INFO(a.AggConfig.String())
-		min_sleep_secs := time.Hour
+		min_sleep_secs := time.Duration(default_sleep_millsecs)
 
 		for symbol, publish_config := range a.AggConfig.DepthAggregatorConfigMap {
+
+			if publish_config.IsPublish == false {
+				continue
+			}
+
 			cur_sleep_millsecs := a.get_wait_millsecs(curr_time, int(publish_config.AggregateFreq))
 
 			if cur_sleep_millsecs == 0 {
@@ -185,7 +192,7 @@ func (a *Aggregator) start_aggregate_kline() {
 
 func (a *Aggregator) aggregate_depth(symbol_list []string) {
 
-	util.LOG_INFO("----- Aggregate Depth Start ------ ")
+	// util.LOG_INFO("----- Aggregate Depth Start ------ ")
 
 	for _, symbol := range symbol_list {
 
@@ -198,7 +205,7 @@ func (a *Aggregator) aggregate_depth(symbol_list []string) {
 			new_depth.Time = int64(util.UTCNanoTime())
 
 			for exchange, cur_depth := range exchange_depth_map {
-				util.LOG_INFO("\n===== <<CurDepth>>: " + cur_depth.String(5))
+				// util.LOG_INFO("\n===== <<CurDepth>>: " + cur_depth.String(5))
 				mix_depth(new_depth.Asks, cur_depth.Asks, exchange)
 				mix_depth(new_depth.Bids, cur_depth.Bids, exchange)
 			}
@@ -218,7 +225,7 @@ func (a *Aggregator) aggregate_depth(symbol_list []string) {
 	// 	// }
 	// }
 
-	util.LOG_INFO("----- Aggregate Depth Over!------ \n")
+	// util.LOG_INFO("----- Aggregate Depth Over!------ \n")
 
 	// defer a.depth_mutex.Unlock()
 }
@@ -287,7 +294,7 @@ func (a *Aggregator) cache_depth(depth *datastruct.DepthQuote) {
 
 	new_depth := datastruct.NewDepth(depth)
 
-	util.LOG_INFO("\n******* <<Cache Depth>>: " + depth.String(5))
+	// util.LOG_INFO("\n******* <<Cache Depth>>: " + depth.String(5))
 
 	if _, ok := a.depth_cache[new_depth.Symbol]; ok == false {
 		a.depth_cache[new_depth.Symbol] = make(map[string]*datastruct.DepthQuote)
@@ -306,7 +313,7 @@ func (a *Aggregator) cache_trade(trade *datastruct.Trade) {
 	new_trade := datastruct.NewTrade(trade)
 	new_trade.Exchange = datastruct.BCTS_EXCHANGE
 
-	util.LOG_INFO(fmt.Sprintf(" Recv datastruct.Trade: %s\n", trade.String()))
+	// util.LOG_INFO(fmt.Sprintf(" Recv datastruct.Trade: %s\n", trade.String()))
 
 	a.update_kline(trade)
 	a.publish_trade(new_trade)
@@ -320,7 +327,7 @@ func (a *Aggregator) publish_depth(depth *datastruct.DepthQuote) {
 
 	a.PubDataChan.DepthChannel <- new_depth
 
-	// util.LOG_INFO("publish_depth: " + depth.String(5))
+	util.LOG_INFO("publish_depth: " + depth.String(5))
 }
 
 func (a *Aggregator) publish_kline(kline *datastruct.Kline) {
@@ -329,7 +336,7 @@ func (a *Aggregator) publish_kline(kline *datastruct.Kline) {
 }
 
 func (a *Aggregator) publish_trade(trade *datastruct.Trade) {
-	fmt.Printf("Pub datastruct.Trade: %s\n", trade.String())
+	// fmt.Printf("Pub datastruct.Trade: %s\n", trade.String())
 
 	a.PubDataChan.TradeChannel <- trade
 }
