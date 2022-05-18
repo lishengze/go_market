@@ -214,17 +214,18 @@ func (s *ServerEngine) UpdateRiskConfigHedgePart(hedge_configs []*config.Hedging
 		if _, ok := s.RiskCtrlConfigMaps[hedge_config.Symbol]; ok == false {
 			s.RiskCtrlConfigMaps[hedge_config.Symbol] = &config.RiskCtrlConfig{}
 			s.RiskCtrlConfigMaps[hedge_config.Symbol].HedgeConfigMap = make(map[string]*config.HedgeConfig)
+
+			util.LOG_INFO("Risk New Symbol" + hedge_config.Symbol + "\n")
 		}
 
+		util.LOG_INFO("Risk Update Symbol" + hedge_config.Symbol + "\n")
 		s.RiskCtrlConfigMaps[hedge_config.Symbol].HedgeConfigMap[hedge_config.Exchange] = &config.HedgeConfig{
 			FeeKind:  hedge_config.FeeKind,
 			FeeValue: hedge_config.TakerFee,
 		}
 	}
 
-	if s.HedgingConfigs != nil && s.MarketRiskConfigs != nil && s.SymbolConfigs != nil {
-		s.Riskworker.UpdateConfig(&s.RiskCtrlConfigMaps)
-	}
+	s.UpdateRiskConfig()
 
 	s.RiskConfigMutex.Unlock()
 }
