@@ -18,6 +18,8 @@ type ServerEngine struct {
 
 	MetaData  datastruct.Metadata
 	AggConfig config.AggregateConfig
+
+	NacosClientWorker *config.NacosClient
 }
 
 func (s *ServerEngine) Init() {
@@ -55,10 +57,18 @@ func (s *ServerEngine) Start() {
 	s.AggregateWorkr.Start()
 }
 
-func TestServerEngine() {
+func (s *ServerEngine) InitConfig() {
 	config.NATIVE_CONFIG_INIT("client.yaml")
-
 	util.LOG_INFO(fmt.Sprintf("CONFIG: %+v", *config.NATIVE_CONFIG()))
+}
+
+func (s *ServerEngine) InitNacosClient() {
+	s.NacosClientWorker = config.NewNacosClient(&config.NATIVE_CONFIG().Nacos)
+
+	// s.NacosClientWorker.listenConfig("MarketRisk", "BCTS", )
+}
+
+func TestServerEngine() {
 
 	server_engine := new(ServerEngine)
 	server_engine.Init()

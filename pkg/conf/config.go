@@ -25,18 +25,6 @@ type RiskCtlTestConfig struct {
 	PricesionRiskctrlOpen bool
 }
 
-type NacosConfig struct {
-	IpAddr              string
-	Port                int32
-	NamespaceId         string
-	TimeoutMs           int
-	NotLoadCacheAtStart bool
-	LogDir              string
-	CacheDir            string
-	RotateTime          string
-	MaxAge              int32
-	LogLevel            string
-}
 type NativeConfig struct {
 	IP            string
 	NetServerType string
