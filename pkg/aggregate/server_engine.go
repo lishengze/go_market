@@ -43,7 +43,6 @@ func (s *ServerEngine) Init() {
 
 	s.AggregateWorkr = &Aggregator{}
 	s.AggregateWorkr.Init(s.RecvDataChan, s.PubDataChan, s.Riskworker)
-
 }
 
 func (s *ServerEngine) Start() {
@@ -65,7 +64,23 @@ func (s *ServerEngine) InitConfig() {
 func (s *ServerEngine) InitNacosClient() {
 	s.NacosClientWorker = config.NewNacosClient(&config.NATIVE_CONFIG().Nacos)
 
-	// s.NacosClientWorker.listenConfig("MarketRisk", "BCTS", )
+	s.NacosClientWorker.ListenConfig("MarketRisk", datastruct.BCTS_GROUP, s.MarketRiskChanged)
+
+	s.NacosClientWorker.ListenConfig("HedgeParams", datastruct.BCTS_GROUP, s.HedgeParamsChanged)
+
+	s.NacosClientWorker.ListenConfig("SymbolParams", datastruct.BCTS_GROUP, s.SymbolParamsChanged)
+}
+
+func (s *ServerEngine) MarketRiskChanged(namespace, group, dataId, data string) {
+
+}
+
+func (s *ServerEngine) HedgeParamsChanged(namespace, group, dataId, hedgingContent string) {
+
+}
+
+func (s *ServerEngine) SymbolParamsChanged(namespace, group, dataId, data string) {
+
 }
 
 func TestServerEngine() {
