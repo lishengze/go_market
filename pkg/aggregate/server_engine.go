@@ -50,7 +50,7 @@ func (s *ServerEngine) Init() {
 	s.RiskCtrlConfigMaps = make(map[string]*config.RiskCtrlConfig)
 
 	s.InitConfig()
-	// go s.StartNacosClient()
+	go s.StartNacosClient()
 
 	s.Commer = comm.Comm{}
 	s.Commer.Init(s.RecvDataChan, s.PubDataChan)
@@ -61,7 +61,7 @@ func (s *ServerEngine) Init() {
 	s.AggregateWorker = &Aggregator{}
 	s.AggregateWorker.Init(s.RecvDataChan, s.PubDataChan, s.Riskworker)
 
-	go s.StartNacosClient()
+	// go s.StartNacosClient()
 }
 
 func (s *ServerEngine) Start() {
