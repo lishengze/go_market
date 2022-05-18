@@ -50,24 +50,25 @@ func (s *ServerEngine) Init() {
 	s.RiskCtrlConfigMaps = make(map[string]*config.RiskCtrlConfig)
 
 	s.InitConfig()
-	go s.StartNacosClient()
-
-	// s.Commer = comm.Comm{}
-	// s.Commer.Init(s.RecvDataChan, s.PubDataChan)
-
-	// s.Riskworker = &RiskWorkerManager{}
-	// s.Riskworker.Init()
-
-	// s.AggregateWorker = &Aggregator{}
-	// s.AggregateWorker.Init(s.RecvDataChan, s.PubDataChan, s.Riskworker)
-
 	// go s.StartNacosClient()
+
+	s.Commer = comm.Comm{}
+	s.Commer.Init(s.RecvDataChan, s.PubDataChan)
+
+	s.Riskworker = &RiskWorkerManager{}
+	s.Riskworker.Init()
+
+	s.AggregateWorker = &Aggregator{}
+	s.AggregateWorker.Init(s.RecvDataChan, s.PubDataChan, s.Riskworker)
+
+	go s.StartNacosClient()
 }
 
 func (s *ServerEngine) Start() {
 
-	// s.Commer.Start()
-	// s.AggregateWorker.Start()
+	s.Commer.Start()
+	s.AggregateWorker.Start()
+
 	// go s.StartNacosClient()
 }
 
