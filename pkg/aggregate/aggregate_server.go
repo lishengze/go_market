@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type Aggregator struct {
@@ -95,7 +96,7 @@ func (a *Aggregator) get_sleep_millsecs(curr_time int) (int, []string) {
 	if a.AggConfig.DepthAggregatorConfigMap == nil || len(a.AggConfig.DepthAggregatorConfigMap) == 0 {
 		sleep_millsecs = default_sleep_millsecs // 还未获取配置信息;
 	} else {
-		util.LOG_INFO(a.AggConfig.String())
+		logx.Info(a.AggConfig.String())
 		min_sleep_secs := time.Duration(default_sleep_millsecs)
 
 		for symbol, publish_config := range a.AggConfig.DepthAggregatorConfigMap {
@@ -129,9 +130,9 @@ func (a *Aggregator) get_sleep_millsecs(curr_time int) (int, []string) {
 }
 
 func (a *Aggregator) start_aggregate_depth() {
-	util.LOG_INFO("Aggregator start_aggregate_depth!")
+	logx.Info("Aggregator start_aggregate_depth!")
 	go func() {
-		util.LOG_INFO("start_aggregate_depth")
+		logx.Info("start_aggregate_depth")
 		// timer := time.Tick(time.Duration(a.depth_aggregator_millsecs * time.Millisecond))
 		// timeout := time.After(time.Millisecond * a.depth_aggregator_millsecs)
 
@@ -139,7 +140,7 @@ func (a *Aggregator) start_aggregate_depth() {
 		for {
 			sleep_millsecs, aggregate_symbol_list := a.get_sleep_millsecs(curr_time)
 
-			util.LOG_INFO(fmt.Sprintf("curr_time:%+v, sleep_millsecs: %+v, aggregate_symbol_list%+v",
+			logx.Info(fmt.Sprintf("curr_time:%+v, sleep_millsecs: %+v, aggregate_symbol_list%+v",
 				curr_time, sleep_millsecs, aggregate_symbol_list))
 
 			a.aggregate_depth(aggregate_symbol_list)
@@ -154,7 +155,7 @@ func (a *Aggregator) start_aggregate_depth() {
 
 		}
 	}()
-	util.LOG_INFO("Aggregator start_aggregate_depth Over!")
+	logx.Info("Aggregator start_aggregate_depth Over!")
 }
 
 func mix_depth(src *treemap.Map, other *treemap.Map, exchange string) {
@@ -179,7 +180,7 @@ func mix_depth(src *treemap.Map, other *treemap.Map, exchange string) {
 }
 
 func (a *Aggregator) start_aggregate_kline() {
-	util.LOG_INFO("Aggregate datastruct.Kline Start!")
+	logx.Info("Aggregate datastruct.Kline Start!")
 	go func() {
 		for {
 			util.WaitForNextMinute()
@@ -187,12 +188,12 @@ func (a *Aggregator) start_aggregate_kline() {
 			a.aggregate_kline()
 		}
 	}()
-	util.LOG_INFO("Aggregate datastruct.Kline Over!")
+	logx.Info("Aggregate datastruct.Kline Over!")
 }
 
 func (a *Aggregator) aggregate_depth(symbol_list []string) {
 
-	// util.LOG_INFO("----- Aggregate Depth Start ------ ")
+	// logx.Info("----- Aggregate Depth Start ------ ")
 
 	for _, symbol := range symbol_list {
 
@@ -205,12 +206,12 @@ func (a *Aggregator) aggregate_depth(symbol_list []string) {
 			new_depth.Time = int64(util.UTCNanoTime())
 
 			for exchange, cur_depth := range exchange_depth_map {
-				// util.LOG_INFO("\n===== <<CurDepth>>: " + cur_depth.String(3))
+				// logx.Info("\n===== <<CurDepth>>: " + cur_depth.String(3))
 				mix_depth(new_depth.Asks, cur_depth.Asks, exchange)
 				mix_depth(new_depth.Bids, cur_depth.Bids, exchange)
 			}
 
-			util.LOG_INFO("\n^^^^^^^ <<aagregated_depth>>: " + new_depth.String(3))
+			logx.Info("\n^^^^^^^ <<aagregated_depth>>: " + new_depth.String(3))
 
 			a.publish_depth(new_depth)
 		}
@@ -221,17 +222,17 @@ func (a *Aggregator) aggregate_depth(symbol_list []string) {
 	// for symbol, exchange_depth_map := range a.depth_cache {
 
 	// 	// for _, cur_depth := range exchange_depth_map {
-	// 	// 	util.LOG_INFO("\n===== After <<CurDepth>>: " + cur_depth.String(3))
+	// 	// 	logx.Info("\n===== After <<CurDepth>>: " + cur_depth.String(3))
 	// 	// }
 	// }
 
-	// util.LOG_INFO("----- Aggregate Depth Over!------ \n")
+	// logx.Info("----- Aggregate Depth Over!------ \n")
 
 	// defer a.depth_mutex.Unlock()
 }
 
 func (a *Aggregator) start_listen_recvdata() {
-	util.LOG_INFO("Aggregator start_listen_recvdata")
+	logx.Info("Aggregator start_listen_recvdata")
 	go func() {
 		for {
 			select {
@@ -244,14 +245,14 @@ func (a *Aggregator) start_listen_recvdata() {
 			}
 		}
 	}()
-	util.LOG_INFO("Aggregator start_receiver Over!")
+	logx.Info("Aggregator start_receiver Over!")
 }
 
 func (a *Aggregator) aggregate_kline() {
 	defer a.kline_mutex.Unlock()
 	a.kline_mutex.Lock()
 
-	util.LOG_INFO(fmt.Sprintf("------ Start aggregate_kline time: %v", time.Now().UTC()))
+	logx.Info(fmt.Sprintf("------ Start aggregate_kline time: %v", time.Now().UTC()))
 
 	for _, kline := range a.kline_aggregated {
 		new_kline := datastruct.NewKline(kline)
@@ -294,7 +295,7 @@ func (a *Aggregator) cache_depth(depth *datastruct.DepthQuote) {
 
 	new_depth := datastruct.NewDepth(depth)
 
-	// util.LOG_INFO("\n******* <<Cache Depth>>: " + depth.String(3))
+	// logx.Info("\n******* <<Cache Depth>>: " + depth.String(3))
 
 	if _, ok := a.depth_cache[new_depth.Symbol]; ok == false {
 		a.depth_cache[new_depth.Symbol] = make(map[string]*datastruct.DepthQuote)
@@ -313,7 +314,7 @@ func (a *Aggregator) cache_trade(trade *datastruct.Trade) {
 	new_trade := datastruct.NewTrade(trade)
 	new_trade.Exchange = datastruct.BCTS_EXCHANGE
 
-	// util.LOG_INFO(fmt.Sprintf(" Recv datastruct.Trade: %s\n", trade.String()))
+	// logx.Info(fmt.Sprintf(" Recv datastruct.Trade: %s\n", trade.String()))
 
 	a.update_kline(trade)
 	a.publish_trade(new_trade)
@@ -327,7 +328,7 @@ func (a *Aggregator) publish_depth(depth *datastruct.DepthQuote) {
 
 	a.PubDataChan.DepthChannel <- new_depth
 
-	util.LOG_INFO("publish_depth: " + depth.String(3))
+	logx.Info("publish_depth: " + depth.String(3))
 }
 
 func (a *Aggregator) publish_kline(kline *datastruct.Kline) {
@@ -360,11 +361,11 @@ func StartPubDataChannel(PubDataChan *datastruct.DataChannel) {
 	for {
 		select {
 		case depth := <-PubDataChan.DepthChannel:
-			util.LOG_INFO(fmt.Sprintf("\n~~~~~~~~Processed Depth %+v \n", depth))
+			logx.Info(fmt.Sprintf("\n~~~~~~~~Processed Depth %+v \n", depth))
 		case trade := <-PubDataChan.TradeChannel:
-			util.LOG_INFO(fmt.Sprintf("\n~~~~~~~~Processed Trade %+v \n", trade))
+			logx.Info(fmt.Sprintf("\n~~~~~~~~Processed Trade %+v \n", trade))
 		case kline := <-PubDataChan.KlineChannel:
-			util.LOG_INFO(fmt.Sprintf("\n~~~~~~~~Processed Kline %+v \n", kline))
+			logx.Info(fmt.Sprintf("\n~~~~~~~~Processed Kline %+v \n", kline))
 		}
 	}
 }
@@ -402,11 +403,74 @@ func TestAggregator() {
 	aggregator.UpdateConfig(AggConfig)
 	aggregator.Start()
 
-	util.LOG_INFO(fmt.Sprintf("\n------- risk_worker.RiskConfig: %+v\n\n", risk_worker.RiskConfig))
+	logx.Info(fmt.Sprintf("\n------- risk_worker.RiskConfig: %+v\n\n", risk_worker.RiskConfig))
 
 	go StartRecvDataChannel(RecvDataChan)
 
 	go StartPubDataChannel(PubDataChan)
 
 	time.Sleep(time.Hour)
+}
+
+func write_log1() {
+	for {
+		logx.Info("[1] " + util.CurrTimeString())
+		time.Sleep(time.Second * 1)
+	}
+}
+
+func write_log2() {
+	for {
+		// Info("[2] " + util.CurrTimeString())
+
+		logx.Infof("f[2] %s ", util.CurrTimeString())
+		time.Sleep(time.Second * 1)
+	}
+}
+
+func write_log3() {
+	for {
+		logx.Errorf("f[3] %s", util.CurrTimeString())
+		time.Sleep(time.Second * 1)
+	}
+}
+
+func write_log4() {
+	for {
+		logx.Slowf("f[4] %s", util.CurrTimeString())
+		time.Sleep(time.Second * 1)
+	}
+}
+
+func write_log5() {
+	for {
+		logx.Severef("f[5] %s", util.CurrTimeString())
+		time.Sleep(time.Second * 1)
+	}
+}
+
+func write_log6() {
+	for {
+		logx.Statf("f[6] %s", util.CurrTimeString())
+		time.Sleep(time.Second * 1)
+	}
+}
+
+func TestLog() {
+	config.NATIVE_CONFIG_INIT("client.yaml")
+	logx.MustSetup(config.NATIVE_CONFIG().LogConfig)
+
+	go write_log1()
+
+	go write_log2()
+
+	go write_log3()
+
+	go write_log4()
+
+	go write_log5()
+
+	go write_log6()
+
+	select {}
 }

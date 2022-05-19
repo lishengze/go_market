@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/Shopify/sarama"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type ConsumeItem struct {
@@ -46,7 +47,7 @@ func (k *KafkaServer) Init(serializer datastruct.SerializerI,
 	k.RecvDataChan = recv_data_chan
 	k.PubDataChan = pub_data_chan
 
-	util.LOG_INFO("KafkaServer.Init")
+	logx.Info("KafkaServer.Init")
 
 	var err error
 
@@ -64,7 +65,7 @@ func (k *KafkaServer) Init(serializer datastruct.SerializerI,
 }
 
 func (k *KafkaServer) InitKafkaApi() error {
-	util.LOG_INFO("KafkaServer.InitKafkaApi")
+	logx.Info("KafkaServer.InitKafkaApi")
 
 	var err error
 
@@ -92,7 +93,7 @@ func (k *KafkaServer) InitListenPubChan() error {
 	// 	DepthChannel: make(chan *datastruct.DepthQuote),
 	// }
 
-	util.LOG_INFO("KafkaServer.InitListenPubChan")
+	logx.Info("KafkaServer.InitListenPubChan")
 
 	go func() {
 		for {
@@ -121,7 +122,7 @@ func (k *KafkaServer) Start() {
 
 func (k *KafkaServer) start_consume() {
 	if len(k.ConsumeSet) == 0 {
-		util.LOG_INFO("ConsumeSet is Empty!")
+		logx.Info("ConsumeSet is Empty!")
 		return
 	}
 
@@ -135,10 +136,10 @@ func (k *KafkaServer) start_test() {
 }
 
 func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
-	util.LOG_INFO("UpdateMetaData: " + fmt.Sprintf("%+v", meta_data))
+	logx.Info("UpdateMetaData: " + fmt.Sprintf("%+v", meta_data))
 
 	NewConsumeSet := GetConsumeSet(*meta_data)
-	util.LOG_INFO(fmt.Sprintf("NewTopicSet: %+v", NewConsumeSet))
+	logx.Info(fmt.Sprintf("NewTopicSet: %+v", NewConsumeSet))
 
 	if k.ConsumeSet == nil {
 		k.ConsumeSet = make(map[string](*ConsumeItem))
@@ -146,7 +147,7 @@ func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
 
 	for new_topic, consume_item := range NewConsumeSet {
 		if _, ok := k.ConsumeSet[new_topic]; ok == false {
-			util.LOG_INFO("Start Consume Topic: " + new_topic)
+			logx.Info("Start Consume Topic: " + new_topic)
 			go k.ConsumeSingleTopic(consume_item)
 			k.ConsumeSet[new_topic] = consume_item
 		}
@@ -154,7 +155,7 @@ func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
 
 	for old_topic, consume_item := range k.ConsumeSet {
 		if _, ok := NewConsumeSet[old_topic]; ok == false {
-			util.LOG_INFO("Stop Consume Topic: " + old_topic)
+			logx.Info("Stop Consume Topic: " + old_topic)
 			consume_item.CancelFunc()
 			delete(k.ConsumeSet, old_topic)
 		}
@@ -164,7 +165,7 @@ func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
 func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 	consumer, err := sarama.NewConsumer([]string{config.NATIVE_CONFIG().IP}, nil)
 
-	util.LOG_INFO("ConsumeSingleTopic: " + consume_item.Topic)
+	logx.Info("ConsumeSingleTopic: " + consume_item.Topic)
 
 	if err != nil {
 		util.LOG_ERROR(err.Error())
@@ -174,7 +175,7 @@ func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 	for {
 		select {
 		case <-consume_item.Ctx.Done():
-			util.LOG_INFO(consume_item.Topic + " listen Over!")
+			logx.Info(consume_item.Topic + " listen Over!")
 			return
 		default:
 			k.ConsumeAtom(consume_item.Topic, consumer)
@@ -183,7 +184,7 @@ func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 }
 
 func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
-	util.LOG_INFO("ConsumeAtom: " + topic)
+	logx.Info("ConsumeAtom: " + topic)
 	partitionList, err := consumer.Partitions(topic) // 根据topic取到所有的分区
 	if err != nil {
 		util.LOG_ERROR(err.Error())
@@ -201,11 +202,11 @@ func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
 
 		for msg := range pc.Messages() {
 
-			// util.LOG_INFO(msg.Topic)
+			// logx.Info(msg.Topic)
 
 			topic_type := GetTopicType(msg.Topic)
 
-			// util.LOG_INFO(topic_type)
+			// logx.Info(topic_type)
 
 			switch topic_type {
 			case DEPTH_TYPE:
@@ -240,7 +241,7 @@ func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
 }
 
 func (k *KafkaServer) PublishDepth(local_depth *datastruct.DepthQuote) error {
-	util.LOG_INFO(fmt.Sprintf("Pub Depth %+v", local_depth.String(3)))
+	logx.Info(fmt.Sprintf("Pub Depth %+v", local_depth.String(3)))
 	serialize_str, err := k.Serializer.EncodeDepth(local_depth)
 
 	if err != nil {
@@ -254,7 +255,7 @@ func (k *KafkaServer) PublishDepth(local_depth *datastruct.DepthQuote) error {
 }
 
 func (k *KafkaServer) PublishKline(local_kline *datastruct.Kline) error {
-	util.LOG_INFO(fmt.Sprintf("Pub kline %+v", local_kline))
+	logx.Info(fmt.Sprintf("Pub kline %+v", local_kline))
 
 	serialize_str, err := k.Serializer.EncodeKline(local_kline)
 
@@ -269,7 +270,7 @@ func (k *KafkaServer) PublishKline(local_kline *datastruct.Kline) error {
 }
 
 func (k *KafkaServer) PublishTrade(local_trade *datastruct.Trade) error {
-	util.LOG_INFO(fmt.Sprintf("Pub Trade %+v", local_trade))
+	logx.Info(fmt.Sprintf("Pub Trade %+v", local_trade))
 
 	serialize_str, err := k.Serializer.EncodeTrade(local_trade)
 

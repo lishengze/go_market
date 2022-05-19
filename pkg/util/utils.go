@@ -24,6 +24,21 @@ func ExceptionFunc() {
 	}
 }
 
+func CurrTimeString() string {
+	return TimeToSecString(time.Now())
+}
+
+func TimeFormat() string {
+	return "2006-01-02 15:04:05"
+}
+
+// TimeToSecString 秒 10 位
+func TimeToSecString(t time.Time) string {
+	// fmt.Println(t.GoString())
+	// t.GoString()
+	return t.Format("2006-01-02 15:04:05")
+}
+
 func UTCNanoTime() int64 {
 
 	return time.Now().UTC().UnixNano()
@@ -56,6 +71,10 @@ func WaitForNextMinute() {
 	// fmt.Println(time.Unix(utc_time_min_secs, 0))
 
 	time.Sleep(time.Duration(60-delta_secs) * time.Second)
+}
+
+func TestTimeStr() {
+	// fmt.Println(TimeString())
 }
 
 // func NanoTimeUInt64() uint64 {

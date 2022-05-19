@@ -7,12 +7,13 @@ import (
 	config "market_aggregate/pkg/conf"
 	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/kafka"
-	"market_aggregate/pkg/util"
 	"time"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 func ListenRecvData(RecvDataChan *datastruct.DataChannel) {
-	util.LOG_INFO("ListenRecvData")
+	logx.Info("ListenRecvData")
 	for {
 		select {
 		case local_depth := <-RecvDataChan.DepthChannel:
@@ -53,7 +54,7 @@ func StartPubData(PubDataChan *datastruct.DataChannel) {
 func TestKafka() {
 	config.NATIVE_CONFIG_INIT("client.yaml")
 
-	util.LOG_INFO(fmt.Sprintf("CONFIG: %+v", *config.NATIVE_CONFIG()))
+	logx.Info(fmt.Sprintf("CONFIG: %+v", *config.NATIVE_CONFIG()))
 
 	Serializer := &comm.ProtobufSerializer{}
 
@@ -107,5 +108,11 @@ func main() {
 
 	// config.TestConf()
 
-	aggregate.TestServerEngine()
+	// aggregate.TestServerEngine()
+
+	// util.TestTimeStr()
+
+	// ulog.TestLog()
+
+	aggregate.TestLog()
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
 	"github.com/shopspring/decimal"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 // type TString string
@@ -183,12 +184,12 @@ func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtr
 	defer util.ExceptionFunc()
 
 	fmt.Println("-------- FeeWorker Process  ---------")
-	// util.LOG_INFO(fmt.Sprintf("\n------- configs: %+v\n\n", *configs))
+	// logx.Info(fmt.Sprintf("\n------- configs: %+v\n\n", *configs))
 
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 		fmt.Printf("Symbol:%s, Config:%+v \n", depth_quote.Symbol, config)
 
-		util.LOG_INFO("\nBefore FeeCtrl: \n" + depth_quote.String(3))
+		logx.Info("\nBefore FeeCtrl: \n" + depth_quote.String(3))
 		// fmt.Println(depth_quote)
 
 		new_asks := w.calc_depth_fee(depth_quote.Asks, config, true)
@@ -197,7 +198,7 @@ func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtr
 		new_bids := w.calc_depth_fee(depth_quote.Bids, config, false)
 		depth_quote.Bids = new_bids
 
-		util.LOG_INFO("\nAfter FeeCtrl: \n" + depth_quote.String(3))
+		logx.Info("\nAfter FeeCtrl: \n" + depth_quote.String(3))
 		// fmt.Println(depth_quote)
 
 	} else {
@@ -260,7 +261,7 @@ func (w *QuotebiasWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 
 		// fmt.Printf("config:%v \n", configs)
-		util.LOG_INFO("\nBefore QuotebiasCtrl: \n" + depth_quote.String(3))
+		logx.Info("\nBefore QuotebiasCtrl: \n" + depth_quote.String(3))
 		// fmt.Println(depth_quote)
 
 		new_asks := calc_depth_bias(depth_quote.Asks, config, true)
@@ -269,7 +270,7 @@ func (w *QuotebiasWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 		new_bids := calc_depth_bias(depth_quote.Bids, config, false)
 		depth_quote.Bids = new_bids
 
-		util.LOG_INFO("\nAfter QuotebiasCtrl: \n" + depth_quote.String(3))
+		logx.Info("\nAfter QuotebiasCtrl: \n" + depth_quote.String(3))
 		// fmt.Println(depth_quote)
 
 	} else {
@@ -446,14 +447,14 @@ func (w *WatermarkWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 	defer util.ExceptionFunc()
 
 	if check_cross(depth_quote) == false {
-		util.LOG_INFO("++++++ WatermarkWorker:Process Has No Cross Depth! +++++\n\n")
+		logx.Info("++++++ WatermarkWorker:Process Has No Cross Depth! +++++\n\n")
 		return true
 	}
 
 	fmt.Println(configs)
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 
-		util.LOG_INFO("\nBefore WatermarkWorker: \n" + depth_quote.String(3))
+		logx.Info("\nBefore WatermarkWorker: \n" + depth_quote.String(3))
 		// fmt.Println(depth_quote)
 
 		watermark := calc_watermark(depth_quote)
@@ -466,7 +467,7 @@ func (w *WatermarkWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 
 		filter_depth_by_watermark(depth_quote.Bids, watermark, config.PriceMinumChange*-1, false)
 
-		util.LOG_INFO("\nAfter WatermarkWorker: \n" + depth_quote.String(3))
+		logx.Info("\nAfter WatermarkWorker: \n" + depth_quote.String(3))
 		// fmt.Println(depth_quote)
 
 	} else {
@@ -535,7 +536,7 @@ func (w *PrecisionWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 
 		// fmt.Printf("\nconfig:%v \n", configs)
-		util.LOG_INFO("\nBefore PrecisionWorker: \n" + depth_quote.String(3))
+		logx.Info("\nBefore PrecisionWorker: \n" + depth_quote.String(3))
 
 		new_asks := resize_depth_precision(depth_quote.Asks, config)
 		depth_quote.Asks = new_asks
@@ -543,7 +544,7 @@ func (w *PrecisionWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 		new_bids := resize_depth_precision(depth_quote.Bids, config)
 		depth_quote.Bids = new_bids
 
-		util.LOG_INFO("\nAfter PrecisionWorker: \n" + depth_quote.String(3))
+		logx.Info("\nAfter PrecisionWorker: \n" + depth_quote.String(3))
 
 	} else {
 
@@ -641,14 +642,14 @@ func (r *RiskWorkerManager) UpdateConfig(RiskConfig *RiskCtrlConfigMap) {
 		}
 	}
 
-	util.LOG_INFO(fmt.Sprintf("\n------- r.RiskConfig: %+v\n\n", r.RiskConfig))
+	logx.Info(fmt.Sprintf("\n------- r.RiskConfig: %+v\n\n", r.RiskConfig))
 }
 
 func (r *RiskWorkerManager) AddWorker(NewWorker RiskWorkerInterface) {
-	util.LOG_INFO("Try Add Worker " + NewWorker.GetWorkerName())
+	logx.Info("Try Add Worker " + NewWorker.GetWorkerName())
 	if r.Worker == nil {
 		r.Worker = NewWorker
-		util.LOG_INFO("Init First Worker " + NewWorker.GetWorkerName() + "\n")
+		logx.Info("Init First Worker " + NewWorker.GetWorkerName() + "\n")
 		return
 	}
 
@@ -656,7 +657,7 @@ func (r *RiskWorkerManager) AddWorker(NewWorker RiskWorkerInterface) {
 	for tmp = r.Worker; tmp.GetNextWoker() != nil; tmp = tmp.GetNextWoker() {
 
 		// time.Sleep(time.Second * 3)
-		util.LOG_INFO("Stored Worker " + tmp.GetWorkerName())
+		logx.Info("Stored Worker " + tmp.GetWorkerName())
 
 		if tmp.GetWorkerName() == NewWorker.GetWorkerName() {
 			util.LOG_WARN("Repeated Worker : " + tmp.GetWorkerName())
@@ -664,7 +665,7 @@ func (r *RiskWorkerManager) AddWorker(NewWorker RiskWorkerInterface) {
 		}
 	}
 	tmp.SetNext(NewWorker)
-	util.LOG_INFO("Add Worker " + NewWorker.GetWorkerName() + "\n")
+	logx.Info("Add Worker " + NewWorker.GetWorkerName() + "\n")
 }
 
 func (r *RiskWorkerManager) Execute(depth_quote *datastruct.DepthQuote) {

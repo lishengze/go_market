@@ -8,6 +8,8 @@ import (
 	"market_aggregate/pkg/util"
 	"sync"
 	"time"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type ServerEngine struct {
@@ -74,36 +76,37 @@ func (s *ServerEngine) Start() {
 
 func (s *ServerEngine) InitConfig() {
 	config.NATIVE_CONFIG_INIT("client.yaml")
-	util.LOG_INFO(fmt.Sprintf("CONFIG: %+v", *config.NATIVE_CONFIG()))
-	util.LOG_INFO(fmt.Sprintf("NacoIP: %s:%d", config.NATIVE_CONFIG().Nacos.IpAddr, config.NATIVE_CONFIG().Nacos.Port))
+	logx.MustSetup(config.NATIVE_CONFIG().LogConfig)
+	logx.Info(fmt.Sprintf("CONFIG: %+v", *config.NATIVE_CONFIG()))
+	logx.Info(fmt.Sprintf("NacoIP: %s:%d", config.NATIVE_CONFIG().Nacos.IpAddr, config.NATIVE_CONFIG().Nacos.Port))
 
 }
 
 func (s *ServerEngine) StartNacosClient() {
-	util.LOG_INFO("****************** StartNacosClient *****************")
+	logx.Info("****************** StartNacosClient *****************")
 	s.NacosClientWorker = config.NewNacosClient(&config.NATIVE_CONFIG().Nacos)
 
-	util.LOG_INFO("Connect Nacos Successfully!")
+	logx.Info("Connect Nacos Successfully!")
 
 	MarketRiskConfigStr, err := s.NacosClientWorker.GetConfigContent("MarketRisk", datastruct.BCTS_GROUP)
 	if err != nil {
 		util.LOG_ERROR(err.Error())
 	}
-	util.LOG_INFO("Requested MarketRisk: " + MarketRiskConfigStr)
+	logx.Info("Requested MarketRisk: " + MarketRiskConfigStr)
 	s.ProcessMarketriskConfigStr(MarketRiskConfigStr)
 
 	HedgeConfigStr, err := s.NacosClientWorker.GetConfigContent("HedgeParams", datastruct.BCTS_GROUP)
 	if err != nil {
 		util.LOG_ERROR(err.Error())
 	}
-	util.LOG_INFO("Requested HedgeConfigStr: " + HedgeConfigStr)
+	logx.Info("Requested HedgeConfigStr: " + HedgeConfigStr)
 	s.ProcsssHedgeConfigStr(HedgeConfigStr)
 
 	SymbolConfigStr, err := s.NacosClientWorker.GetConfigContent("SymbolParams", datastruct.BCTS_GROUP)
 	if err != nil {
 		util.LOG_ERROR(err.Error())
 	}
-	util.LOG_INFO("Requested SymbolConfigStr: " + SymbolConfigStr)
+	logx.Info("Requested SymbolConfigStr: " + SymbolConfigStr)
 	s.ProcessSymbolConfigStr(SymbolConfigStr)
 
 	s.NacosClientWorker.ListenConfig("MarketRisk", datastruct.BCTS_GROUP, s.MarketRiskChanged)
@@ -114,7 +117,7 @@ func (s *ServerEngine) StartNacosClient() {
 }
 
 func (s *ServerEngine) HedgeParamsChanged(namespace, group, dataId, hedgingContent string) {
-	util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged hedgingContent: %s\n", hedgingContent))
+	logx.Info(fmt.Sprintf("HedgeParamsChanged hedgingContent: %s\n", hedgingContent))
 	s.ProcsssHedgeConfigStr(hedgingContent)
 }
 
@@ -136,24 +139,24 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 		}
 
 		symbol_exchange_set[hedge_config.Symbol][hedge_config.Exchange] = struct{}{}
-		util.LOG_INFO(fmt.Sprintf("New Meta: %s.%s", hedge_config.Symbol, hedge_config.Exchange))
+		logx.Info(fmt.Sprintf("New Meta: %s.%s", hedge_config.Symbol, hedge_config.Exchange))
 	}
 
 	NewMeta.DepthMeta = symbol_exchange_set
 	NewMeta.TradeMeta = symbol_exchange_set
 	NewMeta.KlineMeta = symbol_exchange_set
 
-	util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%s \n", NewMeta.String()))
+	logx.Info(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%s \n", NewMeta.String()))
 
 	s.Commer.UpdateMetaData(&NewMeta)
 
-	// util.LOG_INFO(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%+v \n", NewMeta))
+	// logx.Info(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%+v \n", NewMeta))
 
 	s.UpdateRiskConfigHedgePart(hedge_configs)
 }
 
 func (s *ServerEngine) MarketRiskChanged(namespace, group, dataId, data string) {
-	util.LOG_INFO(fmt.Sprintf("MarketRiskContent: %s\n", data))
+	logx.Info(fmt.Sprintf("MarketRiskContent: %s\n", data))
 	s.ProcessMarketriskConfigStr(data)
 }
 
@@ -177,7 +180,7 @@ func (s *ServerEngine) ProcessMarketriskConfigStr(data string) {
 			IsPublish:     bool(market_risk_config.Switch)}
 	}
 
-	util.LOG_INFO(fmt.Sprintf("MarketRiskChanged:\n%s \n", NewAggConfig.String()))
+	logx.Info(fmt.Sprintf("MarketRiskChanged:\n%s \n", NewAggConfig.String()))
 
 	s.AggregateWorker.UpdateConfig(NewAggConfig)
 
@@ -185,7 +188,7 @@ func (s *ServerEngine) ProcessMarketriskConfigStr(data string) {
 }
 
 func (s *ServerEngine) SymbolParamsChanged(namespace, group, dataId, data string) {
-	util.LOG_INFO(fmt.Sprintf("SymbolContent: %s\n", data))
+	logx.Info(fmt.Sprintf("SymbolContent: %s\n", data))
 	s.ProcessSymbolConfigStr(data)
 }
 
@@ -215,10 +218,10 @@ func (s *ServerEngine) UpdateRiskConfigHedgePart(hedge_configs []*config.Hedging
 			s.RiskCtrlConfigMaps[hedge_config.Symbol] = &config.RiskCtrlConfig{}
 			s.RiskCtrlConfigMaps[hedge_config.Symbol].HedgeConfigMap = make(map[string]*config.HedgeConfig)
 
-			util.LOG_INFO("Risk New Symbol: " + hedge_config.Symbol + "\n")
+			logx.Info("Risk New Symbol: " + hedge_config.Symbol + "\n")
 		}
 
-		util.LOG_INFO("Risk Update Symbol: " + hedge_config.Symbol + "\n")
+		logx.Info("Risk Update Symbol: " + hedge_config.Symbol + "\n")
 
 		if s.RiskCtrlConfigMaps[hedge_config.Symbol].HedgeConfigMap == nil {
 			s.RiskCtrlConfigMaps[hedge_config.Symbol].HedgeConfigMap = make(map[string]*config.HedgeConfig)
@@ -297,7 +300,7 @@ func (s *ServerEngine) UpdateRiskConfigSymbolPart(SymbolConfigs []*config.Symbol
 func (s *ServerEngine) UpdateRiskConfig() {
 	if s.HedgingConfigs != nil && s.MarketRiskConfigs != nil && s.SymbolConfigs != nil {
 
-		util.LOG_INFO(fmt.Sprintf("s.RiskCtrlConfigMaps: \n%s", GetRiskCtrlConfigMapString(&s.RiskCtrlConfigMaps)))
+		logx.Info(fmt.Sprintf("s.RiskCtrlConfigMaps: \n%s", GetRiskCtrlConfigMapString(&s.RiskCtrlConfigMaps)))
 
 		s.Riskworker.UpdateConfig(&s.RiskCtrlConfigMaps)
 	}
@@ -310,17 +313,17 @@ func TestServerEngine() {
 	server_engine.Start()
 
 	// risk_config := GetTestRiskConfig()
-	// util.LOG_INFO(fmt.Sprintf("risk_config: %+v", risk_config))
+	// logx.Info(fmt.Sprintf("risk_config: %+v", risk_config))
 
 	// server_engine.Riskworker.UpdateConfig(&risk_config)
 
 	// AggConfig := GetTestAggConfig()
-	// util.LOG_INFO(fmt.Sprintf("AggConfig: %+v", AggConfig))
+	// logx.Info(fmt.Sprintf("AggConfig: %+v", AggConfig))
 
 	// server_engine.AggregateWorker.UpdateConfig(AggConfig)
 
 	// meta_data := datastruct.GetTestMetadata()
-	// util.LOG_INFO(fmt.Sprintf("meta_data: %+v", meta_data))
+	// logx.Info(fmt.Sprintf("meta_data: %+v", meta_data))
 
 	// server_engine.Commer.UpdateMetaData(meta_data)
 

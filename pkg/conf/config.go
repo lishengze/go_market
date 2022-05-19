@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 var g_single_native_config *NativeConfig
@@ -23,6 +24,7 @@ type RiskCtlTestConfig struct {
 	BiasRiskctrlOpen      bool
 	WatermarkRiskctrlOpen bool
 	PricesionRiskctrlOpen bool
+	TestSymbol            string
 }
 
 type NativeConfig struct {
@@ -32,6 +34,7 @@ type NativeConfig struct {
 
 	Nacos          NacosConfig
 	RiskTestConfig RiskCtlTestConfig
+	LogConfig      logx.LogConf
 }
 
 func (n *NativeConfig) ParseFile(file_name string) error {
