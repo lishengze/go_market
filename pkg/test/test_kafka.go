@@ -108,11 +108,11 @@ func main() {
 
 	// config.TestConf()
 
-	// aggregate.TestServerEngine()
+	aggregate.TestServerEngine()
 
 	// util.TestTimeStr()
 
 	// ulog.TestLog()
 
-	aggregate.TestLog()
+	// aggregate.TestLog()
 }
