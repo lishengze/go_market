@@ -188,7 +188,7 @@ func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtr
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 		fmt.Printf("Symbol:%s, Config:%+v \n", depth_quote.Symbol, config)
 
-		util.LOG_INFO("\nBefore FeeCtrl: \n" + depth_quote.String(5))
+		util.LOG_INFO("\nBefore FeeCtrl: \n" + depth_quote.String(3))
 		// fmt.Println(depth_quote)
 
 		new_asks := w.calc_depth_fee(depth_quote.Asks, config, true)
@@ -197,7 +197,7 @@ func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtr
 		new_bids := w.calc_depth_fee(depth_quote.Bids, config, false)
 		depth_quote.Bids = new_bids
 
-		util.LOG_INFO("\nAfter FeeCtrl: \n" + depth_quote.String(5))
+		util.LOG_INFO("\nAfter FeeCtrl: \n" + depth_quote.String(3))
 		// fmt.Println(depth_quote)
 
 	} else {
@@ -260,7 +260,7 @@ func (w *QuotebiasWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 
 		// fmt.Printf("config:%v \n", configs)
-		util.LOG_INFO("\nBefore QuotebiasCtrl: \n" + depth_quote.String(5))
+		util.LOG_INFO("\nBefore QuotebiasCtrl: \n" + depth_quote.String(3))
 		// fmt.Println(depth_quote)
 
 		new_asks := calc_depth_bias(depth_quote.Asks, config, true)
@@ -269,7 +269,7 @@ func (w *QuotebiasWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 		new_bids := calc_depth_bias(depth_quote.Bids, config, false)
 		depth_quote.Bids = new_bids
 
-		util.LOG_INFO("\nAfter QuotebiasCtrl: \n" + depth_quote.String(5))
+		util.LOG_INFO("\nAfter QuotebiasCtrl: \n" + depth_quote.String(3))
 		// fmt.Println(depth_quote)
 
 	} else {
@@ -453,7 +453,7 @@ func (w *WatermarkWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 	fmt.Println(configs)
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 
-		util.LOG_INFO("\nBefore WatermarkWorker: \n" + depth_quote.String(5))
+		util.LOG_INFO("\nBefore WatermarkWorker: \n" + depth_quote.String(3))
 		// fmt.Println(depth_quote)
 
 		watermark := calc_watermark(depth_quote)
@@ -466,7 +466,7 @@ func (w *WatermarkWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 
 		filter_depth_by_watermark(depth_quote.Bids, watermark, config.PriceMinumChange*-1, false)
 
-		util.LOG_INFO("\nAfter WatermarkWorker: \n" + depth_quote.String(5))
+		util.LOG_INFO("\nAfter WatermarkWorker: \n" + depth_quote.String(3))
 		// fmt.Println(depth_quote)
 
 	} else {
@@ -535,7 +535,7 @@ func (w *PrecisionWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 	if config, ok := (*configs)[depth_quote.Symbol]; ok {
 
 		// fmt.Printf("\nconfig:%v \n", configs)
-		util.LOG_INFO("\nBefore PrecisionWorker: \n" + depth_quote.String(5))
+		util.LOG_INFO("\nBefore PrecisionWorker: \n" + depth_quote.String(3))
 
 		new_asks := resize_depth_precision(depth_quote.Asks, config)
 		depth_quote.Asks = new_asks
@@ -543,7 +543,7 @@ func (w *PrecisionWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 		new_bids := resize_depth_precision(depth_quote.Bids, config)
 		depth_quote.Bids = new_bids
 
-		util.LOG_INFO("\nAfter PrecisionWorker: \n" + depth_quote.String(5))
+		util.LOG_INFO("\nAfter PrecisionWorker: \n" + depth_quote.String(3))
 
 	} else {
 
@@ -761,7 +761,7 @@ func TestInnerDepth() {
 
 func test_json() {
 	depth_quote := datastruct.GetTestDepth()
-	fmt.Println(depth_quote.String(5))
+	fmt.Println(depth_quote.String(3))
 }
 
 func TestImport() {

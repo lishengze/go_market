@@ -240,7 +240,7 @@ func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
 }
 
 func (k *KafkaServer) PublishDepth(local_depth *datastruct.DepthQuote) error {
-	util.LOG_INFO(fmt.Sprintf("Pub Depth %+v", local_depth.String(5)))
+	util.LOG_INFO(fmt.Sprintf("Pub Depth %+v", local_depth.String(3)))
 	serialize_str, err := k.Serializer.EncodeDepth(local_depth)
 
 	if err != nil {

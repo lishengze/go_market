@@ -205,12 +205,12 @@ func (a *Aggregator) aggregate_depth(symbol_list []string) {
 			new_depth.Time = int64(util.UTCNanoTime())
 
 			for exchange, cur_depth := range exchange_depth_map {
-				// util.LOG_INFO("\n===== <<CurDepth>>: " + cur_depth.String(5))
+				// util.LOG_INFO("\n===== <<CurDepth>>: " + cur_depth.String(3))
 				mix_depth(new_depth.Asks, cur_depth.Asks, exchange)
 				mix_depth(new_depth.Bids, cur_depth.Bids, exchange)
 			}
 
-			util.LOG_INFO("\n^^^^^^^ <<aagregated_depth>>: " + new_depth.String(5))
+			util.LOG_INFO("\n^^^^^^^ <<aagregated_depth>>: " + new_depth.String(3))
 
 			a.publish_depth(new_depth)
 		}
@@ -221,7 +221,7 @@ func (a *Aggregator) aggregate_depth(symbol_list []string) {
 	// for symbol, exchange_depth_map := range a.depth_cache {
 
 	// 	// for _, cur_depth := range exchange_depth_map {
-	// 	// 	util.LOG_INFO("\n===== After <<CurDepth>>: " + cur_depth.String(5))
+	// 	// 	util.LOG_INFO("\n===== After <<CurDepth>>: " + cur_depth.String(3))
 	// 	// }
 	// }
 
@@ -294,7 +294,7 @@ func (a *Aggregator) cache_depth(depth *datastruct.DepthQuote) {
 
 	new_depth := datastruct.NewDepth(depth)
 
-	// util.LOG_INFO("\n******* <<Cache Depth>>: " + depth.String(5))
+	// util.LOG_INFO("\n******* <<Cache Depth>>: " + depth.String(3))
 
 	if _, ok := a.depth_cache[new_depth.Symbol]; ok == false {
 		a.depth_cache[new_depth.Symbol] = make(map[string]*datastruct.DepthQuote)
@@ -327,7 +327,7 @@ func (a *Aggregator) publish_depth(depth *datastruct.DepthQuote) {
 
 	a.PubDataChan.DepthChannel <- new_depth
 
-	util.LOG_INFO("publish_depth: " + depth.String(5))
+	util.LOG_INFO("publish_depth: " + depth.String(3))
 }
 
 func (a *Aggregator) publish_kline(kline *datastruct.Kline) {

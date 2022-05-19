@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"market_aggregate/pkg/util"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
@@ -114,11 +115,26 @@ func (k *Kline) String() string {
 	return res
 }
 
+func GetDepthString(m *treemap.Map, numb int) string {
+	str := "TreeMap\nmap["
+	it := m.Iterator()
+	count := 0
+	for it.Next() {
+		str += fmt.Sprintf("%v:%v ", it.Key(), it.Value())
+		count += 1
+		if count > numb {
+			break
+		}
+	}
+	return strings.TrimRight(str, " ") + "]"
+
+}
+
 func (d *DepthQuote) String(len int) string {
 
-	res := fmt.Sprintf("%s.%s, %v\nAsks: %s\nBids: %s \n", d.Exchange, d.Symbol,
+	res := fmt.Sprintf("%s.%s, %v\nAsks.%d: %s\nBids.%d: %s \n", d.Exchange, d.Symbol,
 		time.Unix(int64(d.Time/NANO_PER_SECS), d.Time%NANO_PER_SECS),
-		d.Asks.String(), d.Bids.String())
+		d.Asks.Size(), GetDepthString(d.Asks, len), d.Bids.Size(), GetDepthString(d.Bids, len))
 
 	return string(res)
 }

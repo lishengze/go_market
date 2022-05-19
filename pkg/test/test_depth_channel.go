@@ -18,7 +18,7 @@ func send_depth(channel_depth_quote chan *datastruct.DepthQuote) {
 		case <-timer:
 			// fmt.Println(time.Now())
 			depth_quote := datastruct.GetTestDepth()
-			fmt.Printf("\nSendDepth: %s\n", depth_quote.String(5))
+			fmt.Printf("\nSendDepth: %s\n", depth_quote.String(3))
 			channel_depth_quote <- depth_quote
 		}
 	}
@@ -28,8 +28,8 @@ func recev_depth(channel_depth_quote chan *datastruct.DepthQuote) {
 	for {
 		select {
 		case depth_quote := <-channel_depth_quote:
-			fmt.Printf("\nRecvDepth: %s\n", depth_quote.String(5))
-			// fmt.Println(depth_quote.String(5))
+			fmt.Printf("\nRecvDepth: %s\n", depth_quote.String(3))
+			// fmt.Println(depth_quote.String(3))
 		}
 	}
 }
@@ -49,7 +49,7 @@ type EmptyInterface interface {
 }
 
 func process_depth(depth_quote *datastruct.DepthQuote) {
-	fmt.Println(depth_quote.String(5))
+	fmt.Println(depth_quote.String(3))
 }
 
 func TestDepthReflection(data EmptyInterface) {
