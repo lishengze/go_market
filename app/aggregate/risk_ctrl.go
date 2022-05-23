@@ -205,7 +205,7 @@ func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtr
 		return false
 	}
 
-	fmt.Println("FeeWorker Process")
+	// fmt.Println("FeeWorker Process")
 	return true
 }
 

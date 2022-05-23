@@ -332,7 +332,7 @@ func (a *Aggregator) publish_depth(depth *datastruct.DepthQuote) {
 }
 
 func (a *Aggregator) publish_kline(kline *datastruct.Kline) {
-	fmt.Printf("\nPub datastruct.Kline: \n%s\n", kline.String())
+	// fmt.Printf("\nPub datastruct.Kline: \n%s\n", kline.String())
 	a.PubDataChan.KlineChannel <- kline
 }
 
