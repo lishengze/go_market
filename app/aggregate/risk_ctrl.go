@@ -53,21 +53,21 @@ type Worker struct {
 }
 
 func (w *Worker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
-	fmt.Println("Original Worker Process")
+	// fmt.Println("Original Worker Process")
 	return false
 }
 
 func (w *Worker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer util.ExceptionFunc()
 
-	fmt.Println(w)
+	// fmt.Println(w)
 
 	w.Process(depth_quote, configs)
 
 	if w.nextWorker != nil {
 		w.nextWorker.Execute(depth_quote, configs)
 	} else {
-		fmt.Printf("%s Worker Has No Next Worker!\n", w.WorkerName)
+		logx.Infof("%s Worker Has No Next Worker!\n", w.WorkerName)
 	}
 
 	return false
@@ -103,7 +103,7 @@ func get_bias_value(original_value float64, bias_kind int, bias_value float64) f
 	} else if bias_kind == 2 {
 		rst = rst.Add(decimal.NewFromFloat(bias_value))
 	} else {
-		util.LOG_ERROR("Error Bias Kind")
+		logx.Error("Error Bias Kind")
 	}
 
 	rst_float, _ := rst.Float64()
@@ -168,14 +168,12 @@ func (w *FeeWorker) calc_depth_fee(depth *treemap.Map, config *config.RiskCtrlCo
 func (w *FeeWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer util.ExceptionFunc()
 
-	fmt.Println(w)
-
 	w.Process(depth_quote, configs)
 
 	if w.nextWorker != nil {
 		return w.nextWorker.Execute(depth_quote, configs)
 	} else {
-		fmt.Printf("%s Worker Has No Next Worker!\n", w.WorkerName)
+		logx.Infof("%s Worker Has No Next Worker!\n", w.WorkerName)
 		return true
 	}
 }
@@ -183,27 +181,27 @@ func (w *FeeWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtr
 func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer util.ExceptionFunc()
 
-	fmt.Println("-------- FeeWorker Process  ---------")
-	// logx.Info(fmt.Sprintf("\n------- configs: %+v\n\n", *configs))
+	if cur_config, ok := (*configs)[depth_quote.Symbol]; ok {
 
-	if config, ok := (*configs)[depth_quote.Symbol]; ok {
-		fmt.Printf("Symbol:%s, Config:%+v \n", depth_quote.Symbol, config)
+		if depth_quote.Symbol == config.TESTCONFIG().TestSymbol {
+			logx.Infof("Symbol:%s, Config:%+v \n", depth_quote.Symbol, cur_config)
 
-		logx.Info("\nBefore FeeCtrl: \n" + depth_quote.String(3))
-		// fmt.Println(depth_quote)
+			logx.Info("\nBefore FeeCtrl: \n" + depth_quote.String(3))
+		}
 
-		new_asks := w.calc_depth_fee(depth_quote.Asks, config, true)
+		new_asks := w.calc_depth_fee(depth_quote.Asks, cur_config, true)
 		depth_quote.Asks = new_asks
 
-		new_bids := w.calc_depth_fee(depth_quote.Bids, config, false)
+		new_bids := w.calc_depth_fee(depth_quote.Bids, cur_config, false)
 		depth_quote.Bids = new_bids
 
-		logx.Info("\nAfter FeeCtrl: \n" + depth_quote.String(3))
-		// fmt.Println(depth_quote)
+		if depth_quote.Symbol == config.TESTCONFIG().TestSymbol {
+			logx.Info("\nAfter FeeCtrl: \n" + depth_quote.String(3))
+		}
 
 	} else {
 
-		util.LOG_ERROR("Symbol: " + string(depth_quote.Symbol) + " Has no config")
+		logx.Error("Symbol: " + string(depth_quote.Symbol) + " Has no config")
 		return false
 	}
 
@@ -258,42 +256,40 @@ func calc_depth_bias(depth *treemap.Map, config *config.RiskCtrlConfig, isAsk bo
 func (w *QuotebiasWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer util.ExceptionFunc()
 
-	if config, ok := (*configs)[depth_quote.Symbol]; ok {
+	if cur_config, ok := (*configs)[depth_quote.Symbol]; ok {
 
-		// fmt.Printf("config:%v \n", configs)
-		logx.Info("\nBefore QuotebiasCtrl: \n" + depth_quote.String(3))
-		// fmt.Println(depth_quote)
+		if depth_quote.Symbol == config.TESTCONFIG().TestSymbol {
+			logx.Info("\nBefore QuotebiasCtrl: \n" + depth_quote.String(3))
+		}
 
-		new_asks := calc_depth_bias(depth_quote.Asks, config, true)
+		new_asks := calc_depth_bias(depth_quote.Asks, cur_config, true)
 		depth_quote.Asks = new_asks
 
-		new_bids := calc_depth_bias(depth_quote.Bids, config, false)
+		new_bids := calc_depth_bias(depth_quote.Bids, cur_config, false)
 		depth_quote.Bids = new_bids
 
-		logx.Info("\nAfter QuotebiasCtrl: \n" + depth_quote.String(3))
-		// fmt.Println(depth_quote)
+		if depth_quote.Symbol == config.TESTCONFIG().TestSymbol {
+			logx.Info("\nAfter QuotebiasCtrl: \n" + depth_quote.String(3))
+		}
 
 	} else {
 
-		util.LOG_ERROR("Symbol: " + string(depth_quote.Symbol) + " Has no config")
+		logx.Error("Symbol: " + string(depth_quote.Symbol) + " Has no config")
 		return false
 	}
 
-	fmt.Println("QuotebiasWorker Process")
 	return true
 }
 
 func (w *QuotebiasWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer util.ExceptionFunc()
 
-	fmt.Println(w)
-
 	w.Process(depth_quote, configs)
 
 	if w.nextWorker != nil {
 		w.nextWorker.Execute(depth_quote, configs)
 	} else {
-		fmt.Printf("%s Worker Has No Next Worker!\n", w.WorkerName)
+		logx.Infof("%s Worker Has No Next Worker!\n", w.WorkerName)
 	}
 
 	return false
@@ -324,7 +320,7 @@ func calc_watermark(depth_quote *datastruct.DepthQuote) float64 {
 		}
 	}
 
-	fmt.Printf("\n------ ask_crossed_price_list:%v \n", ask_crossed_price_list)
+	logx.Infof("\n------ ask_crossed_price_list:%v \n", ask_crossed_price_list)
 
 	bid_crossed_price_list := []float64{}
 	for bid_iter.End(); bid_iter.Prev(); {
@@ -334,11 +330,11 @@ func calc_watermark(depth_quote *datastruct.DepthQuote) float64 {
 			break
 		}
 	}
-	fmt.Printf("\n------bid_crossed_price_list:%v \n", bid_crossed_price_list)
+	logx.Infof("\n------bid_crossed_price_list:%v \n", bid_crossed_price_list)
 
 	rst = (ask_crossed_price_list[len(ask_crossed_price_list)/2] + bid_crossed_price_list[len(bid_crossed_price_list)/2]) / 2
 
-	fmt.Printf("\n-------watermark: %v \n", rst)
+	logx.Infof("\n-------watermark: %v \n", rst)
 
 	return rst
 }
@@ -350,7 +346,7 @@ func filter_depth_by_watermark(depth *treemap.Map, watermark float64, price_minu
 	depth_iter := depth.Iterator()
 	new_price := watermark + float64(price_minum_change)
 
-	fmt.Printf("\nNewPrice: %v\n", new_price)
+	logx.Infof("\nNewPrice: %v\n", new_price)
 
 	if isAsk {
 
@@ -430,14 +426,12 @@ func check_cross(depth_quote *datastruct.DepthQuote) bool {
 func (w *WatermarkWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer util.ExceptionFunc()
 
-	fmt.Println(w)
-
 	w.Process(depth_quote, configs)
 
 	if w.nextWorker != nil {
 		w.nextWorker.Execute(depth_quote, configs)
 	} else {
-		fmt.Printf("%s Worker Has No Next Worker!\n", w.WorkerName)
+		logx.Infof("%s Worker Has No Next Worker!\n", w.WorkerName)
 	}
 
 	return false
@@ -451,11 +445,11 @@ func (w *WatermarkWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 		return true
 	}
 
-	fmt.Println(configs)
-	if config, ok := (*configs)[depth_quote.Symbol]; ok {
+	if cur_config, ok := (*configs)[depth_quote.Symbol]; ok {
 
-		logx.Info("\nBefore WatermarkWorker: \n" + depth_quote.String(3))
-		// fmt.Println(depth_quote)
+		if depth_quote.Symbol == config.TESTCONFIG().TestSymbol {
+			logx.Info("\nBefore WatermarkWorker: \n" + depth_quote.String(3))
+		}
 
 		watermark := calc_watermark(depth_quote)
 
@@ -463,16 +457,16 @@ func (w *WatermarkWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 			return true
 		}
 
-		filter_depth_by_watermark(depth_quote.Asks, watermark, config.PriceMinumChange, true)
+		filter_depth_by_watermark(depth_quote.Asks, watermark, cur_config.PriceMinumChange, true)
 
-		filter_depth_by_watermark(depth_quote.Bids, watermark, config.PriceMinumChange*-1, false)
+		filter_depth_by_watermark(depth_quote.Bids, watermark, cur_config.PriceMinumChange*-1, false)
 
-		logx.Info("\nAfter WatermarkWorker: \n" + depth_quote.String(3))
-		// fmt.Println(depth_quote)
-
+		if depth_quote.Symbol == config.TESTCONFIG().TestSymbol {
+			logx.Info("\nAfter WatermarkWorker: \n" + depth_quote.String(3))
+		}
 	} else {
 
-		util.LOG_ERROR("Symbol: " + string(depth_quote.Symbol) + " Has no config")
+		logx.Error("Symbol: " + string(depth_quote.Symbol) + " Has no config")
 		return false
 	}
 	return true
@@ -517,14 +511,12 @@ func resize_depth_precision(depth *treemap.Map, config *config.RiskCtrlConfig) *
 func (w *PrecisionWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer util.ExceptionFunc()
 
-	fmt.Println(w)
-
 	w.Process(depth_quote, configs)
 
 	if w.nextWorker != nil {
 		w.nextWorker.Execute(depth_quote, configs)
 	} else {
-		fmt.Printf("%s Worker Has No Next Worker!\n", w.WorkerName)
+		logx.Infof("%s Worker Has No Next Worker!\n", w.WorkerName)
 	}
 
 	return false
@@ -533,27 +525,25 @@ func (w *PrecisionWorker) Execute(depth_quote *datastruct.DepthQuote, configs *R
 func (w *PrecisionWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
 	defer util.ExceptionFunc()
 
-	if config, ok := (*configs)[depth_quote.Symbol]; ok {
+	if cur_config, ok := (*configs)[depth_quote.Symbol]; ok {
 
-		// fmt.Printf("\nconfig:%v \n", configs)
-		logx.Info("\nBefore PrecisionWorker: \n" + depth_quote.String(3))
+		if depth_quote.Symbol == config.TESTCONFIG().TestSymbol {
+			logx.Info("\nBefore PrecisionWorker: \n" + depth_quote.String(3))
+		}
 
-		new_asks := resize_depth_precision(depth_quote.Asks, config)
+		new_asks := resize_depth_precision(depth_quote.Asks, cur_config)
 		depth_quote.Asks = new_asks
 
-		new_bids := resize_depth_precision(depth_quote.Bids, config)
+		new_bids := resize_depth_precision(depth_quote.Bids, cur_config)
 		depth_quote.Bids = new_bids
 
-		logx.Info("\nAfter PrecisionWorker: \n" + depth_quote.String(3))
-
+		if depth_quote.Symbol == config.TESTCONFIG().TestSymbol {
+			logx.Info("\nAfter PrecisionWorker: \n" + depth_quote.String(3))
+		}
 	} else {
-
-		util.LOG_ERROR("Symbol: " + string(depth_quote.Symbol) + " Has no config")
+		logx.Error("Symbol: " + string(depth_quote.Symbol) + " Has no config")
 		return false
 	}
-
-	fmt.Println("PrecisionWorker Process")
-
 	return true
 }
 
@@ -642,7 +632,7 @@ func (r *RiskWorkerManager) UpdateConfig(RiskConfig *RiskCtrlConfigMap) {
 		}
 	}
 
-	logx.Info(fmt.Sprintf("\n------- r.RiskConfig: %+v\n\n", r.RiskConfig))
+	logx.Infof("\n------- r.RiskConfig: %+v\n\n", r.RiskConfig)
 }
 
 func (r *RiskWorkerManager) AddWorker(NewWorker RiskWorkerInterface) {
@@ -671,17 +661,17 @@ func (r *RiskWorkerManager) AddWorker(NewWorker RiskWorkerInterface) {
 func (r *RiskWorkerManager) Execute(depth_quote *datastruct.DepthQuote) {
 	defer r.ConfigMutex.RUnlock()
 
-	fmt.Printf("\n------- RiskWorkerManager  Executing -------- \n\n")
+	logx.Infof("\n------- RiskWorkerManager  Executing -------- \n\n")
 
 	r.ConfigMutex.RLock()
 
 	if r.Worker == nil {
-		util.LOG_ERROR("No Worker Available")
+		logx.Error("No Worker Available")
 		return
 	}
 
 	if len(r.RiskConfig) == 0 {
-		util.LOG_ERROR("RiskConfig Not Available")
+		logx.Error("RiskConfig Not Available")
 		return
 	}
 
@@ -736,8 +726,8 @@ func TestWorker() {
 
 	risk_worker_manager.UpdateConfig(&config)
 
-	// fmt.Printf("depth_quote: %v\n", depth_quote)
-	// fmt.Printf("config: %v\n", config)
+	// logx.Infof("depth_quote: %v\n", depth_quote)
+	// logx.Infof("config: %v\n", config)
 
 	risk_worker_manager.Execute(depth_quote)
 }
@@ -753,11 +743,7 @@ func TestInnerDepth() {
 	// 	"FTX": 1.1,
 	// }
 
-	a := datastruct.InnerDepth{0, map[string]float64{"FTX": 1.1}}
-
-	// fmt.Println(e)
-	// fmt.Println(e1)
-	fmt.Println(a)
+	// a := datastruct.InnerDepth{0, map[string]float64{"FTX": 1.1}}
 }
 
 func test_json() {

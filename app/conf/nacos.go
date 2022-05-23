@@ -1,12 +1,11 @@
 package config
 
 import (
-	"market_aggregate/app/util"
-
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/clients/config_client"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type ServerConfig struct {
@@ -70,7 +69,7 @@ func NewNacosClient(c *NacosConfig) *NacosClient {
 	)
 
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		panic(err)
 	}
 	return &NacosClient{

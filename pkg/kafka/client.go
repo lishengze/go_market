@@ -5,7 +5,6 @@ import (
 	"fmt"
 	config "market_aggregate/app/conf"
 	"market_aggregate/app/datastruct"
-	"market_aggregate/app/util"
 	"sync"
 
 	"github.com/Shopify/sarama"
@@ -71,7 +70,7 @@ func (k *KafkaServer) InitKafkaApi() error {
 
 	k.Producer, err = sarama.NewSyncProducer([]string{config.NATIVE_CONFIG().IP}, nil)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return err
 	}
 
@@ -79,7 +78,7 @@ func (k *KafkaServer) InitKafkaApi() error {
 	broker_config := sarama.NewConfig()
 	err = k.Broker.Open(broker_config)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return err
 	}
 
@@ -168,7 +167,7 @@ func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 	logx.Info("ConsumeSingleTopic: " + consume_item.Topic)
 
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return
 	}
 
@@ -187,7 +186,7 @@ func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
 	logx.Info("ConsumeAtom: " + topic)
 	partitionList, err := consumer.Partitions(topic) // 根据topic取到所有的分区
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return
 	}
 
@@ -195,7 +194,7 @@ func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
 		pc, err := consumer.ConsumePartition(topic, int32(partition), sarama.OffsetNewest)
 
 		if err != nil {
-			util.LOG_ERROR(err.Error())
+			logx.Error(err.Error())
 			continue
 		}
 		defer pc.AsyncClose()
@@ -216,7 +215,7 @@ func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
 			case TRADE_TYPE:
 				go k.ProcessTradeBytes(msg.Value)
 			default:
-				util.LOG_ERROR("Unknown Topic " + topic_type)
+				logx.Error("Unknown Topic " + topic_type)
 			}
 		}
 	}
@@ -234,7 +233,7 @@ func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
 	err := k.Producer.SendMessages(msgs)
 
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return err
 	}
 	return nil
@@ -245,7 +244,7 @@ func (k *KafkaServer) PublishDepth(local_depth *datastruct.DepthQuote) error {
 	serialize_str, err := k.Serializer.EncodeDepth(local_depth)
 
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return err
 	}
 
@@ -260,7 +259,7 @@ func (k *KafkaServer) PublishKline(local_kline *datastruct.Kline) error {
 	serialize_str, err := k.Serializer.EncodeKline(local_kline)
 
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return err
 	}
 
@@ -275,7 +274,7 @@ func (k *KafkaServer) PublishTrade(local_trade *datastruct.Trade) error {
 	serialize_str, err := k.Serializer.EncodeTrade(local_trade)
 
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return err
 	}
 
@@ -289,7 +288,7 @@ func (k *KafkaServer) ProcessDepthBytes(depth_bytes []byte) error {
 	local_depth, err := k.Serializer.DecodeDepth(depth_bytes)
 
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return err
 	}
 
@@ -302,7 +301,7 @@ func (k *KafkaServer) ProcessKlineBytes(kline_bytes []byte) error {
 	local_kline, err := k.Serializer.DecodeKline(kline_bytes)
 
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return err
 	}
 
@@ -315,7 +314,7 @@ func (k *KafkaServer) ProcessTradeBytes(trade_bytes []byte) error {
 	local_trade, err := k.Serializer.DecodeTrade(trade_bytes)
 
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return err
 	}
 

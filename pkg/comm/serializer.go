@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"market_aggregate/app/datastruct"
 	"market_aggregate/app/protostruct"
-	"market_aggregate/app/util"
 	"strconv"
 
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
+	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/protobuf/proto"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -87,12 +87,12 @@ func SetDepthTreeMap(src *treemap.Map, proto_depth []*protostruct.PriceVolume, e
 	for _, value := range proto_depth {
 		price, err := strconv.ParseFloat(value.Price, 64)
 		if err != nil {
-			util.LOG_ERROR(err.Error())
+			logx.Error(err.Error())
 			continue
 		}
 		volume, err := strconv.ParseFloat(value.Volume, 64)
 		if err != nil {
-			util.LOG_ERROR(err.Error())
+			logx.Error(err.Error())
 			continue
 		}
 
@@ -110,7 +110,7 @@ func (p *ProtobufSerializer) DecodeDepth(raw_msg []byte) (*datastruct.DepthQuote
 	proto_depth := protostruct.Depth{}
 	err := proto.Unmarshal(raw_msg, &proto_depth)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return nil, err
 	}
 
@@ -133,37 +133,37 @@ func (p *ProtobufSerializer) DecodeKline(raw_msg []byte) (*datastruct.Kline, err
 	proto_kline := protostruct.Kline{}
 	err := proto.Unmarshal(raw_msg, &proto_kline)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return nil, err
 	}
 
 	open, err := strconv.ParseFloat(proto_kline.Open, 64)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return nil, err
 	}
 
 	high, err := strconv.ParseFloat(proto_kline.High, 64)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return nil, err
 	}
 
 	low, err := strconv.ParseFloat(proto_kline.Low, 64)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return nil, err
 	}
 
 	close, err := strconv.ParseFloat(proto_kline.Close, 64)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return nil, err
 	}
 
 	volume, err := strconv.ParseFloat(proto_kline.Volume, 64)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return nil, err
 	}
 
@@ -184,19 +184,19 @@ func (p *ProtobufSerializer) DecodeTrade(raw_msg []byte) (*datastruct.Trade, err
 	proto_trade := protostruct.Trade{}
 	err := proto.Unmarshal(raw_msg, &proto_trade)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return nil, err
 	}
 
 	price, err := strconv.ParseFloat(proto_trade.Price, 64)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return nil, err
 	}
 
 	volume, err := strconv.ParseFloat(proto_trade.Volume, 64)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return nil, err
 	}
 

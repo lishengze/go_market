@@ -4,7 +4,6 @@ import (
 	"fmt"
 	config "market_aggregate/app/conf"
 	"market_aggregate/app/datastruct"
-	"market_aggregate/app/util"
 	"market_aggregate/pkg/comm"
 	"sync"
 	"time"
@@ -90,21 +89,21 @@ func (s *ServerEngine) StartNacosClient() {
 
 	MarketRiskConfigStr, err := s.NacosClientWorker.GetConfigContent("MarketRisk", datastruct.BCTS_GROUP)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 	}
 	logx.Info("Requested MarketRisk: " + MarketRiskConfigStr)
 	s.ProcessMarketriskConfigStr(MarketRiskConfigStr)
 
 	HedgeConfigStr, err := s.NacosClientWorker.GetConfigContent("HedgeParams", datastruct.BCTS_GROUP)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 	}
 	logx.Info("Requested HedgeConfigStr: " + HedgeConfigStr)
 	s.ProcsssHedgeConfigStr(HedgeConfigStr)
 
 	SymbolConfigStr, err := s.NacosClientWorker.GetConfigContent("SymbolParams", datastruct.BCTS_GROUP)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 	}
 	logx.Info("Requested SymbolConfigStr: " + SymbolConfigStr)
 	s.ProcessSymbolConfigStr(SymbolConfigStr)
@@ -124,7 +123,7 @@ func (s *ServerEngine) HedgeParamsChanged(namespace, group, dataId, hedgingConte
 func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 	hedge_configs, err := config.ParseJsonHedgerConfig(data)
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return
 	}
 
@@ -164,7 +163,7 @@ func (s *ServerEngine) ProcessMarketriskConfigStr(data string) {
 	market_risk_configs, err := config.ParseJsonMarketRiskConfig(data)
 
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return
 	}
 
@@ -196,7 +195,7 @@ func (s *ServerEngine) ProcessSymbolConfigStr(data string) {
 	symbol_configs, err := config.ParseJsonSymbolConfig(data)
 
 	if err != nil {
-		util.LOG_ERROR(err.Error())
+		logx.Error(err.Error())
 		return
 	}
 
