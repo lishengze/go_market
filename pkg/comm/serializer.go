@@ -2,9 +2,9 @@ package comm
 
 import (
 	"fmt"
-	"market_aggregate/pkg/datastruct"
-	"market_aggregate/pkg/protostruct"
-	"market_aggregate/pkg/util"
+	"market_aggregate/app/datastruct"
+	"market_aggregate/app/protostruct"
+	"market_aggregate/app/util"
 	"strconv"
 
 	"github.com/emirpasic/gods/maps/treemap"

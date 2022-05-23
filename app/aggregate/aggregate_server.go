@@ -2,9 +2,9 @@ package aggregate
 
 import (
 	"fmt"
-	config "market_aggregate/pkg/conf"
-	"market_aggregate/pkg/datastruct"
-	"market_aggregate/pkg/util"
+	config "market_aggregate/app/conf"
+	"market_aggregate/app/datastruct"
+	"market_aggregate/app/util"
 	"sync"
 	"time"
 

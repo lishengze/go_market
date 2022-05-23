@@ -1,8 +1,8 @@
 package comm
 
 import (
-	config "market_aggregate/pkg/conf"
-	"market_aggregate/pkg/datastruct"
+	config "market_aggregate/app/conf"
+	"market_aggregate/app/datastruct"
 	"market_aggregate/pkg/kafka"
 )
 

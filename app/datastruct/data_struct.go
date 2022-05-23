@@ -2,7 +2,7 @@ package datastruct
 
 import (
 	"fmt"
-	"market_aggregate/pkg/util"
+	"market_aggregate/app/util"
 	"math/rand"
 	"strings"
 	"time"

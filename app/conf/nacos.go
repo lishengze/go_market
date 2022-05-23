@@ -1,7 +1,7 @@
 package config
 
 import (
-	"market_aggregate/pkg/util"
+	"market_aggregate/app/util"
 
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/clients/config_client"

@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
-	"market_aggregate/pkg/aggregate"
+	config "market_aggregate/app/conf"
+	"market_aggregate/app/datastruct"
 	"market_aggregate/pkg/comm"
-	config "market_aggregate/pkg/conf"
-	"market_aggregate/pkg/datastruct"
 	"market_aggregate/pkg/kafka"
 	"time"
 
@@ -85,34 +84,34 @@ func TestKafka() {
 	time.Sleep(time.Hour)
 }
 
-func main() {
-	fmt.Println("---- Test Kafka ----")
+// func main() {
+// 	fmt.Println("---- Test Kafka ----")
 
-	// aggregate.TestInnerDepth()
+// 	// aggregate.TestInnerDepth()
 
-	// aggregate.TestImport()
+// 	// aggregate.TestImport()
 
-	// aggregate.TestWorker()
+// 	// aggregate.TestWorker()
 
-	// TestDepthChannel()
+// 	// TestDepthChannel()
 
-	// TestTreeMap()
+// 	// TestTreeMap()
 
-	// comm.TestSeKline()
+// 	// comm.TestSeKline()
 
-	// TestKafka()
+// 	// TestKafka()
 
-	// aggregate.TestAggregator()
+// 	// aggregate.TestAggregator()
 
-	// aggregate.TestAddWorker()
+// 	// aggregate.TestAddWorker()
 
-	// config.TestConf()
+// 	// config.TestConf()
 
-	aggregate.TestServerEngine()
+// 	aggregate.TestServerEngine()
 
-	// util.TestTimeStr()
+// 	// util.TestTimeStr()
 
-	// ulog.TestLog()
+// 	// ulog.TestLog()
 
-	// aggregate.TestLog()
-}
+// 	// aggregate.TestLog()
+// }
