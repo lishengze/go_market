@@ -6,9 +6,9 @@ package server
 import (
 	"context"
 
-	"bcts/app/hedge/cmd/rpc/internal/logic"
-	"bcts/app/hedge/cmd/rpc/internal/svc"
-	"bcts/app/hedge/cmd/rpc/types/pb"
+	"market_server/app/hedge/cmd/rpc/internal/logic"
+	"market_server/app/hedge/cmd/rpc/internal/svc"
+	"market_server/app/hedge/cmd/rpc/types/pb"
 )
 
 type HedgeServer struct {

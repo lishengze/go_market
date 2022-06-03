@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 
-	"bcts/app/hedge/cmd/api/internal/config"
-	"bcts/app/hedge/cmd/api/internal/handler"
-	"bcts/app/hedge/cmd/api/internal/svc"
+	"market_server/app/hedge/cmd/api/internal/config"
+	"market_server/app/hedge/cmd/api/internal/handler"
+	"market_server/app/hedge/cmd/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"

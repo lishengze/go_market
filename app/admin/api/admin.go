@@ -1,17 +1,17 @@
 package main
 
 import (
-	"bcts/app/admin/api/internal/config"
-	"bcts/app/admin/api/internal/handler"
-	"bcts/app/admin/api/internal/svc"
 	"flag"
 	"fmt"
+	"market_server/app/admin/api/internal/config"
+	"market_server/app/admin/api/internal/handler"
+	"market_server/app/admin/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"
 )
 
-//go:generate goctl model mysql datasource --url "broker:QsTZfnXb%yJw&r@7@tcp(36.255.220.139:3306)/broker" --table admin_user --dir /Users/zhq/workspace/go/gitlab.hub.hashkey.com/bcts/bcts/app/admin/model
+//go:generate goctl model mysql datasource --url "broker:QsTZfnXb%yJw&r@7@tcp(36.255.220.139:3306)/broker" --table admin_user --dir /Users/zhq/workspace/go/gitlab.hub.hashkey.com/bcts/market_server/app/admin/model
 //go:generate goctl api go --api app/admin/cmd/api/desc/admin.api --dir app/admin/cmd/api/
 var configFile = flag.String("f", "etc/admin.yaml", "the config file")
 

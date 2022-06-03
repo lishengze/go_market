@@ -1,13 +1,14 @@
 package repository
 
 import (
-	"bcts/app/admin/api/internal/svc"
-	"bcts/common/dingtalk"
-	"bcts/common/nacosAdapter"
 	"context"
 	"fmt"
-	"github.com/zeromicro/go-zero/core/logx"
+	"market_server/app/admin/api/internal/svc"
+	"market_server/common/dingtalk"
+	"market_server/common/nacosAdapter"
 	"strings"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type AlarmRepository struct {

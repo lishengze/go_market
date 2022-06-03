@@ -6,7 +6,7 @@ package notice
 import (
 	"context"
 
-	"bcts/app/notice/api/v1"
+	"market_server/app/notice/api/v1"
 
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"

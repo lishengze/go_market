@@ -1,8 +1,8 @@
 package globalMiddleware
 
 import (
-	"bcts/common/globalKey"
 	"fmt"
+	"market_server/common/globalKey"
 	"net/http"
 	"strconv"
 )

@@ -4,10 +4,10 @@ package handler
 import (
 	"net/http"
 
-	hedge "bcts/app/hedge/cmd/api/internal/handler/hedge"
-	member "bcts/app/hedge/cmd/api/internal/handler/member"
-	withdraw "bcts/app/hedge/cmd/api/internal/handler/withdraw"
-	"bcts/app/hedge/cmd/api/internal/svc"
+	hedge "market_server/app/hedge/cmd/api/internal/handler/hedge"
+	member "market_server/app/hedge/cmd/api/internal/handler/member"
+	withdraw "market_server/app/hedge/cmd/api/internal/handler/withdraw"
+	"market_server/app/hedge/cmd/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
 )

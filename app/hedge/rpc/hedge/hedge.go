@@ -6,7 +6,7 @@ package hedge
 import (
 	"context"
 
-	"bcts/app/hedge/cmd/rpc/types/pb"
+	"market_server/app/hedge/cmd/rpc/types/pb"
 
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"

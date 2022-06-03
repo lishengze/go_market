@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"bcts/common/middleware"
+	"market_server/common/middleware"
 	"net/http"
 )
 

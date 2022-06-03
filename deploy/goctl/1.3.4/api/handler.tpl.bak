@@ -1,8 +1,8 @@
 package {{.PkgName}}
 
 import (
-	"bcts/common/crypto"
-    "bcts/common/result"
+	"market_server/common/crypto"
+    "market_server/common/result"
 	"net/http"
 	"encoding/json"
     "io/ioutil"

@@ -6,7 +6,7 @@ package marketservice
 import (
 	"context"
 
-	"bcts/app/dataManager/rpc/types/pb"
+	"market_server/app/dataManager/rpc/types/pb"
 
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"

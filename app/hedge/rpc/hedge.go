@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 
-	"bcts/app/hedge/cmd/rpc/internal/config"
-	"bcts/app/hedge/cmd/rpc/internal/server"
-	"bcts/app/hedge/cmd/rpc/internal/svc"
-	"bcts/app/hedge/cmd/rpc/types/pb"
+	"market_server/app/hedge/cmd/rpc/internal/config"
+	"market_server/app/hedge/cmd/rpc/internal/server"
+	"market_server/app/hedge/cmd/rpc/internal/svc"
+	"market_server/app/hedge/cmd/rpc/types/pb"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"

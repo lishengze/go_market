@@ -1,16 +1,17 @@
 package main
 
 import (
-	"bcts/common/interceptor/rpcserver"
 	"bcts/pkg/kafkaclient"
 	"flag"
 	"fmt"
+	"market_server/common/interceptor/rpcserver"
+
 	"github.com/zeromicro/go-zero/core/logx"
 
-	"bcts/app/order/rpc/internal/config"
-	"bcts/app/order/rpc/internal/server"
-	"bcts/app/order/rpc/internal/svc"
-	"bcts/app/order/rpc/types/pb"
+	"market_server/app/order/rpc/internal/config"
+	"market_server/app/order/rpc/internal/server"
+	"market_server/app/order/rpc/internal/svc"
+	"market_server/app/order/rpc/types/pb"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"

@@ -6,7 +6,7 @@ package order
 import (
 	"context"
 
-	"bcts/app/order/rpc/types/pb"
+	"market_server/app/order/rpc/types/pb"
 
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"

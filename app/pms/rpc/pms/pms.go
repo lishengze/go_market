@@ -6,7 +6,7 @@ package pms
 import (
 	"context"
 
-	"bcts/app/pms/rpc/types/pb"
+	"market_server/app/pms/rpc/types/pb"
 
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"

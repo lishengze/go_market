@@ -6,9 +6,9 @@ package server
 import (
 	"context"
 
-	"bcts/app/dataService/rpc/internal/logic"
-	"bcts/app/dataService/rpc/internal/svc"
-	"bcts/app/dataService/rpc/types/pb"
+	"market_server/app/dataService/rpc/internal/logic"
+	"market_server/app/dataService/rpc/internal/svc"
+	"market_server/app/dataService/rpc/types/pb"
 )
 
 type DataServiceServer struct {

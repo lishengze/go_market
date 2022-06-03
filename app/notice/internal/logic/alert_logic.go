@@ -1,13 +1,13 @@
 package logic
 
 import (
-	"bcts/common/xerror"
 	"bcts/internal/notify"
 	"context"
+	"market_server/common/xerror"
 	"strconv"
 
-	v1 "bcts/app/notice/api/v1"
-	"bcts/app/notice/internal/svc"
+	v1 "market_server/app/notice/api/v1"
+	"market_server/app/notice/internal/svc"
 
 	"bcts/internal/notify/dingtalk"
 

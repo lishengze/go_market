@@ -1,9 +1,9 @@
 package offlinetrade
 
 import (
-	"bcts/app/admin/api/internal/svc"
-	"bcts/app/admin/api/internal/types"
 	"context"
+	"market_server/app/admin/api/internal/svc"
+	"market_server/app/admin/api/internal/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

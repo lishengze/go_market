@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	{{.imports}}
-	"bcts/common/interceptor/rpcserver"
+	"market_server/common/interceptor/rpcserver"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"

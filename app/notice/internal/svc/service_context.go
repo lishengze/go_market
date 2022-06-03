@@ -1,6 +1,6 @@
 package svc
 
-import "bcts/app/notice/internal/config"
+import "market_server/app/notice/internal/config"
 
 type ServiceContext struct {
 	Config config.Config

@@ -15,6 +15,10 @@ const (
 	BCTS_EXCHANGE = "_bcts_"
 
 	BCTS_GROUP = "BCTS"
+
+	KLINE_TYPE = "kline"
+	DEPTH_TYPE = "depth"
+	TRADE_TYPE = "trade"
 )
 
 const (

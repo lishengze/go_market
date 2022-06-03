@@ -1,12 +1,13 @@
 package user
 
 import (
-	"bcts/app/client/api/internal/svc"
-	"bcts/app/client/api/internal/types"
-	"bcts/common/crypto"
 	"context"
-	"github.com/zeromicro/go-zero/core/logx"
+	"market_server/app/client/api/internal/svc"
+	"market_server/app/client/api/internal/types"
+	"market_server/common/crypto"
 	"net/http"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type AddTestLogic struct {

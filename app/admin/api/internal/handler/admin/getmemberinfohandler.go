@@ -1,9 +1,9 @@
 package admin
 
 import (
-	"bcts/app/admin/api/internal/logic/admin"
-	"bcts/app/admin/api/internal/svc"
-	"bcts/app/admin/api/internal/types"
+	"market_server/app/admin/api/internal/logic/admin"
+	"market_server/app/admin/api/internal/svc"
+	"market_server/app/admin/api/internal/types"
 	"net/http"
 
 	"github.com/zeromicro/go-zero/rest/httpx"

@@ -1,20 +1,21 @@
 package offlinetrade
 
 import (
-	repository2 "bcts/app/admin/api/internal/repository"
-	"bcts/app/admin/api/internal/svc"
-	"bcts/app/admin/api/internal/types"
-	"bcts/app/admin/model"
-	"bcts/common/googleAuth"
-	"bcts/common/utils"
-	"bcts/common/xerror"
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/shopspring/decimal"
-	"github.com/zeromicro/go-zero/core/logx"
+	repository2 "market_server/app/admin/api/internal/repository"
+	"market_server/app/admin/api/internal/svc"
+	"market_server/app/admin/api/internal/types"
+	"market_server/app/admin/model"
+	"market_server/common/googleAuth"
+	"market_server/common/utils"
+	"market_server/common/xerror"
 	"strconv"
 	"strings"
+
+	"github.com/shopspring/decimal"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type validator func(request *types.OfflineTradeReq) error

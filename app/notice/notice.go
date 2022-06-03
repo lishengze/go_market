@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 
-	v1 "bcts/app/notice/api/v1"
-	"bcts/app/notice/internal/config"
-	"bcts/app/notice/internal/server"
-	"bcts/app/notice/internal/svc"
+	v1 "market_server/app/notice/api/v1"
+	"market_server/app/notice/internal/config"
+	"market_server/app/notice/internal/server"
+	"market_server/app/notice/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"

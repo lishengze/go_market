@@ -4,9 +4,9 @@
 package server
 
 import (
-	"bcts/app/admin/rpc/internal/logic"
-	"bcts/app/admin/rpc/internal/svc"
-	pb2 "bcts/app/admin/rpc/types/pb"
+	"market_server/app/admin/rpc/internal/logic"
+	"market_server/app/admin/rpc/internal/svc"
+	pb2 "market_server/app/admin/rpc/types/pb"
 	"context"
 )
 

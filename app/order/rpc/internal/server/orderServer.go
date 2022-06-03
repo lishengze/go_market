@@ -6,9 +6,9 @@ package server
 import (
 	"context"
 
-	"bcts/app/order/rpc/internal/logic"
-	"bcts/app/order/rpc/internal/svc"
-	"bcts/app/order/rpc/types/pb"
+	"market_server/app/order/rpc/internal/logic"
+	"market_server/app/order/rpc/internal/svc"
+	"market_server/app/order/rpc/types/pb"
 )
 
 type OrderServer struct {

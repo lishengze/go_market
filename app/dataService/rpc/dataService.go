@@ -1,15 +1,16 @@
 package main
 
 import (
-	"bcts/common/interceptor/rpcserver"
 	"flag"
 	"fmt"
+	"market_server/common/interceptor/rpcserver"
+
 	"github.com/zeromicro/go-zero/core/logx"
 
-	"bcts/app/dataService/rpc/internal/config"
-	"bcts/app/dataService/rpc/internal/server"
-	"bcts/app/dataService/rpc/internal/svc"
-	"bcts/app/dataService/rpc/types/pb"
+	"market_server/app/dataService/rpc/internal/config"
+	"market_server/app/dataService/rpc/internal/server"
+	"market_server/app/dataService/rpc/internal/svc"
+	"market_server/app/dataService/rpc/types/pb"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"

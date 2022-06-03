@@ -1,16 +1,16 @@
 package logic
 
 import (
-	"bcts/app/notice/internal/config"
-	"bcts/common/xerror"
 	"bcts/internal/notify"
 	"bcts/internal/notify/email"
 	"bcts/internal/notify/sms"
 	"context"
+	"market_server/app/notice/internal/config"
+	"market_server/common/xerror"
 	"strings"
 
-	v1 "bcts/app/notice/api/v1"
-	"bcts/app/notice/internal/svc"
+	v1 "market_server/app/notice/api/v1"
+	"market_server/app/notice/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

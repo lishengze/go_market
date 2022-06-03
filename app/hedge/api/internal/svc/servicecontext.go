@@ -1,7 +1,7 @@
 package svc
 
 import (
-	"bcts/app/hedge/cmd/api/internal/config"
+	"market_server/app/hedge/cmd/api/internal/config"
 )
 
 type ServiceContext struct {

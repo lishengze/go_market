@@ -1,8 +1,9 @@
 package svc
 
 import (
-	"bcts/app/pms/model"
-	"bcts/app/pms/rpc/internal/config"
+	"market_server/app/pms/model"
+	"market_server/app/pms/rpc/internal/config"
+
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )

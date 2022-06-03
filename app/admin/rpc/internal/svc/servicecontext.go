@@ -1,7 +1,7 @@
 package svc
 
 import (
-	"bcts/app/admin/rpc/internal/config"
+	"market_server/app/admin/rpc/internal/config"
 )
 
 type ServiceContext struct {

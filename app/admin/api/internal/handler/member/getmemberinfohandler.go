@@ -1,9 +1,9 @@
 package member
 
 import (
-	"bcts/app/admin/api/internal/logic/member"
-	"bcts/app/admin/api/internal/svc"
-	"bcts/app/admin/api/internal/types"
+	"market_server/app/admin/api/internal/logic/member"
+	"market_server/app/admin/api/internal/svc"
+	"market_server/app/admin/api/internal/types"
 	"net/http"
 
 	"github.com/zeromicro/go-zero/rest/httpx"

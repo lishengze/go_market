@@ -1,11 +1,12 @@
 package svc
 
 import (
-	"bcts/app/dataService/rpc/dataservice"
-	"bcts/app/order/model"
-	"bcts/app/order/rpc/internal/config"
-	"bcts/app/userCenter/rpc/usercenter"
-	"bcts/common/nacosAdapter"
+	"market_server/app/dataService/rpc/dataservice"
+	"market_server/app/order/model"
+	"market_server/app/order/rpc/internal/config"
+	"market_server/app/userCenter/rpc/usercenter"
+	"market_server/common/nacosAdapter"
+
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"github.com/zeromicro/go-zero/zrpc"

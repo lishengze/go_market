@@ -1,6 +1,6 @@
 package svc
 
-import "bcts/app/hedge/cmd/rpc/internal/config"
+import "market_server/app/hedge/cmd/rpc/internal/config"
 
 type ServiceContext struct {
 	Config config.Config

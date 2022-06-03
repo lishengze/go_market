@@ -1,12 +1,13 @@
 package svc
 
 import (
-	"bcts/app/dataService/rpc/internal/config"
-	"bcts/common/nacosAdapter"
 	"encoding/json"
+	"market_server/app/dataService/rpc/internal/config"
+	"market_server/common/nacosAdapter"
+	"sync"
+
 	"github.com/jinzhu/copier"
 	"github.com/zeromicro/go-zero/core/logx"
-	"sync"
 )
 
 type ServiceContext struct {

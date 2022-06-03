@@ -4,7 +4,7 @@
 package notice
 
 import (
-	pb2 "bcts/app/admin/rpc/types/pb"
+	pb2 "market_server/app/admin/rpc/types/pb"
 	"context"
 
 	"github.com/zeromicro/go-zero/zrpc"

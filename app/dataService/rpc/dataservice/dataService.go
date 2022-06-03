@@ -6,7 +6,7 @@ package dataservice
 import (
 	"context"
 
-	"bcts/app/dataService/rpc/types/pb"
+	"market_server/app/dataService/rpc/types/pb"
 
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"

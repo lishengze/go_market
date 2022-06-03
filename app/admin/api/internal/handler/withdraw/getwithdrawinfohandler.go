@@ -1,9 +1,9 @@
 package withdraw
 
 import (
-	"bcts/app/admin/api/internal/logic/withdraw"
-	"bcts/app/admin/api/internal/svc"
-	"bcts/app/admin/api/internal/types"
+	"market_server/app/admin/api/internal/logic/withdraw"
+	"market_server/app/admin/api/internal/svc"
+	"market_server/app/admin/api/internal/types"
 	"net/http"
 
 	"github.com/zeromicro/go-zero/rest/httpx"

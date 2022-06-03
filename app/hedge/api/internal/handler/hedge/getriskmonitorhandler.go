@@ -3,9 +3,10 @@ package hedge
 import (
 	"net/http"
 
-	"bcts/app/hedge/cmd/api/internal/logic/hedge"
-	"bcts/app/hedge/cmd/api/internal/svc"
-	"bcts/app/hedge/cmd/api/internal/types"
+	"market_server/app/hedge/cmd/api/internal/logic/hedge"
+	"market_server/app/hedge/cmd/api/internal/svc"
+	"market_server/app/hedge/cmd/api/internal/types"
+
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 

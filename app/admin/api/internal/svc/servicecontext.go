@@ -1,10 +1,11 @@
 package svc
 
 import (
-	"bcts/app/admin/api/internal/config"
-	"bcts/app/admin/api/internal/middleware"
-	"bcts/app/admin/model"
-	"bcts/common/nacosAdapter"
+	"market_server/app/admin/api/internal/config"
+	"market_server/app/admin/api/internal/middleware"
+	"market_server/app/admin/model"
+	"market_server/common/nacosAdapter"
+
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"github.com/zeromicro/go-zero/rest"

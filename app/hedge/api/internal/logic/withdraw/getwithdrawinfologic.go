@@ -3,8 +3,8 @@ package withdraw
 import (
 	"context"
 
-	"bcts/app/hedge/cmd/api/internal/svc"
-	"bcts/app/hedge/cmd/api/internal/types"
+	"market_server/app/hedge/cmd/api/internal/svc"
+	"market_server/app/hedge/cmd/api/internal/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

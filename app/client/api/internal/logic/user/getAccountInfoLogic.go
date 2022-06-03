@@ -1,15 +1,16 @@
 package user
 
 import (
-	"bcts/app/userCenter/rpc/usercenter"
-	"bcts/common/crypto"
-	"bcts/common/xerror"
 	"context"
-	"github.com/pkg/errors"
+	"market_server/app/userCenter/rpc/usercenter"
+	"market_server/common/crypto"
+	"market_server/common/xerror"
 	"net/http"
 
-	"bcts/app/client/api/internal/svc"
-	"bcts/app/client/api/internal/types"
+	"github.com/pkg/errors"
+
+	"market_server/app/client/api/internal/svc"
+	"market_server/app/client/api/internal/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

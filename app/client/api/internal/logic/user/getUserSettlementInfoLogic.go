@@ -1,10 +1,10 @@
 package user
 
 import (
-	"bcts/app/client/api/internal/svc"
-	"bcts/app/client/api/internal/types"
-	"bcts/app/userCenter/rpc/usercenter"
 	"context"
+	"market_server/app/client/api/internal/svc"
+	"market_server/app/client/api/internal/types"
+	"market_server/app/userCenter/rpc/usercenter"
 	"net/http"
 
 	"github.com/zeromicro/go-zero/core/logx"

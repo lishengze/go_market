@@ -1,10 +1,10 @@
 package logic
 
 import (
-	"bcts/app/userCenter/rpc/usercenter"
-	"bcts/common/globalKey"
-	"bcts/common/utils"
-	"bcts/common/xerror"
+	"market_server/app/userCenter/rpc/usercenter"
+	"market_server/common/globalKey"
+	"market_server/common/utils"
+	"market_server/common/xerror"
 	"bcts/pkg/kafkaclient"
 	"bcts/pkg/kafkaclient/mpupb"
 	"context"
@@ -16,9 +16,9 @@ import (
 	"strings"
 	"time"
 
-	"bcts/app/order/model"
-	"bcts/app/order/rpc/internal/svc"
-	"bcts/app/order/rpc/types/pb"
+	"market_server/app/order/model"
+	"market_server/app/order/rpc/internal/svc"
+	"market_server/app/order/rpc/types/pb"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

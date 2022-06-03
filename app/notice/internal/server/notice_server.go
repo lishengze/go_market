@@ -6,9 +6,9 @@ package server
 import (
 	"context"
 
-	"bcts/app/notice/api/v1"
-	"bcts/app/notice/internal/logic"
-	"bcts/app/notice/internal/svc"
+	"market_server/app/notice/api/v1"
+	"market_server/app/notice/internal/logic"
+	"market_server/app/notice/internal/svc"
 )
 
 type NoticeServer struct {

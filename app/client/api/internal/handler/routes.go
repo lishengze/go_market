@@ -4,10 +4,10 @@ package handler
 import (
 	"net/http"
 
-	comm "bcts/app/client/api/internal/handler/comm"
-	order "bcts/app/client/api/internal/handler/order"
-	user "bcts/app/client/api/internal/handler/user"
-	"bcts/app/client/api/internal/svc"
+	comm "market_server/app/client/api/internal/handler/comm"
+	order "market_server/app/client/api/internal/handler/order"
+	user "market_server/app/client/api/internal/handler/user"
+	"market_server/app/client/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
 )

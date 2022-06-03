@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 
-	"bcts/app/pms/rpc/internal/config"
-	"bcts/app/pms/rpc/internal/server"
-	"bcts/app/pms/rpc/internal/svc"
-	"bcts/app/pms/rpc/types/pb"
+	"market_server/app/pms/rpc/internal/config"
+	"market_server/app/pms/rpc/internal/server"
+	"market_server/app/pms/rpc/internal/svc"
+	"market_server/app/pms/rpc/types/pb"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"

@@ -4,11 +4,11 @@ package handler
 import (
 	"net/http"
 
-	hedge "bcts/app/admin/api/internal/handler/hedge"
-	member "bcts/app/admin/api/internal/handler/member"
-	offlinetrade "bcts/app/admin/api/internal/handler/offlinetrade"
-	withdraw "bcts/app/admin/api/internal/handler/withdraw"
-	"bcts/app/admin/api/internal/svc"
+	hedge "market_server/app/admin/api/internal/handler/hedge"
+	member "market_server/app/admin/api/internal/handler/member"
+	offlinetrade "market_server/app/admin/api/internal/handler/offlinetrade"
+	withdraw "market_server/app/admin/api/internal/handler/withdraw"
+	"market_server/app/admin/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
 )

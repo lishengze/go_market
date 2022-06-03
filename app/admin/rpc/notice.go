@@ -1,12 +1,12 @@
 package main
 
 import (
-	"bcts/app/admin/rpc/internal/config"
-	"bcts/app/admin/rpc/internal/server"
-	"bcts/app/admin/rpc/internal/svc"
-	"bcts/app/admin/rpc/types/pb"
 	"flag"
 	"fmt"
+	"market_server/app/admin/rpc/internal/config"
+	"market_server/app/admin/rpc/internal/server"
+	"market_server/app/admin/rpc/internal/svc"
+	"market_server/app/admin/rpc/types/pb"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"

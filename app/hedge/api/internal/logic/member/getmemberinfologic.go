@@ -3,8 +3,8 @@ package member
 import (
 	"context"
 
-	"bcts/app/hedge/api/internal/svc"
-	"bcts/app/hedge/api/internal/types"
+	"market_server/app/hedge/api/internal/svc"
+	"market_server/app/hedge/api/internal/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

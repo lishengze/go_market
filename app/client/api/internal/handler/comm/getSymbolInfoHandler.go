@@ -1,15 +1,16 @@
 package comm
 
 import (
-	"bcts/common/crypto"
-	"bcts/common/result"
 	"encoding/json"
 	"io/ioutil"
+	"market_server/common/crypto"
+	"market_server/common/result"
 	"net/http"
 
-	"bcts/app/client/api/internal/logic/comm"
-	"bcts/app/client/api/internal/svc"
-	"bcts/app/client/api/internal/types"
+	"market_server/app/client/api/internal/logic/comm"
+	"market_server/app/client/api/internal/svc"
+	"market_server/app/client/api/internal/types"
+
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
