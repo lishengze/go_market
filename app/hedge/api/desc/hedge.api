@@ -1,0 +1,15 @@
+syntax = "v1"
+
+info(
+	title: "下单门户服务"
+	desc: "下单门户服务"
+	author: "cross"
+	email: "onefy502@163.com"
+	version: "v1"
+)
+
+import (
+	"client/hedge.api"
+	"client/member.api"
+	"client/withdraw.api"
+)

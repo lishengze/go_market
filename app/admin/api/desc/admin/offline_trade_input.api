@@ -1,0 +1,110 @@
+// 公共的请求参数
+type (
+    OfflineTradeReq {
+        ID              int64  `json:"id,optional" path:"id,optional"`                               // 主键
+        TradeBusinessNo string `json:"trade_business_no,optional" path:"trade_business_no,optional"` //
+        OfflineTradeID  string `json:"offline_trade_id,optional"`
+        UID             string `json:"uid,optional"`
+        UserName        string `json:"user_name,optional"`
+        AccountName     string `json:"account_name,optional"`
+        Name            string `json:"name,optional"`
+        Symbol          string `json:"symbol,optional"`
+        Direction       int    `json:"direction,optional"`
+        TradeID         string `path:"trade_id,optional" json:"trade_id,optional"`
+        Remarks         string `json:"remarks,optional"`
+        Operator        string `json:"operator,optional"` //操作员
+        TradeTime string `json:"trade_time,optional"`
+        Quantity  string `json:"quantity,optional,default=0.0"`
+        Amount    string `json:"amount,optional,default=0.0" form:"amount,optional"`
+        Fee           string `json:"fee,optional,default=0.0"`
+        TwoFactorCode string `json:"two_factor_code,optional" form:"two_factor_code,optional"` //6位数字的2FA code
+    }
+)
+// 公共的响应参数
+type (
+    OfflineTradeInput struct {
+        Id int64 `json:"id"` // 主键ID
+        TradeBusinessNo string `json:"trade_business_no"` // 业务编号
+        TradeTime int64 `json:"trade_time"` // 交易时间
+        OfflineTradeId string `json:"offline_trade_id"` // 线下交易ID
+        Uid int64 `json:"uid"` // uid
+        UserName string `json:"user_name"` // 客户账号
+        Name string `json:"name"` // 姓名
+        Symbol string `json:"symbol"` // 品种
+        Direction int64 `json:"direction"` // 0买 1卖
+        Quantity string `json:"quantity"` // 数量
+        Amount string `json:"amount"` // 金额
+        Price string `json:"price"` // 价格
+        Fee string `json:"fee"` // 手续费
+        TradeId string `json:"trade_id"` // 内部成交ID
+        Remarks string `json:"remarks"` // 备注
+        Status int64 `json:"status"` // 业务状态 1一次录入 2二次录入
+        Operator1 string `json:"operator1"` // 操作员1
+        Operator2 string `json:"operator2"` // 操作员2
+        ReviseOperator string `json:"revise_operator"` // 修正操作员
+        OperateTime int64 `json:"operate_time"` // 操作时间
+    }
+)
+// 删除请求
+type (
+    DeleteOfflineTradeReq {
+        ID              int64  `json:"id,optional" path:"id,optional"` // 主键
+        Operator        string `json:"-,optional"` //操作员
+        TwoFactorCode string `json:"two_factor_code,optional" form:"two_factor_code,optional"` //6位数字的2FA code
+    }
+)
+// 分页查询
+type (
+    GetAllOfflineTradeReq {
+        Pager
+        StartTime      string `form:"start_time,optional"`       //开始日期
+        EndTime        string `form:"end_time,optional"`         //结束日期
+        Symbol         string `form:"symbol,optional"`           //币种
+        UID            string `form:"uid,optional"`              //客户
+        OfflineTradeId string `form:"offline_trade_id,optional"` //线下交易ID
+        Status         string `form:"status,optional"`           //业务状态  1 一次录入, 2 二次录入
+    }
+
+    GetAllOfflineTradeReply {
+        Count int64 `json:"count"` // 条数
+        data []*OfflineTradeInput `json:"data"` // 数据
+    }
+)
+
+@server(
+	prefix: /api/operate
+	group: offlinetrade
+	jwt: JwtAuth
+	middleware: JwtAuthMiddleware,RbacMiddleware
+)
+service admin {
+    @doc(
+	  summary: "创建线下订单"
+	)
+    @handler CreateOfflineTrade
+    post /offlinetrade(OfflineTradeReq) returns(OfflineTradeInput)
+
+    @doc(
+      summary: "更新线下订单"
+    )
+    @handler UpdateOfflineTrade
+    put /offlinetrade/:id(OfflineTradeReq) returns(OfflineTradeInput)
+
+    @doc(
+      summary: "线下订单详情"
+    )
+    @handler GetOneOfflineTrade
+    get /offlinetrade/:id(OfflineTradeReq) returns(OfflineTradeInput)
+
+    @doc(
+      summary: "删除线下订单"
+    )
+    @handler DeleteOfflineTrade
+    delete /offlinetrade/:id(DeleteOfflineTradeReq) returns(OfflineTradeInput)
+
+	@doc(
+      summary: "查询线下订单"
+    )
+    @handler GetAllOfflineTrade
+    get /offlinetrade(GetAllOfflineTradeReq) returns(GetAllOfflineTradeReply)
+}

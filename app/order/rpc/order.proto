@@ -1,0 +1,119 @@
+syntax = "proto3";
+
+option go_package = "./pb";
+
+package pb;
+
+enum DirectionEnum
+{
+  BUY = 0;
+  SELL = 1;
+}
+
+message QuoteReq {
+  //前端生成, 方便追踪当前请求
+  string QuoteID = 1;
+  int64 UserID = 2;
+  string Symbol = 3;
+  int32 Direction = 4;
+  int32 QuoteType = 5;  //询价方式 0:数量询价 1:金额询价
+  string Volume = 6;
+  string Amount = 7;
+}
+
+message QuoteRsp {
+  string QuoteID = 1;
+  int64 UserID = 2;
+  string Symbol = 3;
+  int32 Direction = 4;
+  int32 QuoteType = 5;
+  string Price = 6;
+  string Volume = 7;
+  string Amount = 8;
+}
+
+
+message OrderBase {
+  int64 UserID = 1;               //用户id
+  string Symbol = 2;
+  int32 OrderType =3;             //订单类型 1:otc订单 2:聚合交易订单
+  int32 OTCOrderMode = 4;         //otc下单模式 1:数量下单 2:金额下单
+  int32 OrderPriceType = 5;       //报单价格条件 1:限价单 2:市价单
+  int32 Direction = 6;    //0:买 1:卖
+  string Volume = 7;              //报单数量
+  string Price = 8;              //报单价格
+  string Amount = 9;               //报单金额, 根据金额下单时用到
+}
+
+message CreateOrderReq {
+  string RequestID = 1;           //前端传
+  int64 UserID = 2;               //用户id
+  string Symbol = 3;              //合约
+  int32 OrderType = 4;             //订单类型 1:otc订单 2:聚合交易订单
+  int32 OrderMode = 5;            //下单模式 1:数量下单 2:金额下单
+  int32 OrderPriceType = 6;       //报单价格条件 1:限价单 2:市价单
+  int32 Direction = 7;            //0:买 1:卖
+  string Volume = 8;              //报单数量
+  string Price = 9;              //报单价格
+  string Amount = 10;               //报单金额, 根据金额下单时用到
+}
+
+
+message CreateOrderRsp {
+  string RequestID = 1;
+  string OrderLocalID = 2;
+  int64 UserID = 3;               //用户id
+  string Symbol = 4;
+  int32 OrderType = 5;             //订单类型 1:otc订单 2:聚合交易订单
+  int32 OrderMode = 6;          //otc下单模式 1:数量下单 2:金额下单
+  int32 OrderPriceType = 7;       //报单价格条件 1:限价单 2:市价单
+  int32 direction = 8;          //0:买 1:卖
+  string Volume = 9;              //报单数量
+  string Price = 10;               //报单价格
+  string Amount = 11;             //报单金额, 根据金额下单时用到
+  string CreateTime = 12;         //创建时间
+}
+
+message OTCOrderQueryReq {
+  int64 userID = 1;           //会员ID
+  int64 page = 2;             //页码，从1开始
+  int64 page_size = 3;        //每页的条数
+}
+
+message OrderQueryRsp {
+  int64 count = 1;
+  repeated ExchangeOrder Orders = 2;
+}
+
+message ExchangeOrder {
+  int64 id = 1;
+  string order_local_id = 2;// 本地报单编号/订单ID
+  int64 user_id = 3;// 用户ID
+  int64 order_type = 4; // 订单类型 1:otc订单 2:聚合交易订单
+  int64 order_mode = 5;//下单模式 0:按数量下单 1:按金额下单
+  int64 order_price_type = 6;//报单价格条件 1:限价单 2:市价单
+  string symbol = 7;// 交易币对 比如BTC_USDT
+  int64 direction = 8;//  订单方向
+  int64 order_maker = 9;// 1:taker 2:maker
+  string volume = 10;//decimal.Decimal  报单数量
+  string amount = 11; // decimal.Decimal   报单金额, 根据金额下单时用到
+  string price = 12;// decimal.Decimal 挂单价格
+  int64 order_status = 13;// 订单状态 0:已发送 1:全部成交 2:部分成交在队列 3:部分成交已撤单 4:撤单
+  string trade_volume = 14;// 已成交数量
+  string trade_amount = 15;// 已成交金额(包括手续费)
+  int64 fee_kind = 16;// 订单创建时的手续费类型 1:百分比 2:绝对值
+  string fee_rate = 17;// 订单创建时的手续费类型
+  string order_create_time = 18;
+  string order_modify_time = 19;
+}
+
+//service
+service order {
+  //OTC询价
+  rpc otcQuote(QuoteReq) returns (QuoteRsp);
+  //创建订单
+  rpc createOrder(CreateOrderReq) returns (CreateOrderRsp);
+  //查询订单
+  rpc getOTCOrder(OTCOrderQueryReq) returns (OrderQueryRsp);
+}
+

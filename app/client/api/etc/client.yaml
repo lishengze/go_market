@@ -1,0 +1,58 @@
+Name: client
+Host: 0.0.0.0
+Port: 8888
+Timeout: 5000
+MaxBytes: 5242880
+
+Mysql:
+  #DataSource: root:wanghyu@tcp(127.0.0.1:3306)/bcts?charset=utf8mb4&parseTime=true&loc=UTC
+  DataSource: broker:devBroker321@tcp(127.0.0.1:3306)/broker?charset=utf8mb4&parseTime=true&loc=UTC
+Cache:
+  - Host: 127.0.0.1:6379
+    Pass: ""
+    Type: node
+
+Redis:
+  Host: 127.0.0.1:6379
+  Pass: ""
+  Type: node
+
+Log:
+  Compress: true
+  KeepDays: 0
+  Level: "info"
+  Mode: "file"
+  #Mode: "console"
+  Path: "./log"
+  ServiceName: "client"
+  StackCooldownMillis: 100
+
+#rest请求的回报是否需要加密
+ResponseEncrypted: false
+
+NacosConfig:
+  IpAddr: "127.0.0.1"
+  Port: 8848
+  NamespaceId: "BCTS"
+  TimeoutMs: 5000
+  NotLoadCacheAtStart: true
+  LogDir: "./log/nacos/log"
+  CacheDir: "./log/nacos/cache"
+  LogLevel: "debug"
+
+#证书位置
+PemFileConfig:
+  PriPemFilePath: "etc/pri_hashkey-bcts.pem"
+  PubPemFilePath: "etc/pub_gateway.pem"
+
+UserCenterRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: usercenter.rpc
+
+
+OrderRpc:
+  Endpoints:
+    - 127.0.0.1:8890
+  Timeout: 5000

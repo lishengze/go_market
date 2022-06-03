@@ -1,0 +1,21 @@
+type (
+	WithdrawReq {
+		Id string `path:"id"`
+	}
+
+	WithdrawReply {
+		Id   string `json:"id"`
+		Name string `json:"name"`
+	}
+)
+
+@server(
+	prefix: api/withdraw
+	group: withdraw
+	jwt: JwtAuth
+)
+
+service admin {
+	@handler getWithdrawInfo
+	get /withdraw/:id (WithdrawReq) returns (WithdrawReply)
+}

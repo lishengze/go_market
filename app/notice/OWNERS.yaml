@@ -1,0 +1,10 @@
+// See Owners doc at http://github.com/kubernetes/community/blob/master/contributors/guide/owners.md
+approvers:
+- hucuiliang
+- wanghy
+
+reviewers:
+-
+
+lables:
+- service/notice

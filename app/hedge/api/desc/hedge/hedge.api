@@ -1,0 +1,52 @@
+type (
+	ReqQueryHedgeRisk {
+			Symbol         string `json:"symbol"`           //品种,空表示全部
+        	Direction      int    `json:"direction"`        //成交方向，0表示买，1表示卖
+        	UnitHedgingPnl string `json:"unit_hedging_pnl"` //对冲盈亏币种
+        	StartTime      string `json:"start_time"`       //成交起始时间,格式：2020-12-04 16:29:27
+        	EndTime        string `json:"end_time"`         //成交结束时间,格式：2020-12-04 16:29:27
+        	TradeID        string `json:"trade_id"`         //中央对手方成交编号
+        	Status         string `json:"status"`           //对冲状态, "0":未对冲 "1":对冲处理中  "2":已完成  "3": 异常 ,空表示全部。多选，多个状态间用",”隔开。
+        	Page           int    `json:"page"`             //页码
+        	PageSize       int    `json:"page_size"`        //每页的条数
+	}
+
+	QueryHedgeRiskReply {
+		    TradeID         string          `json:"trade_id"`          // 中央对手方成交编号
+        	Symbol          string          `json:"symbol"`            //品种
+        	CounterMemberID int64           `json:"counter_member_id"` //对手客户UID
+        	OrderID         string          `json:"order_id"`          //客户订单ID
+        	OrderType       string          `json:"order_type"`        //客户订单类型
+        	Direction       int             `json:"direction"`         //成交方向，0或1，0表示买，1表示卖
+        	Price           string          `json:"price"`             // 成交价
+        	Amount          string          `json:"amount"`            // 成交量
+        	NeedHedgeAmount string          `json:"need_hedge_amount"` //未对冲量
+        	HedgeProfit     string          `json:"hedge_profit"`      //对冲盈亏
+
+        	Time            string          `json:"time"`              // 成交时间
+        	Status          int             `json:"status"`            // 对冲状态,"hedging":对冲进行中,"complete":对冲完成,"partial":对冲部分完成,"failure":对冲失败
+
+        	UnhedgedQuantity     string          `json:"unhedged_quantity"`      // 原为未对冲量
+
+        	AvgPriceHedged       string          `json:"avg_price_hedged"`       // 对冲均价
+        	HedgingPnl           string          `json:"hedging_pnl"`            // 对冲盈亏
+        	UnitHedgingPnl       string          `json:"unit_hedging_pnl"`       // 对冲盈亏币种
+        	ClientName           string          `json:"client_name"`            // 客户姓名
+        	PriceClientDealt     string          `json:"price_client_dealt"`     // 成交价
+        	TradeQuantity        string          `json:"trade_quantity"`         // 成交价
+
+	}
+)
+
+//========================> admin v1 <========================
+//need login
+@server(
+	prefix: api/hedge
+	group: hedge
+	jwt: JwtAuth
+)
+
+service admin {
+	@handler GetRiskMonitor
+	get /risk/monitor (ReqQueryHedgeRisk) returns (QueryHedgeRiskReply)
+}

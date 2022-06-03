@@ -1,0 +1,80 @@
+Name: notice.rpc
+ListenOn: 127.0.0.1:8080
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: notice.rpc
+
+EmailServerConf:
+  Endpoint: https://stg1-api.hub.hashkey.com/openapi/messaging/email
+  From: "Xpert.noreply@hashkey.com"
+  FromName: "Hashkey Xpert QA"
+  Channel: trading
+  Token: ff1ZfHadEbxkgmOAmLTU
+  TimeOut: 10000 # 毫秒
+
+SmsServerConf:
+  Endpoint: https://stg1-api.hub.hashkey.com/openapi/messaging/sms
+  Channel: trading
+  Token: ff1ZfHadEbxkgmOAmLTU
+  TimeOut: 10000 # 毫秒
+# 告警服务配置
+DingTalkRobotConf:
+  DefaultGroup:
+    AccessToken: db898ab53bb81ceb95635034a6c326a62e0c56dce511fce45dd3441ef297fd54
+    Secret: SEC440dc8873cca42bcfe5b57754e7b4477f1358551713366007e3998cebb8cb828
+TemplateConf:
+  List:
+    DepositSuccess:
+      Subject: "Hashkey Xpert：Deposit"
+      Content: "[Hashkey Xpert] You have deposit {{AMOUNT}} {{CURRENCY}} successfully, please login Hashkey Xpert to check."
+    DepositFail:
+      Subject: "Hashkey Xpert：Deposit"
+      Content: "[Hashkey Xpert] You have deposit {{AMOUNT}} {{CURRENCY}} failed, please login Hashkey Xpert to check."
+    WithdrawSuccess:
+      Subject: "Hashkey Xpert：Withdraw"
+      Content: "[Hashkey Xpert] You have withdraw {{AMOUNT%% {{CURRENCY}} successfully, please login Hashkey Xpert to check."
+    WithdrawFail:
+      Subject: "Hashkey Xpert：Withdraw"
+      Content: "[Hashkey Xpert] You have withdraw {{AMOUNT%% {{CURRENCY}} failed, please login Hashkey Xpert to check."
+  EmailHtmlTemplate: '<html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"/>
+      <style type="text/css">
+        header svg {
+            width: 26px;
+            height: 26px;
+            margin-right: 8px;
+        }
+      </style>
+    </head>
+    <body>
+    <div class="container" style="max-width:730px;font-size:
+      14px;color: #909199;line-height: 18px;padding: 23px 28px 35px;border: 1px solid rgba(237, 237, 237, .8);">
+        <header style="display:
+          flex;align-items:
+            center;justify-content:
+              flex-end;margin-bottom: 28px;">
+                <span style="font-size:
+                  16px;color: #303033;">HashKey Xpert</span>
+        </header>
+        <div style="padding-bottom:
+          24px;border-bottom: 1px solid rgba(237, 237, 237, .8);">
+            <p style="font-size:
+              24px;font-weight:
+                500;color: #403d3c;line-height: 28px;margin:0 0 26px"></p>
+            <p style="margin: 0 0 10px;">Dear customer</p>
+            <p style="margin: 0;">{{CONTEXT}}</p>
+            <p style="margin:
+              0;">If you have any questions, please contact us: contact@xpert.hashkey.com</p>
+        </div>
+        <footer style="padding-top: 25px;">
+          <p style="margin: 0;">Best regards,</p>
+          <p style="margin: 0 0 10px;">Hashkey Xpert HongKong</p>
+          <p style="margin: 0;">This is an automated message. Please do not reply.</p>
+        </footer>
+      </div>
+    </body>
+  </html>'

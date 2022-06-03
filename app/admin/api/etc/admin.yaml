@@ -1,0 +1,55 @@
+Name: admin
+Host: 127.0.0.1
+Port: 8001
+Timeout: 5_1000
+#ListenOn: 127.0.0.1:8001
+
+Etcd:
+  Hosts:
+    - 127.0.0.1:2379
+  Key: admin.rpc
+
+Mysql:
+  Addr: "broker:QsTZfnXb%yJw&r@7@tcp(36.255.220.139:3306)/broker?charset=utf8,utf8mb4&parseTime=True&loc=UTC&timeout=15s"
+  max_open_conns: 16
+  max_idle_conns: 8
+  conn_max_life_time: 300
+
+Cache:
+  - Weight: 100
+    Host: "127.0.0.1:6379"
+    Pass: "tradingtest"
+
+PriceRedis:
+  Host: "127.0.0.1:6379"
+  Pass: "tradingtest"
+
+TimeoutMarketPrice:
+  Mtime: 600000000000
+  Ctime: 120000000000
+  #不活跃的币
+  Coins: ["BTT", "C98", "GNX", "PAX"]
+
+Snowflake:
+  Node: 1
+  Epoch: 1588262400000
+  NodeBits: 8
+
+Environment:
+  Env: "qa"
+
+JwtAuth:
+  AccessSecret: "0(**^.^**)0"
+  AccessExpire: 3600
+
+Nacos:
+  IpAddr: "36.255.220.139"
+  Port: 8848
+  NamespaceId: "bcts"
+  TimeoutMs: 5000
+  NotLoadCacheAtStart: true
+  LogDir: "logs/nacos/log"
+  CacheDir: "logs/nacos/cache"
+  RotateTime: "24h"
+  MaxAge: 3
+  LogLevel: "debug"

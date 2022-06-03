@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+option go_package = "./pb";
+
+package pb;
+
+message DSEmpty{
+}
+
+message SymbolInfo {
+    string SymbolID           = 1;             //品种代码，如 BTC_USDT
+    int64 SymbolKind          = 2;            //品种类型，如 1-现货、2-期货等
+    string Underlying         = 3;             //标的，如 BTC
+    string PrimaryCurrency    = 4;            //基础货币，如 USDT
+    string BidCurrency        = 5;            //报价货币，如 USDT
+    string SettleCurrency     = 6;            //结算货币，如 USDT
+    bool Switch               = 7;               //交易开关
+    int64 VolumePrecision     = 8;            //数量精度
+    int64 PricePrecision      = 9;            //价格精度
+    int64 AmountPrecision     = 10;           //金额精度
+    string MinUnit            = 11;            //最小交易单位
+    string MinChangePrice     = 12;             //最小变动价位
+    string Spread             = 13;            //点差，品种tick值的整数倍
+    int64 FeeKind             = 14;           //手续费算法，取值1或2，1表示百比分，2表示绝对值。默认为1.
+    string TakerFee           = 15;             //Taker手续费率
+    string MakerFee           = 16;             //Maker手续费率
+    string SingleMinOrderVolume   = 17; //单次最小下单量
+    string SingleMaxOrderVolume   = 18; //单次最大下单量
+    string SingleMinOrderAmount   = 19; //单次最小下单金额
+    string SingleMaxOrderAmount   = 20; //单次最大下单金额
+    string BuyPriceLimit          = 21;     //买委托价格限制
+    string SellPriceLimit         = 22;   //卖委托价格限制
+    int64  MaxMatchGear          = 23;         //最大成交档位,不得超过20
+    string OtcMinOrderVolume      = 24;    //OTC最小量
+    string OtcMaxOrderVolume      = 25;    //OTC最大量
+    string  OtcMinOrderAmount     = 26;    //OTC最小金额
+    string OtcMaxOrderAmount      = 27;  //OTC最大金额
+}
+
+message CurrencyInfo {
+    string  CurrencyID  = 1;    //币种代码，如 USDT
+    int64   Kind        = 2;       //币种类型，1:法币 2: 公链数字货币 3：稳定币
+    string ChineseName  = 3;   //中文名称，如 泰达币
+    string EnglishName  = 4;     //英文名称，如 Tether USD
+    string MinUnit      = 5;       //币种最小单位
+    bool DepositSwitch  = 6;  //充值开关
+    bool WithdrawSwitch = 7;  //提现开关
+    string MinWithdraw  = 8;   //单笔最小提现金额
+    string MaxWithdraw  = 9;    //单笔最大提现金额
+    string MaxDayWithdraw = 10;//当日最大提现金额
+    string Threshold    = 11;       //大额提现阈值
+    int64 FeeKind       = 12;     //提现手续费算法 1:百比分，2:绝对值。默认为1.
+    string Fee          = 13;     //提现手续费率
+    string Operator     = 14;        //操作员
+    string Time         = 15;     //操作时间
+}
+
+//合约
+message GetSymbolReq {
+  string Symbol = 1; //如果全部查询，空
+}
+message GetSymbolRsp {
+  int64 Count = 1;
+  repeated SymbolInfo List = 2;
+}
+
+//币种
+message GetCurrencyReq {
+  string Currency = 1;
+}
+
+message GetCurrencyRsp {
+  int64 Count = 1;
+  repeated CurrencyInfo List = 2;
+}
+
+
+//用户交易手续费
+message GetUserFeeInfoReq {
+  int64 UserID = 1;
+  string GroupID = 2;  //用户组ID
+  string Symbol = 3;
+}
+
+message GetUserFeeInfoRsp {
+  int64 UserID = 1;
+  int64 GroupID = 2;  //用户组ID
+  string Symbol = 3;
+  string BaseCurrency = 4;
+  string TargetCurrency = 5;
+  int32 FeeKind = 6;
+  string TakerFee = 7;
+  string MakerFee = 8;
+  SymbolInfo SymbolInfo = 9;
+}
+
+
+message PublishNacosConfig {
+  string DataID    = 1;
+  string Group     = 2;
+  string Content   = 3;
+}
+
+message DeleteNacosConfig {
+  string DataID    = 1;
+  string Group     = 2;
+}
+
+
+service dataService {
+  //获取合约参数
+  rpc getSymbol(GetSymbolReq) returns (GetSymbolRsp);
+  //获取币种参数
+  rpc getCurrency(GetCurrencyReq) returns (GetCurrencyRsp);
+  //获取用户交易手续费
+  rpc getUserFeeInfo(GetUserFeeInfoReq) returns (GetUserFeeInfoRsp);
+  //发布参数
+  rpc publishNacosConfig(PublishNacosConfig) returns (DSEmpty);
+  //删除参数
+  rpc deleteNacosConfig(DeleteNacosConfig) returns (DSEmpty);
+}

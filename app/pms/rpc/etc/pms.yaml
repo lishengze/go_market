@@ -1,0 +1,27 @@
+Name: pms.rpc
+ListenOn: 127.0.0.1:8844
+Mode: dev
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: pms.rpc
+Mysql:
+  DataSource: root:123456@tcp(127.0.0.1:3306)/broker?charset=utf8,utf8mb4&parseTime=True&loc=UTC
+  #DataSource: "broker:devBroker321@tcp(118.193.33.169:3306)/broker?charset=utf8mb4&parseTime=true&loc=UTC"
+Cache:
+  - Host: 127.0.0.1:6379
+    Pass:
+Redis:
+  Host: 127.0.0.1:6379
+  Pass:
+  Type: node
+Kafka:
+  Brokers:
+    - 152.32.254.76:9117
+  Group: trade
+  Version: 2.8.0
+  Topics:
+    - TRADEx-BTC_USDT
+    - TRADEx-ATLAS_USD
+    - TRADEx-ATOM_USDT
+

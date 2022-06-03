@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+option go_package = "./pb";
+
+package Proto3.MarketData; 
+
+import public "google/protobuf/timestamp.proto";
+
+message PriceVolume {
+  string price = 1;
+  string volume = 2;
+}
+
+message Depth {
+  google.protobuf.Timestamp timestamp = 1; // 交易所更新时间
+  string  exchange = 2;
+  string  symbol = 3;
+  repeated  PriceVolume asks = 4;
+  repeated  PriceVolume bids = 5;
+  google.protobuf.Timestamp mpu_timestamp = 6; // mpu 服务器时间
+}
+
+message Trade {
+  google.protobuf.Timestamp timestamp = 1; // 交易所更新时间
+  string exchange = 2;
+  string symbol = 3;
+  string price = 4;
+  string volume = 5;
+}
+
+message Kline {
+  google.protobuf.Timestamp timestamp = 1; // 时间
+  string exchange = 2;
+  string symbol = 3;
+  string open = 4;
+  string high = 5;
+  string low = 6;
+  string close = 7;
+  string volume = 8; // 量
+  string value = 9; // 额
+  uint32 resolution = 10;
+}
+
+message HistKlineData
+{
+    string symbol = 1;
+    string exchange = 2;    
+    uint64 start_time = 3;
+    uint64 end_time = 4;
+    uint32 count = 5;
+    uint32 frequency = 6;
+    repeated Kline kline_data = 7;
+};
+
+message EmptyReq {
+
+}
+
+message EmptyRsp {
+}
+
+
+// 增加的两个是pms,还有前置服务器的 需要用到的行情接口；
+message ReqHishKlineInfo
+{
+    string symbol = 1;
+    string exchange = 2;    
+    uint64 start_time = 3;
+    uint64 end_time = 4;
+    uint32 count = 5;
+    uint32 frequency = 6;
+};
+
+message ReqTradeInfo
+{
+    string symbol = 1;
+    string exchange = 2;
+    uint64 time = 3;
+};
+
+service MarketService { // 服务名字还是用 MarketService, 整个行情系统都要用；
+  rpc RequestHistKlineData(ReqHishKlineInfo) returns (HistKlineData){}
+  rpc RequestTradeData(ReqTradeInfo) returns (Trade) {} 
+}

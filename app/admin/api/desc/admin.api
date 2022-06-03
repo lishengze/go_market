@@ -1,0 +1,23 @@
+syntax = "v1"
+
+info(
+	title: "管理服务"
+	desc: "管理服务"
+	author: "cross"
+	email: "onefy502@163.com"
+	version: "v1"
+)
+
+import (
+	"admin/hedge.api"
+	"admin/member.api"
+	"admin/withdraw.api"
+	"admin/offline_trade_input.api"
+)
+
+type Pager {
+	Page     int64       `form:"page"`      // 页数
+	PageSize int64       `form:"page_size"` // 每页多少条数据
+	Order    interface{} `form:"order,optional"`
+	Where    interface{} `form:"where,optional"`
+}

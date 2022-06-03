@@ -1,0 +1,104 @@
+syntax = "v1"
+
+info(
+	title: "bcts user interface"
+	desc: "bcts用户相关接口"
+	author: "wanghyu"
+	email: "wanghyu@163.com"
+	version: "1.0.0"
+)
+
+//用户信息查询请求
+type (
+	UserInfoReq {
+		UserID int64 `form:"user_id,optional"`
+	}
+
+	UserInfoRsp {
+		UserID int64 `json:"user_id"`
+		UserType int64 `json:"user_type"`
+		Name string `json:"name"`
+		Email string `json:"email"`
+		Mobile string `json:"mobile"`
+		KycLevel int64 `json:"kyc_level"`
+	}
+)
+
+//用户结算信息查询
+type (
+	UserSettlementInfoReq {
+		UserID int64 `form:"user_id,optional"`
+	}
+
+	SettlementInfo {
+		BankName string `json:"bank_name"`
+		BankAccountNo string `json:"bank_account_no"` //银行账号
+		Swift string `json:"swift"`
+		RouteCode string `json:"route_code"`
+		BeneficiaryName string `json:"beneficiary_name"`
+		BeneficiaryAccount string `json:"beneficiary_account"`
+		BeneficiaryAddress string `json:"beneficiary_address"`
+	}
+
+	UserSettlementInfoRsp {
+		Count int `json:"count"`
+		List []*SettlementInfo `json:"list"`
+	}
+)
+
+//用户账户信息查询
+type (
+	AccountInfoReq {
+		UserID int64 `form:"user_id,optional"`
+		Currency string `form:"currency,optional"`
+	}
+
+	AccountInfo {
+		UserID int64 `json:"user_id"`
+		Currency string `json:"currency"`
+		Available string `json:"available"`
+		Frozen string `json:"frozen"`
+		Balance string `json:"balance"`
+		CostPrice string `json:"cost_price"`
+	}
+	AccountInfoRsp {
+		Count int `json:"count"`
+		List []*AccountInfo `json:"list"`
+	}
+
+)
+
+
+type (
+	TestAddReq {
+		Test1 string `json:"test1"`
+		Test2 string `json:"test2"`
+	}
+
+	TestAddRsp {
+		ID string `json:"id"`
+	}
+)
+
+@server(
+	group: user
+	prefix : trading/api/v2
+)
+
+service client {
+	@doc "用户信息查询"
+	@handler getUserInfo
+	get /user/info (UserInfoReq) returns (UserInfoRsp);
+
+	@doc "用户结算信息查询"
+	@handler getUserSettlementInfo
+	get /user/settlement/info (UserSettlementInfoReq) returns (UserSettlementInfoRsp)
+
+	@doc "用户账户信息查询"
+	@handler getAccountInfo
+	get /user/account/info (AccountInfoReq) returns (AccountInfoRsp)
+
+	@doc "测试"
+	@handler addTest
+	post /user/add (TestAddReq) returns (TestAddRsp)
+}

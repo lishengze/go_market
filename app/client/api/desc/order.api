@@ -1,0 +1,119 @@
+syntax = "v1"
+
+info(
+	title:  "bcts ask otcQuote"
+	desc:   "bcts 用户报单，询价"
+	author: "liushilong"
+	email:  "liushilong@163.com"
+	version: "1.0.0"
+)
+
+type (
+	CreateOrderReq {
+		RequestID      string `json:"request_id"`        	//请求id，区别每次请求
+		UserID         int64 	`json:"order_id"`          //订单id 用户订单id，用于程序化交易
+		OrderType      int32    `json:"order_type, options=1|2"`            //订单类型 1:otc订单 2:聚合交易订单
+		OrderMode      int32    `json:"otc_order_mode, options=1|2"`        //下单模式 1:数量下单 2:金额下单
+		OrderPriceType int32    `json:"order_price_type, options=1|2"`      //报单价格条件 1:限价单 2:市价单
+		Symbol         string 	`json:"symbol"`                //币对
+		Direction      int32    `json:"direction, options=1|2"` //下单方向，0表示买，1表示卖
+		Price          string 	`json:"price"`                 //报单价格
+		Volume         string 	`json:"volume"`                //报单数量
+		Amount         string 	`json:"amount"`                //报单金额
+		OrderMaker     int32    `json:"order_maker, options=1|2"`         //1: taker  2:maker
+	}
+
+
+	CreateOrderRsp {
+		RequestID       string `json:"request_id"`        //请求id，区别每次请求
+		OrderLocalID         string `json:"order_id"`          //订单id 用户订单id，用于程序化交易
+		UserID          int64  `json:"user_id"`           //客户UID
+		OrderType       int32    `json:"order_type"`        //订单类型 1:otc订单 2:聚合交易订单
+		OrderMode       int32    `json:"otc_order_mode, options=1|2"`        //下单模式 1:数量下单 2:金额下单
+		OrderPriceType  int32    `json:"order_price_type, options=1|2"`      //报单价格条件 1:限价单 2:市价单
+		Symbol          string `json:"symbol"`            //币对
+		Direction       int32    `json:"direction"`         //下单方向，0或1，0表示买，1表示卖
+		Price           string `json:"price"`             //报单价格
+		Volume          string `json:"volume"`            //报单数量
+		TradeVolume     string `json:"trade_volume"`      //成交数量
+		TradeAmount     string `json:"trade_amount"`      //成交金额
+		LeftoverVolume  string `json:"leftover_volume"`   //剩余量
+		OrderStatus     int32    `json:"order_status"`      //订单状态，0 已接单 "TRADING"，1 交易部分完成 / 部分匹配成交 "PART_COMPLETED"， 2 交易完成 / 已匹配成交 "COMPLETED"，3 交易取消 "CANCELED"， 4 交易部分取消 "CANCELED"
+		OrderMaker      int32   `json:"order_maker"`       //是否maker单 1:taker 2:maker
+
+		OrderCreateTime string `json:"order_create_time"` //订单创建时间
+		OrderModifyTime string `json:"order_modify_time"` //订单更新时间
+	}
+
+	// OTC询价
+	OtcQuoteReq {
+		QuoteID string `json:"quote_id"` //前端生成 规则 "quote_{userid}_{毫秒时间戳}"
+		UserID int64 `json:"user_id, optional"`
+		Symbol string `json:"symbol"` //币对，比如 BTC_USD
+		Direction int32    `json:"direction,range=[0:1]"` //下单方向 0:买，1:卖
+		QuoteType int32 `json:"quote_type, options=0|1"` //询价方式 0:按数量询价 1:按金额询价
+		Volume string `json:"volume,optional"`   // 数量
+		Amount string `json:"amount,optional"`   // 交易额
+	}
+
+	OtcQuoteRsp {
+		QuoteID string `json:"quote_id"` //前端生成 规则 "quote_{userid}_{毫秒时间戳}"
+		UserID int64 `json:"user_id"`
+		Symbol    string `json:"symbol"`     //币对
+		Direction int32    `json:"direction,range=[0:1]"` //下单方向  0:买，1:卖
+		QuoteType int32 `json:"quote_type, options=0|1"` //询价方式 0:按数量询价 1:按金额询价
+		Price     string `json:"price"`      // 价格
+		Volume string `json:"volume"` // 数量
+		Amount string `json:"amount"` // 交易额
+	}
+
+	OTCOrderQueryReq {
+		Page int `json:"page,optional,default=1"`                 //页码，从1开始
+		PageSize int `json:"page_size,optional,default=15"`        //每页的条数
+	}
+
+	OrderOrderItem {
+		OrderLocalId    string `json:"order_local_id"`    //订单id 本地报单编号
+		UserID          string  `json:"user_id"`           //客户UID
+		OrderType       int  `json:"order_type"`        // 订单类型 1:otc订单 2:聚合交易订单
+		OrderPriceType  int    `json:"order_price_type"`  //报单价格条件 1:限价单 2:市价单
+		Symbol          string `json:"symbol"`            //币对
+		Direction       int    `json:"direction"`         //下单方向，0或1，0表示买，1表示卖
+		Price           string `json:"price"`             //报单价格
+		Volume          string `json:"volume"`            //报单数量
+		Amount          string `json:"amount"`            //报单金额
+		TradeVolume     string `json:"trade_volume"`      //成交数量
+		TradeAmount     string `json:"trade_amount"`      //成交金额
+		OrderStatus     int    `json:"order_status"`      //订单状态，0 已接单 "TRADING"，1 交易部分完成 / 部分匹配成交 "PART_COMPLETED"， 2 交易完成 / 已匹配成交 "COMPLETED"，3 交易取消 "CANCELED"， 4 交易部分取消 "CANCELED"
+		OrderMaker      int   `json:"order_maker"`       //是否maker单 1:taker 2:maker
+		OrderCreateTime string `json:"order_create_time"` //订单创建时间
+		OrderModifyTime string `json:"order_modify_time"` //订单更新时间
+	}
+
+	OrderQueryRsp {
+		Orders []*OrderOrderItem `json:"orders"`
+		Count string `json:"count"`
+	}
+
+
+)
+
+@server(
+	group: order
+	prefix: trading/api/v2
+)
+
+service client {
+	@doc "OTC询价"
+	@handler otcQuote
+	post /otc-quote (OtcQuoteReq) returns (OtcQuoteRsp)
+
+    @doc "用户报单接口"
+    @handler createOrder
+    post /create-order (CreateOrderReq) returns (CreateOrderRsp)
+
+	@doc "用户订单查询"
+	@handler getOTCOrder
+	get /otc-order (OTCOrderQueryReq) returns (OrderQueryRsp)
+
+}
