@@ -95,29 +95,74 @@ func (d *DBServer) get_table_name(data_type string, symbol string, exchange stri
 
 func (d *DBServer) update_table_list() {
 	sql_str := "show tables;"
-	result, err := d.db.Query(sql_str)
+	rows, err := d.db.Query(sql_str)
 
 	if err != nil {
 		logx.Errorf("err: %+v", err)
 	}
 
-	// while(result->next())
-	// {
-	// 	string table = result->getString(1);
+	columns, _ := rows.Columns()
+	scanArgs := make([]interface{}, len(columns))
+	values := make([]interface{}, len(columns))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
 
-	// 	// LOG_INFO("table: " + table);
+	for rows.Next() {
+		err = rows.Scan(scanArgs...)
 
-	// 	table_set_.emplace(table);
-	// }
+		if err != nil {
+			logx.Error(err.Error())
+			return
+		}
+
+		for _, col := range values {
+			if col != nil {
+				table := string(col.([]byte))
+
+				if _, ok := d.tables_[table]; ok == false {
+					d.tables_[table] = struct{}{}
+				}
+			}
+		}
+	}
 }
 
 func (d *DBServer) check_table(data_type string, symbol string, exchange string) bool {
+	table_name := d.get_table_name(data_type, symbol, exchange)
 
-	return false
+	if _, ok := d.tables_[table_name]; ok == false || len(d.tables_) == 0 {
+		d.update_table_list()
+	} else {
+		return true
+	}
+
+	if _, ok := d.tables_[table_name]; ok == false {
+		return false
+	}
+
+	return true
 }
 
-func (d *DBServer) create_table(data_type string, symbol string, exchange string) bool {
-	return false
+func (d *DBServer) create_table(data_type string, symbol string, exchange string) (bool, error) {
+
+	var create_str string
+	switch data_type {
+	case datastruct.KLINE_TYPE:
+		create_str = d.get_kline_create_str(symbol, exchange)
+	case datastruct.TRADE_TYPE:
+		create_str = d.get_trade_create_str(symbol, exchange)
+	case datastruct.DEPTH_TYPE:
+		create_str = d.get_depth_create_str(symbol, exchange)
+	}
+
+	_, err := d.db.Exec(create_str)
+	if err != nil {
+		return false, err
+	}
+
+	d.update_table_list()
+	return d.check_table(data_type, symbol, exchange), nil
 }
 
 func (d *DBServer) get_kline_create_str(symbol string, exchange string) string {
@@ -141,16 +186,53 @@ func (d *DBServer) get_trade_create_str(symbol string, exchange string) string {
 }
 
 func (d *DBServer) get_depth_create_str(symbol string, exchange string) string {
-	result := ""
+	result := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s exchange VARCHAR(32), 
+						symbol VARCHAR(64), time BIGINT PRIMARY KEY, 
+						price DECIMAL(32, 8), volume DECIMAL(32, 8)),  DEFAULT CHARSET utf8`,
+		d.get_table_name(datastruct.DEPTH_TYPE, symbol, exchange))
+
 	return result
 }
 
 func (d *DBServer) store_kline(kline *datastruct.Kline) error {
-	return nil
+	if ok := d.check_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); ok == false {
+		if ok, err := d.create_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); ok == false {
+			logx.Error(err.Error())
+			return err
+		}
+	}
+
+	stmt, err := d.get_insert_stmt(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange)
+
+	if err != nil {
+		logx.Error(err)
+		return err
+	}
+
+	stmt.Exec(kline.Exchange, kline.Symbol, kline.Time, kline.Open,
+		kline.High, kline.Low, kline.Close, kline.Volume, kline.Resolution)
+
+	return err
 }
 
 func (d *DBServer) store_trade(trade *datastruct.Trade) error {
-	return nil
+	if ok := d.check_table(datastruct.KLINE_TYPE, trade.Symbol, trade.Exchange); ok == false {
+		if ok, err := d.create_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); ok == false {
+			logx.Error(err.Error())
+			return err
+		}
+	}
+
+	stmt, err := d.get_insert_stmt(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange)
+
+	if err != nil {
+		logx.Error(err)
+		return err
+	}
+
+	stmt.Exec(trade.Exchange, trade.Symbol, trade.Time, trade.Price, trade.Volume)
+
+	return err
 }
 
 func (d *DBServer) store_depth(depth *datastruct.DepthQuote) error {
@@ -160,6 +242,9 @@ func (d *DBServer) store_depth(depth *datastruct.DepthQuote) error {
 func (s *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKlineInfo) (*pb.HistKlineData, error) {
 
 	rst := pb.HistKlineData{}
+
+	// string sql_str = get_kline_sql_str(req_kline_info.exchange, req_kline_info.symbol, req_kline_info.start_time, req_kline_info.end_time);
+
 	return &rst, nil
 }
 
