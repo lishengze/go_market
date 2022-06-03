@@ -3,7 +3,10 @@ package dbserver
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+	"math"
+	"strconv"
 
 	"market_server/app/dataManager/rpc/internal/config"
 	"market_server/app/dataManager/rpc/types/pb"
@@ -11,6 +14,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -147,13 +151,14 @@ func (d *DBServer) check_table(data_type string, symbol string, exchange string)
 func (d *DBServer) create_table(data_type string, symbol string, exchange string) (bool, error) {
 
 	var create_str string
+	table_name := d.get_table_name(data_type, symbol, exchange)
 	switch data_type {
 	case datastruct.KLINE_TYPE:
-		create_str = d.get_kline_create_str(symbol, exchange)
+		create_str = get_kline_create_str(table_name, symbol, exchange)
 	case datastruct.TRADE_TYPE:
-		create_str = d.get_trade_create_str(symbol, exchange)
+		create_str = get_trade_create_str(table_name, symbol, exchange)
 	case datastruct.DEPTH_TYPE:
-		create_str = d.get_depth_create_str(symbol, exchange)
+		create_str = get_depth_create_str(table_name, symbol, exchange)
 	}
 
 	_, err := d.db.Exec(create_str)
@@ -163,35 +168,6 @@ func (d *DBServer) create_table(data_type string, symbol string, exchange string
 
 	d.update_table_list()
 	return d.check_table(data_type, symbol, exchange), nil
-}
-
-func (d *DBServer) get_kline_create_str(symbol string, exchange string) string {
-	result := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s exchange VARCHAR(32), 
-							symbol VARCHAR(64), time BIGINT PRIMARY KEY, 
-						   open DECIMAL(32, 8), high DECIMAL(32, 8), low DECIMAL(32, 8),
-						   close DECIMAL(32, 8), volume DECIMAL(32, 8)), 
-						   resolution BIGINT, DEFAULT CHARSET utf8`,
-		d.get_table_name(datastruct.KLINE_TYPE, symbol, exchange))
-
-	return result
-}
-
-func (d *DBServer) get_trade_create_str(symbol string, exchange string) string {
-	result := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s exchange VARCHAR(32), 
-						   symbol VARCHAR(64), time BIGINT PRIMARY KEY, 
-						   price DECIMAL(32, 8), volume DECIMAL(32, 8)),  DEFAULT CHARSET utf8`,
-		d.get_table_name(datastruct.TRADE_TYPE, symbol, exchange))
-
-	return result
-}
-
-func (d *DBServer) get_depth_create_str(symbol string, exchange string) string {
-	result := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s exchange VARCHAR(32), 
-						symbol VARCHAR(64), time BIGINT PRIMARY KEY, 
-						price DECIMAL(32, 8), volume DECIMAL(32, 8)),  DEFAULT CHARSET utf8`,
-		d.get_table_name(datastruct.DEPTH_TYPE, symbol, exchange))
-
-	return result
 }
 
 func (d *DBServer) store_kline(kline *datastruct.Kline) error {
@@ -239,18 +215,181 @@ func (d *DBServer) store_depth(depth *datastruct.DepthQuote) error {
 	return nil
 }
 
-func (s *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKlineInfo) (*pb.HistKlineData, error) {
+func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKlineInfo) (*pb.HistKlineData, error) {
 
 	rst := pb.HistKlineData{}
 
-	// string sql_str = get_kline_sql_str(req_kline_info.exchange, req_kline_info.symbol, req_kline_info.start_time, req_kline_info.end_time);
+	table_name := d.get_table_name(datastruct.KLINE_TYPE, in.GetSymbol(), in.GetExchange())
+	sql_str := get_kline_sql_str(table_name, in.GetStartTime(), in.GetEndTime())
+
+	rows, err := d.db.Query(sql_str)
+
+	if err != nil {
+		logx.Errorf("err: %+v", err)
+		return nil, err
+	}
+
+	columns, _ := rows.Columns()
+	scanArgs := make([]interface{}, len(columns))
+	values := make([]interface{}, len(columns))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+
+	rst.Count = uint32(len(columns))
+	rst.Symbol = in.GetSymbol()
+	rst.Exchange = in.GetExchange()
+	rst.StartTime = in.GetStartTime()
+	rst.EndTime = in.GetEndTime()
+	rst.Frequency = in.GetFrequency()
+
+	for rows.Next() {
+		err = rows.Scan(scanArgs...)
+
+		if err != nil {
+			logx.Error(err.Error())
+			return nil, err
+		}
+
+		tmp_kline := &pb.Kline{}
+		tmp_kline.Exchange = string(values[0].([]byte))
+		tmp_kline.Symbol = string(values[1].([]byte))
+
+		time, _ := strconv.Atoi(string(values[2].([]byte)))
+		tmp_kline.Timestamp = &timestamppb.Timestamp{Seconds: int64(time) / datastruct.NANO_PER_SECS, Nanos: int32(time % datastruct.NANO_PER_SECS)}
+
+		tmp_kline.Open = string(values[3].([]byte))
+		tmp_kline.High = string(values[4].([]byte))
+		tmp_kline.Low = string(values[5].([]byte))
+		tmp_kline.Close = string(values[6].([]byte))
+		tmp_kline.Volume = string(values[7].([]byte))
+
+		resolution, _ := strconv.Atoi(string(values[8].([]byte)))
+		tmp_kline.Resolution = uint32(resolution)
+
+		rst.KlineData = append(rst.KlineData, tmp_kline)
+
+	}
 
 	return &rst, nil
 }
 
-func (s *DBServer) RequestTradeData(ctx context.Context, in *pb.ReqTradeInfo) (*pb.Trade, error) {
+func (d *DBServer) GetAllTime(table_name string) []uint64 {
+	sql_str := fmt.Sprintf("select time from %s", table_name)
+	var rst []uint64
+
+	rows, err := d.db.Query(sql_str)
+
+	if err != nil {
+		logx.Errorf("err: %+v", err)
+		return rst
+	}
+
+	columns, _ := rows.Columns()
+	scanArgs := make([]interface{}, len(columns))
+	values := make([]interface{}, len(columns))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanArgs...)
+
+		if err != nil {
+			logx.Error(err.Error())
+			return rst
+		}
+
+		for _, col := range values {
+			if col != nil {
+				time, _ := strconv.Atoi(string(col.([]byte)))
+
+				rst = append(rst, uint64(time))
+
+			}
+		}
+	}
+	return rst
+}
+
+func (d *DBServer) RequestTradeData(ctx context.Context, in *pb.ReqTradeInfo) (*pb.Trade, error) {
 
 	rst := pb.Trade{}
+	table_name := d.get_table_name(datastruct.TRADE_TYPE, in.GetSymbol(), in.GetExchange())
 
-	return &rst, nil
+	time_list := d.GetAllTime(table_name)
+
+	if len(time_list) > 0 {
+
+		nearest_time := time_list[0]
+		minum_time_delta := time_list[0]
+		for _, time := range time_list {
+			if uint64(math.Abs(float64(time-in.GetTime()))) < minum_time_delta {
+				nearest_time = time
+				minum_time_delta = uint64(math.Abs(float64(time - in.GetTime())))
+			}
+		}
+
+		sql_str := get_trade_sql_str(table_name, nearest_time)
+
+		rows, err := d.db.Query(sql_str)
+
+		if err != nil {
+			logx.Errorf("err: %+v", err)
+			return &rst, err
+		}
+
+		columns, _ := rows.Columns()
+		scanArgs := make([]interface{}, len(columns))
+		values := make([]interface{}, len(columns))
+		for i := range values {
+			scanArgs[i] = &values[i]
+		}
+
+		for rows.Next() {
+			err = rows.Scan(scanArgs...)
+
+			if err != nil {
+				logx.Error(err.Error())
+				return &rst, err
+			}
+
+			rst.Exchange = string(values[0].([]byte))
+			rst.Symbol = string(values[1].([]byte))
+
+			time, _ := strconv.Atoi(string(values[2].([]byte)))
+			rst.Timestamp = &timestamppb.Timestamp{Seconds: int64(time) / datastruct.NANO_PER_SECS, Nanos: int32(time % datastruct.NANO_PER_SECS)}
+			rst.Price = string(values[3].([]byte))
+			rst.Volume = string(values[4].([]byte))
+		}
+
+		return &rst, nil
+	} else {
+		return &rst, errors.New("TradeData Empty!")
+	}
+
+}
+
+func TestDB() {
+	recv_data_chan := datastruct.NewDataChannel()
+	mysql_config := config.MysqlConfig{
+		Addr:               "bcts:bcts@tcp(127.0.0.1:3306)/market",
+		max_open_conns:     16,
+		max_idle_conns:     8,
+		conn_max_life_time: 300,
+	}
+
+	fmt.Println(mysql_config)
+
+	// dbServer, err := NewDBServer(recv_data_chan, mysql_config)
+
+	// fmt.Println(dbServer)
+
+	// // dbServer.update_table_list()
+
+	// fmt.Println(dbServer.tables_)
+
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 }

@@ -33,12 +33,18 @@ func NewMarketServiceServer(svcCtx *svc.ServiceContext) *MarketServiceServer {
 	recv_data_chan := datastruct.NewDataChannel()
 	pub_data_chan := datastruct.NewDataChannel()
 
+	dbServer, err := dbserver.NewDBServer(recv_data_chan, svcCtx.Config.Mysql)
+
+	if err != nil {
+
+	}
+
 	rst := &MarketServiceServer{
 		svcCtx: svcCtx,
 		recvDataChan: recv_data_chan,
 		pubDataChan: pub_data_chan,
 		commer : comm.NewComm(recv_data_chan, pub_data_chan, svcCtx.Config.SerialType, svcCtx.Config.NetServerType),
-		dbServer: dbserver.NewDBServer(recv_data_chan, svcCtx.Config.Mysql),
+		dbServer: dbServer,
 	}
 
 	return rst
