@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"time"
 
 	"market_server/app/dataManager/rpc/internal/config"
 	"market_server/app/dataManager/rpc/types/pb"
@@ -66,7 +67,7 @@ func (d *DBServer) get_insert_stmt(data_type string, symbol string, exchange str
 	var stmt *sql.Stmt
 	var ok bool
 	var err error
-	if stmt, ok = d.insert_stmt_map[table_name]; ok == false {
+	if stmt, ok = d.insert_stmt_map[table_name]; !ok {
 		switch data_type {
 		case datastruct.KLINE_TYPE:
 			stmt, err = d.db.Prepare(fmt.Sprintf(`INSERT %s (exchange,symbol,time,open,high,low,close,volume,resolution) 
@@ -79,8 +80,10 @@ func (d *DBServer) get_insert_stmt(data_type string, symbol string, exchange str
 	}
 
 	if err != nil {
-		d.insert_stmt_map[table_name] = stmt
+		return nil, err
 	}
+
+	d.insert_stmt_map[table_name] = stmt
 
 	return stmt, err
 }
@@ -124,7 +127,7 @@ func (d *DBServer) update_table_list() {
 			if col != nil {
 				table := string(col.([]byte))
 
-				if _, ok := d.tables_[table]; ok == false {
+				if _, ok := d.tables_[table]; !ok {
 					d.tables_[table] = struct{}{}
 				}
 			}
@@ -135,13 +138,13 @@ func (d *DBServer) update_table_list() {
 func (d *DBServer) check_table(data_type string, symbol string, exchange string) bool {
 	table_name := d.get_table_name(data_type, symbol, exchange)
 
-	if _, ok := d.tables_[table_name]; ok == false || len(d.tables_) == 0 {
+	if _, ok := d.tables_[table_name]; !ok || len(d.tables_) == 0 {
 		d.update_table_list()
 	} else {
 		return true
 	}
 
-	if _, ok := d.tables_[table_name]; ok == false {
+	if _, ok := d.tables_[table_name]; !ok {
 		return false
 	}
 
@@ -161,8 +164,11 @@ func (d *DBServer) create_table(data_type string, symbol string, exchange string
 		create_str = get_depth_create_str(table_name, symbol, exchange)
 	}
 
+	fmt.Printf("create_str: %s \n", create_str)
+
 	_, err := d.db.Exec(create_str)
 	if err != nil {
+		logx.Error(err.Error())
 		return false, err
 	}
 
@@ -171,8 +177,8 @@ func (d *DBServer) create_table(data_type string, symbol string, exchange string
 }
 
 func (d *DBServer) store_kline(kline *datastruct.Kline) error {
-	if ok := d.check_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); ok == false {
-		if ok, err := d.create_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); ok == false {
+	if ok := d.check_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); !ok {
+		if ok, err := d.create_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); !ok {
 			logx.Error(err.Error())
 			return err
 		}
@@ -192,8 +198,8 @@ func (d *DBServer) store_kline(kline *datastruct.Kline) error {
 }
 
 func (d *DBServer) store_trade(trade *datastruct.Trade) error {
-	if ok := d.check_table(datastruct.KLINE_TYPE, trade.Symbol, trade.Exchange); ok == false {
-		if ok, err := d.create_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); ok == false {
+	if ok := d.check_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
+		if ok, err := d.create_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
 			logx.Error(err.Error())
 			return err
 		}
@@ -370,26 +376,72 @@ func (d *DBServer) RequestTradeData(ctx context.Context, in *pb.ReqTradeInfo) (*
 
 }
 
+func test_basic(dbServer *DBServer) {
+	dbServer.update_table_list()
+	fmt.Printf("Original All Tables: %+v: \n\n", dbServer.tables_)
+
+	ok, err := dbServer.create_table(datastruct.KLINE_TYPE, "ETH_USDT", "_bcts_")
+	if !ok {
+		fmt.Println(err)
+		return
+	}
+	dbServer.update_table_list()
+	fmt.Printf("All Tables: %+v: \n\n", dbServer.tables_)
+
+	dbServer.create_table(datastruct.TRADE_TYPE, "ETH_USDT", "_bcts_")
+	if !ok {
+		fmt.Println(err)
+		return
+	}
+	dbServer.update_table_list()
+	fmt.Printf("All Tables: %+v: \n\n", dbServer.tables_)
+}
+
+func test_store(dbServer *DBServer) {
+	// test_kline := datastruct.GetTestKline()
+	// test_kline.Exchange = datastruct.BCTS_EXCHANGE
+	// dbServer.store_kline(test_kline)
+
+	test_trade := datastruct.GetTestTrade()
+	test_trade.Exchange = datastruct.BCTS_EXCHANGE
+	dbServer.store_trade(test_trade)
+}
+
+func store_data(dbServer *DBServer, data_count int) {
+	for i := 0; i < data_count; i++ {
+
+		test_kline := datastruct.GetTestKline()
+		test_kline.Exchange = datastruct.BCTS_EXCHANGE
+		dbServer.store_kline(test_kline)
+
+		test_trade := datastruct.GetTestTrade()
+		test_trade.Exchange = datastruct.BCTS_EXCHANGE
+		dbServer.store_trade(test_trade)
+
+		fmt.Printf("Store data %d \n", i)
+		time.Sleep(time.Second * 1)
+	}
+}
+
 func TestDB() {
 	recv_data_chan := datastruct.NewDataChannel()
+
 	mysql_config := config.MysqlConfig{
-		Addr:               "bcts:bcts@tcp(127.0.0.1:3306)/market",
-		max_open_conns:     16,
-		max_idle_conns:     8,
-		conn_max_life_time: 300,
+		Addr: "bcts:bcts@tcp(127.0.0.1:3306)/market",
 	}
 
 	fmt.Println(mysql_config)
 
-	// dbServer, err := NewDBServer(recv_data_chan, mysql_config)
+	dbServer, err := NewDBServer(recv_data_chan, mysql_config)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-	// fmt.Println(dbServer)
+	// test_basic(dbServer)
 
-	// // dbServer.update_table_list()
+	// test_store(dbServer)
 
-	// fmt.Println(dbServer.tables_)
+	store_data(dbServer, 100)
 
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
 }
