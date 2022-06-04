@@ -28,7 +28,7 @@ type MarketServiceServer struct {
 	pubDataChan  *datastruct.DataChannel
 }
 
-func NewMarketServiceServer(svcCtx *svc.ServiceContext) *MarketServiceServer {
+func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
 	
 	recv_data_chan := datastruct.NewDataChannel()
 	pub_data_chan := datastruct.NewDataChannel()
@@ -36,7 +36,7 @@ func NewMarketServiceServer(svcCtx *svc.ServiceContext) *MarketServiceServer {
 	dbServer, err := dbserver.NewDBServer(recv_data_chan, svcCtx.Config.Mysql)
 
 	if err != nil {
-
+		return nil
 	}
 
 	rst := &MarketServiceServer{
@@ -100,8 +100,6 @@ func (s *MarketServiceServer) ProcessSymbolConfigStr(data string) {
 
 	s.commer.UpdateMetaData(&new_meta)
 }
-
-
 
 //  服务名字还是用 MarketService, 整个行情系统都要用；
 func (m *MarketServiceServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKlineInfo) (*pb.HistKlineData, error) {

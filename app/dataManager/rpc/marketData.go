@@ -7,6 +7,7 @@ import (
 	"market_server/app/dataManager/rpc/internal/server"
 	"market_server/app/dataManager/rpc/internal/svc"
 	"market_server/app/dataManager/rpc/types/pb"
+	"os"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"
@@ -15,10 +16,17 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-var configFile = flag.String("f", "etc/marketData.yaml", "the config file")
-
 func main() {
 	flag.Parse()
+
+	env := "local"
+
+	for _, v := range os.Args {
+		env = v
+	}
+
+	fmt.Printf("env: %+v \n", env)
+	var configFile = flag.String("f", "etc/"+env+"/marketData.yaml", "the config file")
 
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
@@ -35,5 +43,7 @@ func main() {
 	defer s.Stop()
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
+
+	svr.Start()
 	s.Start()
 }
