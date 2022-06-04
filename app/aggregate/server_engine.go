@@ -76,8 +76,8 @@ func (s *ServerEngine) Start() {
 
 func (s *ServerEngine) InitConfig() {
 	env := "local"
-	logx.Infof("Args: %+v", os.Args)
-	env = os.Args[0]
+	fmt.Printf("Args: %+v", os.Args)
+	env = os.Args[1]
 	fmt.Printf("env: %+v \n", env)
 	config_file := "etc/" + env + "/client.yaml"
 	logx.Info("config_file: " + config_file)
