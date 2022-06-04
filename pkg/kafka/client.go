@@ -240,7 +240,10 @@ func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
 }
 
 func (k *KafkaServer) PublishDepth(local_depth *datastruct.DepthQuote) error {
-	logx.Slow(fmt.Sprintf("Pub Depth %+v", local_depth.String(3)))
+	if local_depth.Symbol == config.TESTCONFIG().TestSymbol {
+		logx.Slow("\n[Pub] Depth " + local_depth.String(3))
+	}
+
 	serialize_str, err := k.Serializer.EncodeDepth(local_depth)
 
 	if err != nil {
@@ -254,7 +257,9 @@ func (k *KafkaServer) PublishDepth(local_depth *datastruct.DepthQuote) error {
 }
 
 func (k *KafkaServer) PublishKline(local_kline *datastruct.Kline) error {
-	logx.Slow(fmt.Sprintf("Pub kline %+v", local_kline))
+	if local_kline.Symbol == config.TESTCONFIG().TestSymbol {
+		logx.Slow("\n[Pub] kline " + local_kline.String())
+	}
 
 	serialize_str, err := k.Serializer.EncodeKline(local_kline)
 
@@ -269,7 +274,9 @@ func (k *KafkaServer) PublishKline(local_kline *datastruct.Kline) error {
 }
 
 func (k *KafkaServer) PublishTrade(local_trade *datastruct.Trade) error {
-	logx.Slow(fmt.Sprintf("Pub Trade %+v", local_trade))
+	if local_trade.Symbol == config.TESTCONFIG().TestSymbol {
+		logx.Slow("\n[Pub] Trade " + local_trade.String())
+	}
 
 	serialize_str, err := k.Serializer.EncodeTrade(local_trade)
 

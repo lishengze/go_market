@@ -237,10 +237,19 @@ func (a *Aggregator) start_listen_recvdata() {
 		for {
 			select {
 			case new_depth := <-a.RecvDataChan.DepthChannel:
+				if new_depth.Symbol == config.TESTCONFIG().TestSymbol {
+					logx.Info("\n[Rcv] Depth " + new_depth.String(3))
+				}
 				a.cache_depth(new_depth)
 			case new_kline := <-a.RecvDataChan.KlineChannel:
+				if new_kline.Symbol == config.TESTCONFIG().TestSymbol {
+					logx.Info("\n[Rcv] Kline " + new_kline.String())
+				}
 				a.cache_kline(new_kline)
 			case new_trade := <-a.RecvDataChan.TradeChannel:
+				if new_trade.Symbol == config.TESTCONFIG().TestSymbol {
+					logx.Info("\n[Rcv] Trade " + new_trade.String())
+				}
 				a.cache_trade(new_trade)
 			}
 		}
@@ -294,8 +303,7 @@ func (a *Aggregator) cache_depth(depth *datastruct.DepthQuote) {
 	a.depth_mutex.Lock()
 
 	new_depth := datastruct.NewDepth(depth)
-
-	// logx.Info("\n******* <<Cache Depth>>: " + depth.String(3))
+	//
 
 	if _, ok := a.depth_cache[new_depth.Symbol]; ok == false {
 		a.depth_cache[new_depth.Symbol] = make(map[string]*datastruct.DepthQuote)
