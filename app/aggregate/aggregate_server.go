@@ -211,7 +211,7 @@ func (a *Aggregator) aggregate_depth(symbol_list []string) {
 				mix_depth(new_depth.Bids, cur_depth.Bids, exchange)
 			}
 
-			logx.Info("\n^^^^^^^ <<aagregated_depth>>: " + new_depth.String(3))
+			logx.Statf("\n^^^^^^^ <<aagregated_depth>>: " + new_depth.String(3))
 
 			a.publish_depth(new_depth)
 		}
