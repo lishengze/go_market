@@ -2,7 +2,7 @@ package kafka
 
 import (
 	"context"
-	"market_server/app/datastruct"
+	"market_server/common/datastruct"
 	"strings"
 )
 

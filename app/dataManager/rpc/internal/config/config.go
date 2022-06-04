@@ -18,10 +18,10 @@ var lock = &sync.Mutex{}
 //   max_idle_conns: 8
 //   conn_max_life_time: 300
 type MysqlConfig struct {
-	Addr               string
-	max_open_conns     int
-	max_idle_conns     int
-	conn_max_life_time int
+	Addr string
+	// max_open_conns     int
+	// max_idle_conns     int
+	// conn_max_life_time int
 }
 
 type Config struct {

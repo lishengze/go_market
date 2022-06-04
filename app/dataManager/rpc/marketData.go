@@ -10,11 +10,31 @@ import (
 	"os"
 
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
+
+func test_config() {
+	type TestConfig struct {
+		zrpc.RpcServerConf
+
+		IP            string
+		NetServerType string
+		SerialType    string
+
+		Nacos     config.NacosConfig
+		LogConfig logx.LogConf
+		Mysql     config.MysqlConfig
+	}
+
+	var c TestConfig
+	conf.MustLoad("marketData.yaml", &c)
+
+	fmt.Printf("config: %+v \n", c)
+}
 
 func main() {
 	flag.Parse()
@@ -46,4 +66,8 @@ func main() {
 
 	svr.Start()
 	s.Start()
+
+	// server.TestMain()
+
+	// test_config()
 }

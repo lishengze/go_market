@@ -5,6 +5,9 @@ package server
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"flag"
 
 	"market_server/app/dataManager/rpc/internal/dbserver"
 	"market_server/app/dataManager/rpc/internal/svc"
@@ -14,7 +17,16 @@ import (
 
 	"market_server/common/datastruct"
 	"github.com/zeromicro/go-zero/core/logx"
+
+
+	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/service"
+	"github.com/zeromicro/go-zero/zrpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"	
 )
+
+
 
 type MarketServiceServer struct {
 	svcCtx *svc.ServiceContext
@@ -36,6 +48,7 @@ func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
 	dbServer, err := dbserver.NewDBServer(recv_data_chan, svcCtx.Config.Mysql)
 
 	if err != nil {
+		fmt.Println(err)
 		return nil
 	}
 
@@ -52,6 +65,8 @@ func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
 
 func (m *MarketServiceServer) Start() {
 	m.commer.Start()
+
+	m.SetInitMeta()
 
 	go m.StartNacosClient()
 }
@@ -89,14 +104,42 @@ func (s *MarketServiceServer) ProcessSymbolConfigStr(data string) {
 	new_meta := datastruct.Metadata{}
 
 	for _, symbol_config := range symbol_configs {
+		if _,ok := symbol_exchange_set[symbol_config.Symbol];!ok {
+			symbol_exchange_set[symbol_config.Symbol] = make(map[string]struct{})
+		}
+		if _,ok := symbol_exchange_set[symbol_config.Symbol][datastruct.BCTS_EXCHANGE]; !ok {
+			symbol_exchange_set[symbol_config.Symbol][datastruct.BCTS_EXCHANGE] = struct{}{}
+		}
 
-		symbol_exchange_set[symbol_config.Symbol][datastruct.BCTS_EXCHANGE] = struct{}{}
+		
 	}
 
 	new_meta.TradeMeta = symbol_exchange_set
 	new_meta.KlineMeta = symbol_exchange_set	
 
 	logx.Infof("NewMeta: %v \n", new_meta)
+
+	s.commer.UpdateMetaData(&new_meta)
+}
+
+func (s *MarketServiceServer) SetInitMeta() {
+	init_symbol_list := []string{"BTC_USDT", "ETH_USDT", "USD_USDT","BTC_USD", "ETH_USD"}
+
+	symbol_exchange_set := make(map[string](map[string]struct{}))
+	new_meta := datastruct.Metadata{}
+	for _,symbol := range init_symbol_list {
+		if _,ok := symbol_exchange_set[symbol];!ok {
+			symbol_exchange_set[symbol] = make(map[string]struct{})
+		}
+		if _,ok := symbol_exchange_set[symbol][datastruct.BCTS_EXCHANGE]; !ok {
+			symbol_exchange_set[symbol][datastruct.BCTS_EXCHANGE] = struct{}{}
+		}
+	}
+
+	new_meta.TradeMeta = symbol_exchange_set
+	new_meta.KlineMeta = symbol_exchange_set	
+
+	logx.Infof("InitMeta: %v \n", new_meta)
 
 	s.commer.UpdateMetaData(&new_meta)
 }
@@ -109,4 +152,49 @@ func (m *MarketServiceServer) RequestHistKlineData(ctx context.Context, in *pb.R
 
 func (m *MarketServiceServer) RequestTradeData(ctx context.Context, in *pb.ReqTradeInfo) (*pb.Trade, error) {
 	return m.dbServer.RequestTradeData(ctx, in)
+}
+
+
+func TestMain() {
+	flag.Parse()
+
+	env := "local"
+
+	for _, v := range os.Args {
+		env = v
+	}
+
+	fmt.Printf("env: %+v \n", env)
+	var configFile = flag.String("f", "etc/"+env+"/marketData.yaml", "the config file")
+
+	fmt.Println(*configFile)
+
+	var c config.Config
+	conf.MustLoad(*configFile, &c)
+
+	fmt.Printf("config: %+v \n",c)
+
+	
+
+	ctx := svc.NewServiceContext(c)
+	svr := NewMarketServiceServer(ctx)
+
+	// return
+
+	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
+		pb.RegisterMarketServiceServer(grpcServer, svr)
+
+		if c.Mode == service.DevMode || c.Mode == service.TestMode {
+			reflection.Register(grpcServer)
+		}
+	})
+	defer s.Stop()
+
+	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
+
+	svr.Start()
+
+	s.Start()
+
+	select{}
 }
