@@ -96,7 +96,7 @@ func (a *Aggregator) get_sleep_millsecs(curr_time int) (int, []string) {
 	if a.AggConfig.DepthAggregatorConfigMap == nil || len(a.AggConfig.DepthAggregatorConfigMap) == 0 {
 		sleep_millsecs = default_sleep_millsecs // 还未获取配置信息;
 	} else {
-		logx.Info(a.AggConfig.String())
+		// logx.Info(a.AggConfig.String())
 		min_sleep_secs := time.Duration(default_sleep_millsecs)
 
 		for symbol, publish_config := range a.AggConfig.DepthAggregatorConfigMap {
@@ -140,8 +140,8 @@ func (a *Aggregator) start_aggregate_depth() {
 		for {
 			sleep_millsecs, aggregate_symbol_list := a.get_sleep_millsecs(curr_time)
 
-			logx.Info(fmt.Sprintf("curr_time:%+v, sleep_millsecs: %+v, aggregate_symbol_list%+v",
-				curr_time, sleep_millsecs, aggregate_symbol_list))
+			// logx.Info(fmt.Sprintf("curr_time:%+v, sleep_millsecs: %+v, aggregate_symbol_list%+v",
+			// 	curr_time, sleep_millsecs, aggregate_symbol_list))
 
 			a.aggregate_depth(aggregate_symbol_list)
 
@@ -328,7 +328,7 @@ func (a *Aggregator) publish_depth(depth *datastruct.DepthQuote) {
 
 	a.PubDataChan.DepthChannel <- new_depth
 
-	logx.Info("publish_depth: " + depth.String(3))
+	// logx.Info("publish_depth: " + depth.String(3))
 }
 
 func (a *Aggregator) publish_kline(kline *datastruct.Kline) {
