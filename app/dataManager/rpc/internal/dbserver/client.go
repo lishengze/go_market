@@ -226,7 +226,17 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 	rst := pb.HistKlineData{}
 
 	table_name := d.get_table_name(datastruct.KLINE_TYPE, in.GetSymbol(), in.GetExchange())
-	sql_str := get_kline_sql_str(table_name, in.GetStartTime(), in.GetEndTime())
+
+	var sql_str string
+	if in.GetCount() != 0 {
+		sql_str = get_kline_sql_str_by_count(table_name, int(in.GetCount()))
+	} else if in.GetStartTime() <= 0 || in.GetEndTime() <= 0 || in.GetEndTime() < in.GetStartTime() {
+		return nil, errors.New("Time Invalid!")
+	} else {
+		sql_str = get_kline_sql_str_by_time(table_name, in.GetStartTime(), in.GetEndTime())
+	}
+
+	fmt.Printf("sql_str: %+v \n", sql_str)
 
 	rows, err := d.db.Query(sql_str)
 
@@ -242,7 +252,7 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 		scanArgs[i] = &values[i]
 	}
 
-	rst.Count = uint32(len(columns))
+	rst.Count = 0
 	rst.Symbol = in.GetSymbol()
 	rst.Exchange = in.GetExchange()
 	rst.StartTime = in.GetStartTime()
@@ -250,6 +260,7 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 	rst.Frequency = in.GetFrequency()
 
 	for rows.Next() {
+		rst.Count = rst.Count + 1
 		err = rows.Scan(scanArgs...)
 
 		if err != nil {
@@ -326,7 +337,6 @@ func (d *DBServer) RequestTradeData(ctx context.Context, in *pb.ReqTradeInfo) (*
 	time_list := d.GetAllTime(table_name)
 
 	if len(time_list) > 0 {
-
 		nearest_time := time_list[0]
 		minum_time_delta := time_list[0]
 		for _, time := range time_list {
@@ -336,10 +346,10 @@ func (d *DBServer) RequestTradeData(ctx context.Context, in *pb.ReqTradeInfo) (*
 			}
 		}
 
+		fmt.Printf("RequestTime: %+v, NearestTime: %+v \n", in.GetTime(), nearest_time)
+
 		sql_str := get_trade_sql_str(table_name, nearest_time)
-
 		rows, err := d.db.Query(sql_str)
-
 		if err != nil {
 			logx.Errorf("err: %+v", err)
 			return &rst, err
@@ -423,6 +433,43 @@ func store_data(dbServer *DBServer, data_count int) {
 	}
 }
 
+func test_request_trade(dbServer *DBServer) {
+	in := &pb.ReqTradeInfo{
+		Symbol:   "BTC_USDT",
+		Exchange: datastruct.BCTS_EXCHANGE,
+		Time:     1654297013967604740,
+	}
+
+	ctx_bk := context.Background()
+	rst, err := dbServer.RequestTradeData(ctx_bk, in)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("Rst: %+v \n", rst)
+}
+
+func test_request_histkline(dbServer *DBServer) {
+	in := &pb.ReqHishKlineInfo{
+		Symbol:    "BTC_USDT",
+		Exchange:  datastruct.BCTS_EXCHANGE,
+		StartTime: 1654297007842658763,
+		EndTime:   1654297013959596689,
+		Count:     10,
+		Frequency: 60,
+	}
+
+	ctx_bk := context.Background()
+	rst, err := dbServer.RequestHistKlineData(ctx_bk, in)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("Rst: %+v \n", rst)
+}
+
 func TestDB() {
 	recv_data_chan := datastruct.NewDataChannel()
 
@@ -442,6 +489,9 @@ func TestDB() {
 
 	// test_store(dbServer)
 
-	store_data(dbServer, 100)
+	// store_data(dbServer, 100)
 
+	// test_request_trade(dbServer)
+
+	test_request_histkline(dbServer)
 }

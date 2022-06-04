@@ -35,10 +35,14 @@ func get_depth_create_str(table_name string, symbol string, exchange string) str
 	return result
 }
 
-func get_kline_sql_str(table_name string, start_time uint64, end_time uint64) string {
-	return fmt.Sprintf(`select * from %s where time <=%d and time>= %d;`, table_name, end_time, start_time)
+func get_kline_sql_str_by_time(table_name string, start_time uint64, end_time uint64) string {
+	return fmt.Sprintf(`select * from %s where time<=%d and time>=%d;`, table_name, end_time, start_time)
+}
+
+func get_kline_sql_str_by_count(table_name string, data_count int) string {
+	return fmt.Sprintf(`select * from %s order by time desc limit %d;`, table_name, data_count)
 }
 
 func get_trade_sql_str(table_name string, time uint64) string {
-	return fmt.Sprintf(`select * from %s where time ==%d;`, table_name, time)
+	return fmt.Sprintf(`select * from %s where time=%d;`, table_name, time)
 }
