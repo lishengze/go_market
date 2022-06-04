@@ -5,6 +5,7 @@ import (
 	config "market_aggregate/app/conf"
 	"market_aggregate/app/datastruct"
 	"market_aggregate/pkg/comm"
+	"os"
 	"sync"
 	"time"
 
@@ -74,11 +75,18 @@ func (s *ServerEngine) Start() {
 }
 
 func (s *ServerEngine) InitConfig() {
-	config.NATIVE_CONFIG_INIT("client.yaml")
+	env := "local"
+	for _, v := range os.Args {
+		env = v
+	}
+	fmt.Printf("env: %+v \n", env)
+	config_file := "etc/" + env + "/client.yaml"
+	logx.Info("config_file: " + config_file)
+
+	config.NATIVE_CONFIG_INIT(config_file)
 	logx.MustSetup(config.NATIVE_CONFIG().LogConfig)
 	logx.Info(fmt.Sprintf("CONFIG: %+v", *config.NATIVE_CONFIG()))
 	logx.Info(fmt.Sprintf("NacoIP: %s:%d", config.NATIVE_CONFIG().Nacos.IpAddr, config.NATIVE_CONFIG().Nacos.Port))
-
 }
 
 func (s *ServerEngine) StartNacosClient() {
