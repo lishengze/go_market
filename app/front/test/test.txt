@@ -1,0 +1,13 @@
+----- Test Rpc -------
+Rst: symbol:"BTC_USDT" exchange:"_bcts_" start_time:1654297007842658763 end_time:1654297013959596689 count:10 frequency:60 
+kline_data:{timestamp:{seconds:1654297014 nanos:972584155} exchange:"_bcts_" symbol:"BTC_USDT" open:"3000.00000000" high:"4000.00000000" low:"2800.00000000" close:"3500.00000000" volume:"1.10000000" resolution:60} 
+kline_data:{timestamp:{seconds:1654297013 nanos:959596688} exchange:"_bcts_" symbol:"BTC_USDT" open:"3000.00000000" high:"4000.00000000" low:"2800.00000000" close:"3500.00000000" volume:"1.10000000" resolution:60} 
+kline_data:{timestamp:{seconds:1654297012 nanos:948310723} exchange:"_bcts_" symbol:"BTC_USDT" open:"3000.00000000" high:"4000.00000000" low:"2800.00000000" close:"3500.00000000" volume:"1.10000000" resolution:60} 
+kline_data:{timestamp:{seconds:1654297011 nanos:926979379} exchange:"_bcts_" symbol:"BTC_USDT" open:"3000.00000000" high:"4000.00000000" low:"2800.00000000" close:"3500.00000000" volume:"1.10000000" resolution:60} 
+kline_data:{timestamp:{seconds:1654297010 nanos:904293580} exchange:"_bcts_" symbol:"BTC_USDT" open:"3000.00000000" high:"4000.00000000" low:"2800.00000000" close:"3500.00000000" volume:"1.10000000" resolution:60} 
+kline_data:{timestamp:{seconds:1654297009 nanos:881507146} exchange:"_bcts_" symbol:"BTC_USDT" open:"3000.00000000" high:"4000.00000000" low:"2800.00000000" close:"3500.00000000" volume:"1.10000000" resolution:60} 
+kline_data:{timestamp:{seconds:1654297008 nanos:867281216} exchange:"_bcts_" symbol:"BTC_USDT" open:"3000.00000000" high:"4000.00000000" low:"2800.00000000" close:"3500.00000000" volume:"1.10000000" resolution:60} 
+kline_data:{timestamp:{seconds:1654297007 nanos:842658764} exchange:"_bcts_" symbol:"BTC_USDT" open:"3000.00000000" high:"4000.00000000" low:"2800.00000000" close:"3500.00000000" volume:"1.10000000" resolution:60} 
+kline_data:{timestamp:{seconds:1654297006 nanos:817480004} exchange:"_bcts_" symbol:"BTC_USDT" open:"3000.00000000" high:"4000.00000000" low:"2800.00000000" close:"3500.00000000" volume:"1.10000000" resolution:60} 
+kline_data:{timestamp:{seconds:1654297005 nanos:796042983} exchange:"_bcts_" symbol:"BTC_USDT" open:"3000.00000000" high:"4000.00000000" low:"2800.00000000" close:"3500.00000000" volume:"1.10000000" resolution:60} 
+ReqTrade Rst: timestamp:{seconds:1654297013 nanos:967604743} exchange:"_bcts_" symbol:"BTC_USDT" price:"660.00000000" volume:"6.00000000" 
