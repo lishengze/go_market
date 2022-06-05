@@ -1,5 +1,7 @@
 package datastruct
 
+import "market_server/app/dataManager/rpc/config"
+
 type SerializerI interface {
 	EncodeDepth(*DepthQuote) ([]byte, error)
 	EncodeKline(*Kline) ([]byte, error)
@@ -11,7 +13,7 @@ type SerializerI interface {
 }
 
 type NetServerI interface {
-	Init(SerializerI, *DataChannel, *DataChannel) error
+	InitKafka(SerializerI, *DataChannel, *DataChannel, config.KafkaConfig) error
 	Start()
 	UpdateMetaData(*Metadata)
 

@@ -11,7 +11,7 @@ import (
 
 	"market_server/app/dataManager/rpc/internal/dbserver"
 	"market_server/app/dataManager/rpc/internal/svc"
-	"market_server/app/dataManager/rpc/internal/config"
+	"market_server/app/dataManager/rpc/config"
 	"market_server/app/dataManager/rpc/types/pb"
 	"market_server/common/comm"
 
@@ -41,7 +41,6 @@ type MarketServiceServer struct {
 }
 
 func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
-	
 	recv_data_chan := datastruct.NewDataChannel()
 	pub_data_chan := datastruct.NewDataChannel()
 
@@ -56,7 +55,7 @@ func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
 		svcCtx: svcCtx,
 		recvDataChan: recv_data_chan,
 		pubDataChan: pub_data_chan,
-		commer : comm.NewComm(recv_data_chan, pub_data_chan, svcCtx.Config.SerialType, svcCtx.Config.NetServerType),
+		commer : comm.NewComm(recv_data_chan, pub_data_chan, svcCtx.Config.Comm),
 		dbServer: dbServer,
 	}
 
@@ -64,11 +63,13 @@ func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
 }
 
 func (m *MarketServiceServer) Start() {
+	m.dbServer.StartListenRecvdata()
+
 	m.commer.Start()
 
 	m.SetInitMeta()
 
-	go m.StartNacosClient()
+	// go m.StartNacosClient()
 }
 
 func (s *MarketServiceServer) StartNacosClient() {
@@ -139,7 +140,7 @@ func (s *MarketServiceServer) SetInitMeta() {
 	new_meta.TradeMeta = symbol_exchange_set
 	new_meta.KlineMeta = symbol_exchange_set	
 
-	logx.Infof("InitMeta: %v \n", new_meta)
+	logx.Infof("[I] InitMeta: %v \n", new_meta)
 
 	s.commer.UpdateMetaData(&new_meta)
 }
@@ -174,7 +175,7 @@ func TestMain() {
 
 	fmt.Printf("config: %+v \n",c)
 
-	
+	logx.MustSetup(c.LogConfig)
 
 	ctx := svc.NewServiceContext(c)
 	svr := NewMarketServiceServer(ctx)

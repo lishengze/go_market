@@ -1,6 +1,7 @@
 package comm
 
 import (
+	"market_server/app/dataManager/rpc/config"
 	"market_server/common/datastruct"
 	"market_server/common/kafka"
 )
@@ -40,17 +41,16 @@ type Comm struct {
 
 func NewComm(recv_chan *datastruct.DataChannel,
 	pub_chan *datastruct.DataChannel,
-	serial_type string,
-	net_server_type string) *Comm {
+	cfg config.CommConfig) *Comm {
 	c := &Comm{}
 
-	if serial_type == COMM_PROTOBUF {
+	if cfg.SerialType == COMM_PROTOBUF {
 		c.Serializer = &ProtobufSerializer{}
 	}
 
-	if net_server_type == COMM_KAFKA {
+	if cfg.NetServerType == COMM_KAFKA {
 		c.NetServer = &kafka.KafkaServer{}
-		c.NetServer.Init(c.Serializer, recv_chan, pub_chan)
+		c.NetServer.InitKafka(c.Serializer, recv_chan, pub_chan, cfg.KafkaConfig)
 	}
 
 	return c
@@ -59,16 +59,15 @@ func NewComm(recv_chan *datastruct.DataChannel,
 func (c *Comm) Init(
 	recv_chan *datastruct.DataChannel,
 	pub_chan *datastruct.DataChannel,
-	serial_type string,
-	net_server_type string) error {
+	cfg config.CommConfig) error {
 
-	if serial_type == COMM_PROTOBUF {
+	if cfg.SerialType == COMM_PROTOBUF {
 		c.Serializer = &ProtobufSerializer{}
 	}
 
-	if net_server_type == COMM_KAFKA {
+	if cfg.NetServerType == COMM_KAFKA {
 		c.NetServer = &kafka.KafkaServer{}
-		c.NetServer.Init(c.Serializer, recv_chan, pub_chan)
+		c.NetServer.InitKafka(c.Serializer, recv_chan, pub_chan, cfg.KafkaConfig)
 	}
 
 	// c.DataChan = data_chan

@@ -1,0 +1,3 @@
+{"@timestamp":"2022-06-05 11:31:33","level":"info","content":"[S] DBServer start_listen_recvdata"}
+{"@timestamp":"2022-06-05 11:31:33","level":"info","content":"[S] DBServer start_receiver Over!"}
+{"@timestamp":"2022-06-05 11:31:33","level":"info","content":"[I] InitMeta: {map[] map[BTC_USD:map[_bcts_:{}] BTC_USDT:map[_bcts_:{}] ETH_USD:map[_bcts_:{}] ETH_USDT:map[_bcts_:{}] USD_USDT:map[_bcts_:{}]] map[BTC_USD:map[_bcts_:{}] BTC_USDT:map[_bcts_:{}] ETH_USD:map[_bcts_:{}] ETH_USDT:map[_bcts_:{}] USD_USDT:map[_bcts_:{}]]} \n"}

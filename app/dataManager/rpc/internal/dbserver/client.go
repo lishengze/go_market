@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"market_server/app/dataManager/rpc/internal/config"
+	"market_server/app/dataManager/rpc/config"
 	"market_server/app/dataManager/rpc/types/pb"
 	"market_server/common/datastruct"
 
@@ -44,8 +44,8 @@ func NewDBServer(recvDataChan *datastruct.DataChannel, mysql_config config.Mysql
 	}, nil
 }
 
-func (a *DBServer) start_listen_recvdata() {
-	logx.Info("Aggregator start_listen_recvdata")
+func (a *DBServer) StartListenRecvdata() {
+	logx.Info("[S] DBServer start_listen_recvdata")
 	go func() {
 		for {
 			select {
@@ -58,7 +58,7 @@ func (a *DBServer) start_listen_recvdata() {
 			}
 		}
 	}()
-	logx.Info("Aggregator start_receiver Over!")
+	logx.Info("[S] DBServer start_receiver Over!")
 }
 
 func (d *DBServer) get_insert_stmt(data_type string, symbol string, exchange string) (*sql.Stmt, error) {

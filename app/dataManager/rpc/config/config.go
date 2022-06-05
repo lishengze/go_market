@@ -1,7 +1,9 @@
 package config
 
 import (
+	"flag"
 	"fmt"
+	"os"
 	"sync"
 
 	"github.com/zeromicro/go-zero/core/conf"
@@ -24,13 +26,20 @@ type MysqlConfig struct {
 	// conn_max_life_time int
 }
 
+type KafkaConfig struct {
+	IP string `json:",optional"`
+}
+
+type CommConfig struct {
+	KafkaConfig
+	NetServerType string `json:",optional"`
+	SerialType    string `json:",optional"`
+}
+
 type Config struct {
 	zrpc.RpcServerConf
 
-	IP            string
-	NetServerType string
-	SerialType    string
-
+	Comm      CommConfig
 	Nacos     NacosConfig
 	LogConfig logx.LogConf
 	Mysql     MysqlConfig
@@ -71,8 +80,15 @@ func NATIVE_CONFIG() *Config {
 
 func TestConf() {
 	var c Config
-	configFile := "client.yaml"
-	conf.MustLoad(configFile, &c)
-	fmt.Println(c.Nacos.IpAddr, ": ", c.Nacos.Port)
+	flag.Parse()
+
+	fmt.Printf("Args: %+v \n", os.Args)
+	env := os.Args[1]
+
+	fmt.Printf("env: %+v \n", env)
+	var configFile = flag.String("f", "etc/"+env+"/marketData.yaml", "the config file")
+
+	conf.MustLoad(*configFile, &c)
+	// fmt.Println(c.Nacos.IpAddr, ": ", c.Nacos.Port)
 	fmt.Printf("%+v\n", c)
 }

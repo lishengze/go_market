@@ -3,71 +3,62 @@ package main
 import (
 	"flag"
 	"fmt"
-	"market_server/app/dataManager/rpc/internal/config"
+	"market_server/app/dataManager/rpc/config"
 	"market_server/app/dataManager/rpc/internal/server"
-	"market_server/app/dataManager/rpc/internal/svc"
-	"market_server/app/dataManager/rpc/types/pb"
 	"os"
 
 	"github.com/zeromicro/go-zero/core/conf"
-	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/service"
-	"github.com/zeromicro/go-zero/zrpc"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 func test_config() {
-	type TestConfig struct {
-		zrpc.RpcServerConf
-
-		IP            string
-		NetServerType string
-		SerialType    string
-
-		Nacos     config.NacosConfig
-		LogConfig logx.LogConf
-		Mysql     config.MysqlConfig
-	}
-
-	var c TestConfig
-	conf.MustLoad("marketData.yaml", &c)
-
-	fmt.Printf("config: %+v \n", c)
-}
-
-func main() {
+	var c config.Config
 	flag.Parse()
 
-	env := "local"
-
-	for _, v := range os.Args {
-		env = v
-	}
+	fmt.Printf("Args: %+v \n", os.Args)
+	env := os.Args[1]
 
 	fmt.Printf("env: %+v \n", env)
 	var configFile = flag.String("f", "etc/"+env+"/marketData.yaml", "the config file")
 
-	var c config.Config
 	conf.MustLoad(*configFile, &c)
-	ctx := svc.NewServiceContext(c)
-	svr := server.NewMarketServiceServer(ctx)
+	// fmt.Println(c.Nacos.IpAddr, ": ", c.Nacos.Port)
+	fmt.Printf("%+v\n", c)
+}
 
-	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
-		pb.RegisterMarketServiceServer(grpcServer, svr)
+func main() {
+	// flag.Parse()
 
-		if c.Mode == service.DevMode || c.Mode == service.TestMode {
-			reflection.Register(grpcServer)
-		}
-	})
-	defer s.Stop()
+	// fmt.Printf("Args: %+v \n", os.Args)
+	// env := os.Args[1]
 
-	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
+	// fmt.Printf("env: %+v \n", env)
+	// var configFile = flag.String("f", "etc/"+env+"/marketData.yaml", "the config file")
 
-	svr.Start()
-	s.Start()
+	// var c config.Config
+	// conf.MustLoad(*configFile, &c)
 
-	// server.TestMain()
+	// logx.MustSetup(c.LogConfig)
+
+	// fmt.Printf("Log: %+v \n", c)
+
+	// ctx := svc.NewServiceContext(c)
+	// svr := server.NewMarketServiceServer(ctx)
+
+	// s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
+	// 	pb.RegisterMarketServiceServer(grpcServer, svr)
+
+	// 	if c.Mode == service.DevMode || c.Mode == service.TestMode {
+	// 		reflection.Register(grpcServer)
+	// 	}
+	// })
+	// defer s.Stop()
+
+	// fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
+
+	// svr.Start()
+	// s.Start()
+
+	server.TestMain()
 
 	// test_config()
 }

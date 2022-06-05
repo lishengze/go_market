@@ -3,7 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
-	config "market_server/common/conf"
+	"market_server/app/dataManager/rpc/config"
 	"market_server/common/datastruct"
 	"sync"
 
@@ -34,19 +34,23 @@ type KafkaServer struct {
 
 	PublishMutex sync.Mutex
 
+	config config.KafkaConfig
 	IsTest bool
 }
 
 // Init(*config.Config, SerializerI, *DataChannel)
-func (k *KafkaServer) Init(serializer datastruct.SerializerI,
+func (k *KafkaServer) InitKafka(serializer datastruct.SerializerI,
 	recv_data_chan *datastruct.DataChannel,
-	pub_data_chan *datastruct.DataChannel) error {
+	pub_data_chan *datastruct.DataChannel,
+	config config.KafkaConfig) error {
 
 	k.Serializer = serializer
 	k.RecvDataChan = recv_data_chan
 	k.PubDataChan = pub_data_chan
 
-	logx.Info("KafkaServer.Init")
+	k.config = config
+
+	logx.Infof("KafkaServer.Init, config: %+v", k.config)
 
 	var err error
 
@@ -68,13 +72,13 @@ func (k *KafkaServer) InitKafkaApi() error {
 
 	var err error
 
-	k.Producer, err = sarama.NewSyncProducer([]string{config.NATIVE_CONFIG().IP}, nil)
+	k.Producer, err = sarama.NewSyncProducer([]string{k.config.IP}, nil)
 	if err != nil {
 		logx.Error(err.Error())
 		return err
 	}
 
-	k.Broker = sarama.NewBroker(config.NATIVE_CONFIG().IP)
+	k.Broker = sarama.NewBroker(k.config.IP)
 	broker_config := sarama.NewConfig()
 	err = k.Broker.Open(broker_config)
 	if err != nil {
@@ -162,7 +166,7 @@ func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
 }
 
 func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
-	consumer, err := sarama.NewConsumer([]string{config.NATIVE_CONFIG().IP}, nil)
+	consumer, err := sarama.NewConsumer([]string{k.config.IP}, nil)
 
 	logx.Info("ConsumeSingleTopic: " + consume_item.Topic)
 
@@ -324,13 +328,16 @@ func (k *KafkaServer) ProcessTradeBytes(trade_bytes []byte) error {
 }
 
 func (k *KafkaServer) SendRecvedDepth(depth *datastruct.DepthQuote) {
+	logx.Slowf("[kafka] Rcv Depth: %s \n", depth.String(3))
 	k.RecvDataChan.DepthChannel <- depth
 }
 
 func (k *KafkaServer) SendRecvedKline(kline *datastruct.Kline) {
+	logx.Slowf("[kafka] Rcv kline: %s \n", kline.String())
 	k.RecvDataChan.KlineChannel <- kline
 }
 
 func (k *KafkaServer) SendRecvedTrade(trade *datastruct.Trade) {
+	logx.Slowf("[kafka] Rcv Trade: %s \n", trade.String())
 	k.RecvDataChan.TradeChannel <- trade
 }

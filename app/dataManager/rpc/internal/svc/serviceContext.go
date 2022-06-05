@@ -1,6 +1,6 @@
 package svc
 
-import "market_server/app/dataManager/rpc/internal/config"
+import "market_server/app/dataManager/rpc/config"
 
 type ServiceContext struct {
 	Config config.Config
