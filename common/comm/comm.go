@@ -4,6 +4,8 @@ import (
 	"market_server/app/dataManager/rpc/config"
 	"market_server/common/datastruct"
 	"market_server/common/kafka"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type CommI interface {
@@ -42,6 +44,7 @@ type Comm struct {
 func NewComm(recv_chan *datastruct.DataChannel,
 	pub_chan *datastruct.DataChannel,
 	cfg config.CommConfig) *Comm {
+	logx.Infof("NewComm, Config: %+v\n", cfg)
 	c := &Comm{}
 
 	if cfg.SerialType == COMM_PROTOBUF {
@@ -77,6 +80,8 @@ func (c *Comm) Init(
 func (c *Comm) Start() {
 	if c.NetServer != nil {
 		c.NetServer.Start()
+	} else {
+		logx.Error("c.NetServer is nil")
 	}
 }
 

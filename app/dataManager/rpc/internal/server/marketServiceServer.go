@@ -177,6 +177,8 @@ func TestMain() {
 
 	logx.MustSetup(c.LogConfig)
 
+	logx.Infof("config: %+v \n",c)
+
 	ctx := svc.NewServiceContext(c)
 	svr := NewMarketServiceServer(ctx)
 

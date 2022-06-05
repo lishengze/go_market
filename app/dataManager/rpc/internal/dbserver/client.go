@@ -340,13 +340,17 @@ func (d *DBServer) RequestTradeData(ctx context.Context, in *pb.ReqTradeInfo) (*
 		nearest_time := time_list[0]
 		minum_time_delta := time_list[0]
 		for _, time := range time_list {
-			if uint64(math.Abs(float64(time-in.GetTime()))) < minum_time_delta {
+			// cur_delta :=  uint64(math.Abs(float64(float64(time)-float64(in.GetTime()))))
+			cur_delta := uint64(math.Abs(float64(int64(time) - int64(in.GetTime()))))
+			if cur_delta < minum_time_delta {
 				nearest_time = time
-				minum_time_delta = uint64(math.Abs(float64(time - in.GetTime())))
+				minum_time_delta = cur_delta
 			}
 		}
 
-		fmt.Printf("RequestTime: %+v, NearestTime: %+v \n", in.GetTime(), nearest_time)
+		logx.Infof("TimeList: %+v \n", time_list)
+		logx.Infof("minum_time_delta: %+v, RequestTime: %+v, NearestTime: %+v \n",
+			minum_time_delta, in.GetTime(), nearest_time)
 
 		sql_str := get_trade_sql_str(table_name, nearest_time)
 		rows, err := d.db.Query(sql_str)
