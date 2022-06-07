@@ -20,7 +20,10 @@ import (
 	"time"
 )
 
-const delayThreshold = time.Second * 10 // 行情延迟
+const (
+	kafkaWriteCostLimit = time.Second * 2
+	delayThreshold      = time.Second * 10 // 行情延迟
+)
 
 type (
 	Mpu interface {
@@ -215,7 +218,7 @@ func (o *mpu) dispatchDepth() {
 			start := time.Now()
 			err = o.kafkaSyncProducer.SendMessages(msgs)
 			cost := time.Now().Sub(start)
-			if cost > time.Second*3 {
+			if cost > kafkaWriteCostLimit {
 				logx.Errorf("write %d kline, cost:%v", len(msgs), cost)
 			}
 			if err != nil {
@@ -264,7 +267,7 @@ func (o *mpu) dispatchTrade() {
 			start := time.Now()
 			err = o.kafkaSyncProducer.SendMessages(msgs)
 			cost := time.Now().Sub(start)
-			if cost > time.Second*3 {
+			if cost > kafkaWriteCostLimit {
 				logx.Errorf("write %d kline, cost:%v", len(msgs), cost)
 			}
 
@@ -311,7 +314,7 @@ func (o *mpu) dispatchKline() {
 			start := time.Now()
 			err = o.kafkaSyncProducer.SendMessages(msgs)
 			cost := time.Now().Sub(start)
-			if cost > time.Second*3 {
+			if cost > kafkaWriteCostLimit {
 				logx.Errorf("write %d kline, cost:%v", len(msgs), cost)
 			}
 
