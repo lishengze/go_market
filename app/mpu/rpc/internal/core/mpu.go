@@ -219,7 +219,7 @@ func (o *mpu) dispatchDepth() {
 			err = o.kafkaSyncProducer.SendMessages(msgs)
 			cost := time.Now().Sub(start)
 			if cost > kafkaWriteCostLimit {
-				logx.Errorf("write %d kline, cost:%v", len(msgs), cost)
+				logx.Errorf("write %d depth, cost:%v", len(msgs), cost)
 			}
 			if err != nil {
 				logx.Errorf("kafkaConn write depth err:%s, data:%+v", err, *depth)
@@ -268,7 +268,7 @@ func (o *mpu) dispatchTrade() {
 			err = o.kafkaSyncProducer.SendMessages(msgs)
 			cost := time.Now().Sub(start)
 			if cost > kafkaWriteCostLimit {
-				logx.Errorf("write %d kline, cost:%v", len(msgs), cost)
+				logx.Errorf("write %d trade, cost:%v", len(msgs), cost)
 			}
 
 			if err != nil {
