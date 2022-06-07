@@ -247,19 +247,19 @@ func (a *Aggregator) start_listen_recvdata() {
 		for {
 			select {
 			case new_depth := <-a.RecvDataChan.DepthChannel:
-				if new_depth.Symbol == a.cfg.RiskTestConfig.TestSymbol {
-					logx.Info("\n[Rcv] Depth " + new_depth.String(3))
-				}
+				// if new_depth.Symbol == a.cfg.RiskTestConfig.TestSymbol {
+				// 	logx.Info("\n[Rcv] Depth " + new_depth.String(3))
+				// }
 				a.cache_depth(new_depth)
 			case new_kline := <-a.RecvDataChan.KlineChannel:
-				if new_kline.Symbol == a.cfg.RiskTestConfig.TestSymbol {
-					logx.Info("\n[Rcv] Kline " + new_kline.String())
-				}
+				// if new_kline.Symbol == a.cfg.RiskTestConfig.TestSymbol {
+				// 	logx.Info("\n[Rcv] Kline " + new_kline.String())
+				// }
 				a.cache_kline(new_kline)
 			case new_trade := <-a.RecvDataChan.TradeChannel:
-				if new_trade.Symbol == a.cfg.RiskTestConfig.TestSymbol {
-					logx.Info("\n[Rcv] Trade " + new_trade.String())
-				}
+				// if new_trade.Symbol == a.cfg.RiskTestConfig.TestSymbol {
+				// 	logx.Info("\n[Rcv] Trade " + new_trade.String())
+				// }
 				a.cache_trade(new_trade)
 			}
 		}

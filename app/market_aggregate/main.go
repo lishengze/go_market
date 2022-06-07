@@ -7,10 +7,17 @@ import (
 	"market_server/app/market_aggregate/config"
 	"market_server/app/market_aggregate/svc"
 	"os"
+	"time"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"
 )
+
+func set_test_meta(s *aggregate.ServerEngine) {
+	s.SetTestFlag(true)
+
+	s.SetTestConfig()
+}
 
 func main() {
 	fmt.Printf("Args: %+v \n", os.Args)
@@ -24,10 +31,23 @@ func main() {
 
 	logx.MustSetup(c.LogConfig)
 
-	fmt.Printf("Log: %+v \n", c)
+	fmt.Printf("Log: %s \n", c.String())
 
 	ctx := svc.NewServiceContext(c)
 	svr := aggregate.NewServerEngine(ctx)
 
+	is_test := true
+
+	if is_test {
+		set_test_meta(svr)
+	}
+
 	svr.Start()
+
+	if is_test {
+		time.Sleep(time.Second * 6)
+		svr.TestKafkaCancelListen()
+	}
+
+	select {}
 }

@@ -29,6 +29,8 @@ type ServerEngine struct {
 	SymbolConfigs      []*mkconfig.SymbolConfig
 
 	NacosClientWorker *config.NacosClient
+
+	IsTest bool
 }
 
 func NewServerEngine(svcCtx *svc.ServiceContext) *ServerEngine {
@@ -58,9 +60,13 @@ func (s *ServerEngine) Start() {
 
 	s.AggregateWorker.Start()
 
-	go s.StartNacosClient()
+	if !s.IsTest {
+		go s.StartNacosClient()
+	}
+}
 
-	select {}
+func (s *ServerEngine) SetTestFlag(value bool) {
+	s.IsTest = value
 }
 
 func (s *ServerEngine) StartNacosClient() {
@@ -130,8 +136,6 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 	logx.Info(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%s \n", NewMeta.String()))
 
 	s.Commer.UpdateMetaData(&NewMeta)
-
-	// logx.Info(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%+v \n", NewMeta))
 
 	s.UpdateRiskConfigHedgePart(hedge_configs)
 }
@@ -287,25 +291,27 @@ func (s *ServerEngine) UpdateRiskConfig() {
 	}
 }
 
-func TestServerEngine() {
+func (s *ServerEngine) SetTestConfig() {
+	risk_config := GetTestRiskConfig()
+	logx.Infof("risk_config: %+v", risk_config)
 
-	// server_engine := new(ServerEngine)
-	// server_engine.Start()
+	s.Riskworker.UpdateConfig(&risk_config)
 
-	// risk_config := GetTestRiskConfig()
-	// logx.Info(fmt.Sprintf("risk_config: %+v", risk_config))
+	AggConfig := GetTestAggConfig()
+	logx.Infof("AggConfig: %+v", AggConfig)
 
-	// server_engine.Riskworker.UpdateConfig(&risk_config)
+	s.AggregateWorker.UpdateConfig(AggConfig)
 
-	// AggConfig := GetTestAggConfig()
-	// logx.Info(fmt.Sprintf("AggConfig: %+v", AggConfig))
+	meta_data := datastruct.GetTestMetadata("BTC_USDT")
+	logx.Infof("meta_data: %+v", meta_data)
 
-	// server_engine.AggregateWorker.UpdateConfig(AggConfig)
+	s.Commer.UpdateMetaData(meta_data)
+}
 
-	// meta_data := datastruct.GetTestMetadata()
-	// logx.Info(fmt.Sprintf("meta_data: %+v", meta_data))
+func (s *ServerEngine) TestKafkaCancelListen() {
 
-	// server_engine.Commer.UpdateMetaData(meta_data)
+	meta_data := datastruct.GetTestMetadata("ETH_USDT")
+	logx.Infof("meta_data: %+v", meta_data)
 
-	select {}
+	s.Commer.UpdateMetaData(meta_data)
 }

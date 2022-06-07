@@ -34,6 +34,11 @@ type Config struct {
 	LogConfig      logx.LogConf
 }
 
+func (c *Config) String() string {
+	return fmt.Sprintf("CommConfig: %+v \nNacosConfig: %+v \nRiskCtlTestConfig: %+v\nLogConfig: %+v\n",
+		c.Comm, c.Nacos, c.RiskTestConfig, c.LogConfig)
+}
+
 func (n *NativeConfig) ParseFile(file_name string) error {
 	conf.MustLoad(file_name, n)
 	return nil

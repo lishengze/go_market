@@ -1,6 +1,8 @@
-IP: "43.154.179.47:9117"
-NetServerType: "KAFKA"
-SerialType: "PROTOBUF"
+Comm:
+  IP: "43.154.179.47:9117"
+  NetServerType: "KAFKA"
+  SerialType: "PROTOBUF"
+
 
 Nacos:
   IpAddr: "36.255.220.139"

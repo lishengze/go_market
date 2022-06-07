@@ -36,6 +36,11 @@ type KafkaServer struct {
 
 	config config.KafkaConfig
 	IsTest bool
+
+	consume_lock sync.Mutex
+
+	consume_topics       map[string]struct{}
+	consume_topics_mutex sync.Mutex
 }
 
 // Init(*config.Config, SerializerI, *DataChannel)
@@ -49,6 +54,7 @@ func (k *KafkaServer) InitKafka(serializer datastruct.SerializerI,
 	k.PubDataChan = pub_data_chan
 
 	k.config = config
+	k.consume_topics = make(map[string]struct{})
 
 	logx.Infof("KafkaServer.Init, config: %+v", k.config)
 
@@ -113,17 +119,45 @@ func (k *KafkaServer) InitListenPubChan() error {
 	return nil
 }
 
+func (k *KafkaServer) IsTopicConsumed(topic string) bool {
+
+	k.consume_topics_mutex.Lock()
+	_, ok := k.consume_topics[topic]
+	k.consume_topics_mutex.Unlock()
+
+	return ok
+}
+
+func (k *KafkaServer) AddConsumeTopic(topic string) {
+	k.consume_topics_mutex.Lock()
+	if _, ok := k.consume_topics[topic]; !ok {
+		k.consume_topics[topic] = struct{}{}
+
+		logx.Infof("Add Consume Topic: %s", topic)
+	}
+	k.consume_topics_mutex.Unlock()
+}
+
+func (k *KafkaServer) DelConsumeTopic(topic string) {
+	k.consume_topics_mutex.Lock()
+	if _, ok := k.consume_topics[topic]; !ok {
+		delete(k.consume_topics, topic)
+
+		logx.Infof("Del Consume Topic: %s", topic)
+	}
+	k.consume_topics_mutex.Unlock()
+}
+
 // Start Consume Topic
 func (k *KafkaServer) Start() {
-	if k.IsTest {
-		k.start_test()
-		return
-	}
-
 	k.start_consume()
 }
 
 func (k *KafkaServer) start_consume() {
+	k.consume_lock.Lock()
+
+	logx.Info("CurrConsumeSet: " + fmt.Sprintf("%+v", k.ConsumeSet))
+
 	if len(k.ConsumeSet) == 0 {
 		logx.Info("ConsumeSet is Empty!")
 		return
@@ -132,13 +166,13 @@ func (k *KafkaServer) start_consume() {
 	for _, consume_item := range k.ConsumeSet {
 		go k.ConsumeSingleTopic(consume_item)
 	}
-}
 
-func (k *KafkaServer) start_test() {
-
+	k.consume_lock.Unlock()
 }
 
 func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
+	k.consume_lock.Lock()
+
 	logx.Info("UpdateMetaData: " + fmt.Sprintf("%+v", meta_data))
 
 	NewConsumeSet := GetConsumeSet(*meta_data)
@@ -163,40 +197,34 @@ func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
 			delete(k.ConsumeSet, old_topic)
 		}
 	}
+
+	k.consume_lock.Unlock()
 }
 
 func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 	consumer, err := sarama.NewConsumer([]string{k.config.IP}, nil)
-
-	logx.Info("ConsumeSingleTopic: " + consume_item.Topic)
 
 	if err != nil {
 		logx.Error(err.Error())
 		return
 	}
 
-	for {
-		select {
-		case <-consume_item.Ctx.Done():
-			logx.Info(consume_item.Topic + " listen Over!")
-			return
-		default:
-			k.ConsumeAtom(consume_item.Topic, consumer)
-		}
+	if k.IsTopicConsumed(consume_item.Topic) {
+		logx.Infof("Topic %s already consumed!", consume_item.Topic)
+		return
 	}
-}
+	k.AddConsumeTopic(consume_item.Topic)
 
-func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
-	logx.Info("ConsumeAtom: " + topic)
-	partitionList, err := consumer.Partitions(topic) // 根据topic取到所有的分区
+	partitionList, err := consumer.Partitions(consume_item.Topic) // 根据topic取到所有的分区
 	if err != nil {
 		logx.Error(err.Error())
 		return
 	}
 
 	for partition := range partitionList {
-		pc, err := consumer.ConsumePartition(topic, int32(partition), sarama.OffsetNewest)
+		pc, err := consumer.ConsumePartition(consume_item.Topic, int32(partition), sarama.OffsetNewest)
 
+		logx.Info("[After] ConsumePartition ")
 		if err != nil {
 			logx.Error(err.Error())
 			continue
@@ -204,12 +232,7 @@ func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
 		defer pc.AsyncClose()
 
 		for msg := range pc.Messages() {
-
-			// logx.Info(msg.Topic)
-
 			topic_type := GetTopicType(msg.Topic)
-
-			// logx.Info(topic_type)
 
 			switch topic_type {
 			case DEPTH_TYPE:
@@ -221,8 +244,20 @@ func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
 			default:
 				logx.Error("Unknown Topic " + topic_type)
 			}
+
+			select {
+			case <-consume_item.Ctx.Done():
+				logx.Info(consume_item.Topic + " listen Over!")
+				return
+			default:
+				// time.Sleep(time.Second)
+			}
 		}
 	}
+}
+
+func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
+
 }
 
 func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
