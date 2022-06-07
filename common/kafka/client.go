@@ -6,6 +6,7 @@ import (
 	"market_server/common/config"
 	"market_server/common/datastruct"
 	"sync"
+	"time"
 
 	"github.com/Shopify/sarama"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -41,6 +42,45 @@ type KafkaServer struct {
 
 	consume_topics       map[string]struct{}
 	consume_topics_mutex sync.Mutex
+
+	statistic_secs     int
+	rcv_statistic_info sync.Map
+	pub_statistic_info sync.Map
+}
+
+func (k *KafkaServer) StatisticTimeTaskMain() {
+	logx.Info("StatisticTimeTask Start!")
+	duration := time.Duration((time.Duration)(k.statistic_secs) * time.Second)
+	timer := time.Tick(duration)
+	for {
+		select {
+		case <-timer:
+			k.UpdateStatisticInfo()
+		}
+	}
+}
+
+func (k *KafkaServer) UpdateStatisticInfo() {
+
+}
+
+func (k *KafkaServer) OutputRcvInfo(key, value interface{}) bool {
+	logx.Statf("[rcv]%s : %d ", key, value)
+	return true
+}
+
+func (k *KafkaServer) OutputPubInfo(key, value interface{}) bool {
+	logx.Statf("[pub]%s : %d ", key, value)
+	return true
+}
+
+func (k *KafkaServer) OutputStatisticInfo() {
+
+	k.rcv_statistic_info.Range(k.OutputRcvInfo)
+
+	k.pub_statistic_info.Range(k.OutputPubInfo)
+
+	k.rcv_statistic_info.clear()
 }
 
 // Init(*config.Config, SerializerI, *DataChannel)
@@ -55,8 +95,9 @@ func (k *KafkaServer) InitKafka(serializer datastruct.SerializerI,
 
 	k.config = config
 	k.consume_topics = make(map[string]struct{})
+	k.statistic_secs = 5
 
-	logx.Infof("KafkaServer.Init, config: %+v", k.config)
+	logx.Infof("KafkaServer.Init, config: %+v\n", k.config)
 
 	var err error
 

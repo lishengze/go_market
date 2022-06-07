@@ -293,17 +293,17 @@ func (s *ServerEngine) UpdateRiskConfig() {
 
 func (s *ServerEngine) SetTestConfig() {
 	risk_config := GetTestRiskConfig()
-	logx.Infof("risk_config: %+v", risk_config)
+	logx.Infof("\\nrisk_config: %+v", risk_config)
 
 	s.Riskworker.UpdateConfig(&risk_config)
 
 	AggConfig := GetTestAggConfig()
-	logx.Infof("AggConfig: %+v", AggConfig)
+	logx.Infof("\\nAggConfig: %+v", AggConfig)
 
 	s.AggregateWorker.UpdateConfig(AggConfig)
 
 	meta_data := datastruct.GetTestMetadata("BTC_USDT")
-	logx.Infof("meta_data: %+v", meta_data)
+	logx.Infof("\\nmeta_data: %+v", meta_data)
 
 	s.Commer.UpdateMetaData(meta_data)
 }

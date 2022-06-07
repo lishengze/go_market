@@ -74,7 +74,7 @@ func (m *MarketServiceServer) Start() {
 
 func (s *MarketServiceServer) StartNacosClient() {
 	logx.Info("****************** StartNacosClient *****************")
-	s.NacosClientWorker = config.NewNacosClient(&config.NATIVE_CONFIG().Nacos)
+	s.NacosClientWorker = config.NewNacosClient(&s.svcCtx.Config.Nacos)
 
 	logx.Info("Connect Nacos Successfully!")
 
