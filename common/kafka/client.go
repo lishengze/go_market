@@ -46,12 +46,16 @@ type KafkaServer struct {
 	statistic_secs     int
 	rcv_statistic_info sync.Map
 	pub_statistic_info sync.Map
+
+	statistic_start time.Time
 }
 
 func (k *KafkaServer) StatisticTimeTaskMain() {
-	logx.Info("StatisticTimeTask Start!")
+	logx.Info("---- StatisticTimeTask Start!")
 	duration := time.Duration((time.Duration)(k.statistic_secs) * time.Second)
 	timer := time.Tick(duration)
+
+	k.statistic_start = time.Now()
 	for {
 		select {
 		case <-timer:
@@ -60,27 +64,34 @@ func (k *KafkaServer) StatisticTimeTaskMain() {
 	}
 }
 
-func (k *KafkaServer) UpdateStatisticInfo() {
-
-}
-
 func (k *KafkaServer) OutputRcvInfo(key, value interface{}) bool {
-	logx.Statf("[rcv]%s : %d ", key, value)
+	if value.(int) != 0 {
+		logx.Infof("[rcv] %s : %d ", key, value)
+		k.rcv_statistic_info.Store(key, 0)
+	}
+
 	return true
 }
 
 func (k *KafkaServer) OutputPubInfo(key, value interface{}) bool {
-	logx.Statf("[pub]%s : %d ", key, value)
+	if value.(int) != 0 {
+		logx.Infof("[pub] %s : %d ", key, value)
+		k.pub_statistic_info.Store(key, 0)
+	}
 	return true
 }
 
-func (k *KafkaServer) OutputStatisticInfo() {
+func (k *KafkaServer) UpdateStatisticInfo() {
+
+	logx.Infof("Statistic Start: %+v \n", k.statistic_start)
 
 	k.rcv_statistic_info.Range(k.OutputRcvInfo)
 
 	k.pub_statistic_info.Range(k.OutputPubInfo)
 
-	k.rcv_statistic_info.clear()
+	k.statistic_start = time.Now()
+
+	logx.Infof("Statistic End: %+v \n", k.statistic_start)
 }
 
 // Init(*config.Config, SerializerI, *DataChannel)
@@ -95,7 +106,7 @@ func (k *KafkaServer) InitKafka(serializer datastruct.SerializerI,
 
 	k.config = config
 	k.consume_topics = make(map[string]struct{})
-	k.statistic_secs = 5
+	k.statistic_secs = 10
 
 	logx.Infof("KafkaServer.Init, config: %+v\n", k.config)
 
@@ -191,6 +202,7 @@ func (k *KafkaServer) DelConsumeTopic(topic string) {
 
 // Start Consume Topic
 func (k *KafkaServer) Start() {
+	go k.StatisticTimeTaskMain()
 	k.start_consume()
 }
 
@@ -275,6 +287,12 @@ func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 		for msg := range pc.Messages() {
 			topic_type := GetTopicType(msg.Topic)
 
+			if value, ok := k.rcv_statistic_info.Load(msg.Topic); ok {
+				k.rcv_statistic_info.Store(msg.Topic, value.(int)+1)
+			} else {
+				k.rcv_statistic_info.Store(msg.Topic, 1)
+			}
+
 			switch topic_type {
 			case DEPTH_TYPE:
 				go k.ProcessDepthBytes(msg.Value)
@@ -299,68 +317,6 @@ func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 
 func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
 
-}
-
-func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
-	defer k.PublishMutex.Unlock()
-
-	msgs := []*sarama.ProducerMessage{{
-		Topic: topic,
-		Value: sarama.ByteEncoder(origin_bytes),
-	}}
-
-	k.PublishMutex.Lock()
-	err := k.Producer.SendMessages(msgs)
-
-	if err != nil {
-		logx.Error(err.Error())
-		return err
-	}
-	return nil
-}
-
-func (k *KafkaServer) PublishDepth(local_depth *datastruct.DepthQuote) error {
-	logx.Info(fmt.Sprintf("Pub Depth %+v", local_depth.String(3)))
-	serialize_str, err := k.Serializer.EncodeDepth(local_depth)
-
-	if err != nil {
-		logx.Error(err.Error())
-		return err
-	}
-
-	topic := GetDepthTopic(local_depth.Symbol, local_depth.Exchange)
-
-	return k.PublishMsg(topic, serialize_str)
-}
-
-func (k *KafkaServer) PublishKline(local_kline *datastruct.Kline) error {
-	logx.Info(fmt.Sprintf("Pub kline %+v", local_kline))
-
-	serialize_str, err := k.Serializer.EncodeKline(local_kline)
-
-	if err != nil {
-		logx.Error(err.Error())
-		return err
-	}
-
-	topic := GetKlineTopic(local_kline.Symbol, local_kline.Exchange)
-
-	return k.PublishMsg(topic, serialize_str)
-}
-
-func (k *KafkaServer) PublishTrade(local_trade *datastruct.Trade) error {
-	logx.Info(fmt.Sprintf("Pub Trade %+v", local_trade))
-
-	serialize_str, err := k.Serializer.EncodeTrade(local_trade)
-
-	if err != nil {
-		logx.Error(err.Error())
-		return err
-	}
-
-	topic := GetTradeTopic(local_trade.Symbol, local_trade.Exchange)
-
-	return k.PublishMsg(topic, serialize_str)
 }
 
 func (k *KafkaServer) ProcessDepthBytes(depth_bytes []byte) error {
@@ -403,17 +359,85 @@ func (k *KafkaServer) ProcessTradeBytes(trade_bytes []byte) error {
 	return nil
 }
 
+func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
+	defer k.PublishMutex.Unlock()
+
+	if value, ok := k.pub_statistic_info.Load(topic); ok {
+		k.pub_statistic_info.Store(topic, value.(int)+1)
+	} else {
+		k.pub_statistic_info.Store(topic, 1)
+	}
+
+	msgs := []*sarama.ProducerMessage{{
+		Topic: topic,
+		Value: sarama.ByteEncoder(origin_bytes),
+	}}
+
+	k.PublishMutex.Lock()
+	err := k.Producer.SendMessages(msgs)
+
+	if err != nil {
+		logx.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+func (k *KafkaServer) PublishDepth(local_depth *datastruct.DepthQuote) error {
+	// logx.Slow(fmt.Sprintf("Pub Depth %+v", local_depth.String(3)))
+	serialize_str, err := k.Serializer.EncodeDepth(local_depth)
+
+	if err != nil {
+		logx.Error(err.Error())
+		return err
+	}
+
+	topic := GetDepthTopic(local_depth.Symbol, local_depth.Exchange)
+
+	return k.PublishMsg(topic, serialize_str)
+}
+
+func (k *KafkaServer) PublishKline(local_kline *datastruct.Kline) error {
+	// logx.Slow(fmt.Sprintf("Pub kline %+v", local_kline))
+
+	serialize_str, err := k.Serializer.EncodeKline(local_kline)
+
+	if err != nil {
+		logx.Error(err.Error())
+		return err
+	}
+
+	topic := GetKlineTopic(local_kline.Symbol, local_kline.Exchange)
+
+	return k.PublishMsg(topic, serialize_str)
+}
+
+func (k *KafkaServer) PublishTrade(local_trade *datastruct.Trade) error {
+	// logx.Slow(fmt.Sprintf("Pub Trade %+v", local_trade))
+
+	serialize_str, err := k.Serializer.EncodeTrade(local_trade)
+
+	if err != nil {
+		logx.Error(err.Error())
+		return err
+	}
+
+	topic := GetTradeTopic(local_trade.Symbol, local_trade.Exchange)
+
+	return k.PublishMsg(topic, serialize_str)
+}
+
 func (k *KafkaServer) SendRecvedDepth(depth *datastruct.DepthQuote) {
-	logx.Slowf("[kafka] Rcv Depth: %s \n", depth.String(3))
+	// logx.Slowf("[kafka] Rcv Depth: %s \n", depth.String(3))
 	k.RecvDataChan.DepthChannel <- depth
 }
 
 func (k *KafkaServer) SendRecvedKline(kline *datastruct.Kline) {
-	logx.Slowf("[kafka] Rcv kline: %s \n", kline.String())
+	// logx.Slowf("[kafka] Rcv kline: %s \n", kline.String())
 	k.RecvDataChan.KlineChannel <- kline
 }
 
 func (k *KafkaServer) SendRecvedTrade(trade *datastruct.Trade) {
-	logx.Slowf("[kafka] Rcv Trade: %s \n", trade.String())
+	// logx.Slowf("[kafka] Rcv Trade: %s \n", trade.String())
 	k.RecvDataChan.TradeChannel <- trade
 }

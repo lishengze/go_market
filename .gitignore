@@ -11,10 +11,14 @@ app/xPertBusiness/rpc/log/*
 update
 merge
 *.exe
+log/
 
 
 app/userCenter/rpc/log/
 app/order/rpc/log/
+
+
+app/market_aggregate/log/
 
 app/admin/api/go_build_bcts_app_admin_cmd_api
 

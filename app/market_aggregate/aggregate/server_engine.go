@@ -45,7 +45,7 @@ func NewServerEngine(svcCtx *svc.ServiceContext) *ServerEngine {
 	s.MarketRiskConfigs = nil
 	s.SymbolConfigs = nil
 	s.RiskCtrlConfigMaps = make(map[string]*mkconfig.RiskCtrlConfig)
-
+	s.IsTest = false
 	s.Commer = comm.NewComm(s.RecvDataChan, s.PubDataChan, svcCtx.Config.Comm)
 
 	s.Riskworker = NewRiskWorkerManager(&s.ctx.Config)
