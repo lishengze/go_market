@@ -3,7 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
-	"market_server/app/dataManager/rpc/config"
+	"market_server/common/config"
 	"market_server/common/datastruct"
 	"sync"
 
@@ -149,7 +149,7 @@ func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
 	}
 
 	for new_topic, consume_item := range NewConsumeSet {
-		if _, ok := k.ConsumeSet[new_topic]; ok == false {
+		if _, ok := k.ConsumeSet[new_topic]; !ok {
 			logx.Info("Start Consume Topic: " + new_topic)
 			go k.ConsumeSingleTopic(consume_item)
 			k.ConsumeSet[new_topic] = consume_item
@@ -157,7 +157,7 @@ func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
 	}
 
 	for old_topic, consume_item := range k.ConsumeSet {
-		if _, ok := NewConsumeSet[old_topic]; ok == false {
+		if _, ok := NewConsumeSet[old_topic]; !ok {
 			logx.Info("Stop Consume Topic: " + old_topic)
 			consume_item.CancelFunc()
 			delete(k.ConsumeSet, old_topic)

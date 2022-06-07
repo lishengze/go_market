@@ -11,7 +11,7 @@ import (
 
 	"market_server/app/dataManager/rpc/internal/dbserver"
 	"market_server/app/dataManager/rpc/internal/svc"
-	"market_server/app/dataManager/rpc/config"
+	"market_server/common/config"
 	"market_server/app/dataManager/rpc/types/pb"
 	"market_server/common/comm"
 

@@ -33,7 +33,7 @@ func GetTopics(MetaData datastruct.Metadata) map[string]struct{} {
 	for symbol, exchange_map := range MetaData.DepthMeta {
 		for exchange := range exchange_map {
 			topic := GetDepthTopic(symbol, exchange)
-			if _, ok := rst[topic]; ok == false {
+			if _, ok := rst[topic]; !ok {
 				rst[topic] = struct{}{}
 			}
 		}
@@ -42,7 +42,7 @@ func GetTopics(MetaData datastruct.Metadata) map[string]struct{} {
 	for symbol, exchange_map := range MetaData.KlineMeta {
 		for exchange, _ := range exchange_map {
 			topic := GetKlineTopic(symbol, exchange)
-			if _, ok := rst[topic]; ok == false {
+			if _, ok := rst[topic]; !ok {
 				rst[topic] = struct{}{}
 			}
 		}
@@ -51,7 +51,7 @@ func GetTopics(MetaData datastruct.Metadata) map[string]struct{} {
 	for symbol, exchange_map := range MetaData.TradeMeta {
 		for exchange, _ := range exchange_map {
 			topic := GetTradeTopic(symbol, exchange)
-			if _, ok := rst[topic]; ok == false {
+			if _, ok := rst[topic]; !ok {
 				rst[topic] = struct{}{}
 			}
 		}
@@ -65,7 +65,7 @@ func GetConsumeSet(MetaData datastruct.Metadata) map[string](*ConsumeItem) {
 	for symbol, exchange_map := range MetaData.DepthMeta {
 		for exchange, _ := range exchange_map {
 			topic := GetDepthTopic(symbol, exchange)
-			if _, ok := rst[topic]; ok == false {
+			if _, ok := rst[topic]; !ok {
 
 				base_ctx := context.Background()
 				base_child_ctx, base_child_cancel_func := context.WithCancel(base_ctx)
@@ -83,7 +83,7 @@ func GetConsumeSet(MetaData datastruct.Metadata) map[string](*ConsumeItem) {
 	for symbol, exchange_map := range MetaData.KlineMeta {
 		for exchange, _ := range exchange_map {
 			topic := GetKlineTopic(symbol, exchange)
-			if _, ok := rst[topic]; ok == false {
+			if _, ok := rst[topic]; !ok {
 				base_ctx := context.Background()
 				base_child_ctx, base_child_cancel_func := context.WithCancel(base_ctx)
 
@@ -100,7 +100,7 @@ func GetConsumeSet(MetaData datastruct.Metadata) map[string](*ConsumeItem) {
 	for symbol, exchange_map := range MetaData.TradeMeta {
 		for exchange, _ := range exchange_map {
 			topic := GetTradeTopic(symbol, exchange)
-			if _, ok := rst[topic]; ok == false {
+			if _, ok := rst[topic]; !ok {
 				base_ctx := context.Background()
 				base_child_ctx, base_child_cancel_func := context.WithCancel(base_ctx)
 

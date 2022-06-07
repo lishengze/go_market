@@ -1,6 +1,6 @@
 package svc
 
-import "market_server/common/config"
+import "market_server/app/market_aggregate/config"
 
 type ServiceContext struct {
 	Config config.Config

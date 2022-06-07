@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"market_server/app/dataManager/rpc/config"
 	"market_server/app/dataManager/rpc/internal/server"
+	"market_server/common/config"
 	"os"
 
 	"github.com/zeromicro/go-zero/core/conf"

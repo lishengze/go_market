@@ -1,7 +1,7 @@
 package comm
 
 import (
-	"market_server/app/dataManager/rpc/config"
+	"market_server/common/config"
 	"market_server/common/datastruct"
 	"market_server/common/kafka"
 

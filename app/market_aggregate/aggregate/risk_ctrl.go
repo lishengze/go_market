@@ -1,0 +1,687 @@
+package aggregate
+
+import (
+	"market_server/app/market_aggregate/config"
+	mkconfig "market_server/app/market_aggregate/config"
+	"market_server/common/datastruct"
+	"market_server/common/util"
+	"math"
+	"sync"
+
+	"github.com/emirpasic/gods/maps/treemap"
+	"github.com/emirpasic/gods/utils"
+	"github.com/shopspring/decimal"
+	"github.com/zeromicro/go-zero/core/logx"
+)
+
+// type TString string
+
+// func catch_exp() {
+// 	errMsg := recover()
+
+// 	if errMsg != nil {
+// 		fmt.Println(errMsg)
+
+// 	}
+
+// 	fmt.Println("This is catch_exp func")
+
+// }
+
+type RiskCtrlConfigMap map[string]*mkconfig.RiskCtrlConfig
+
+func GetRiskCtrlConfigMapString(r *RiskCtrlConfigMap) string {
+	result := ""
+	for symbol, risk_config := range *r {
+		result += symbol + ":\n" + risk_config.String()
+	}
+	return result
+}
+
+type RiskWorkerInterface interface {
+	Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool
+	Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool
+	SetNext(nextWorker RiskWorkerInterface)
+	GetWorkerName() string
+	GetNextWoker() RiskWorkerInterface
+}
+
+type Worker struct {
+	nextWorker RiskWorkerInterface
+	WorkerName string
+	cfg        *config.Config
+}
+
+func (w *Worker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
+	// fmt.Println("Original Worker Process")
+	return false
+}
+
+func (w *Worker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
+	defer util.ExceptionFunc()
+
+	// fmt.Println(w)
+
+	w.Process(depth_quote, configs)
+
+	if w.nextWorker != nil {
+		w.nextWorker.Execute(depth_quote, configs)
+	} else {
+		logx.Statf("%s Worker Has No Next Worker!\n", w.WorkerName)
+	}
+
+	return false
+}
+
+func (w *Worker) SetNext(next RiskWorkerInterface) {
+	defer util.ExceptionFunc()
+
+	w.nextWorker = next
+}
+
+func (w *Worker) GetWorkerName() string {
+	return w.WorkerName
+}
+
+func (w *Worker) GetNextWoker() RiskWorkerInterface {
+	return w.nextWorker
+}
+
+type FeeWorker struct {
+	Worker
+}
+
+func get_bias_value(original_value float64, bias_kind int, bias_value float64) float64 {
+	defer util.ExceptionFunc()
+
+	rst := decimal.NewFromFloat(original_value)
+
+	// biased_value := original_value
+
+	if bias_kind == 1 {
+		rst = rst.Mul(decimal.NewFromFloat(1 + bias_value))
+	} else if bias_kind == 2 {
+		rst = rst.Add(decimal.NewFromFloat(bias_value))
+	} else {
+		logx.Error("Error Bias Kind")
+	}
+
+	rst_float, _ := rst.Float64()
+	if rst_float < 0 {
+		rst_float = 0
+	}
+
+	return rst_float
+}
+
+func get_new_fee_price(original_price float64, exchange string, hedge_config *mkconfig.RiskCtrlConfig, isAsk bool) float64 {
+	defer util.ExceptionFunc()
+
+	new_price := original_price
+	if hedge_config, ok := hedge_config.HedgeConfigMap[exchange]; ok {
+
+		if isAsk {
+			new_price = get_bias_value(original_price, hedge_config.FeeKind, hedge_config.FeeValue)
+		} else {
+			new_price = get_bias_value(original_price, hedge_config.FeeKind, hedge_config.FeeValue*-1)
+		}
+	}
+	return new_price
+}
+
+// 根据每个交易所的手续费率，计算手续费
+
+func (w *FeeWorker) calc_depth_fee(depth *treemap.Map, config *mkconfig.RiskCtrlConfig, isAsk bool) *treemap.Map {
+	defer util.ExceptionFunc()
+
+	result := treemap.NewWith(utils.Float64Comparator)
+
+	iter := depth.Iterator()
+
+	for iter.Begin(); iter.Next(); {
+		original_price := iter.Key().(float64)
+		inner_depth := iter.Value().(*datastruct.InnerDepth)
+
+		for exchange, _ := range inner_depth.ExchangeVolume {
+			new_price := get_new_fee_price(original_price, exchange, config, isAsk)
+
+			if new_inner_depth_iter, ok := result.Get(new_price); ok {
+
+				new_inner_depth := new_inner_depth_iter.(*datastruct.InnerDepth)
+
+				new_inner_depth.ExchangeVolume[exchange] += inner_depth.Volume
+				new_inner_depth.Volume += inner_depth.Volume
+
+			} else {
+				new_inner_depth := datastruct.InnerDepth{Volume: 0, ExchangeVolume: make(map[string]float64)}
+
+				new_inner_depth.ExchangeVolume[exchange] = inner_depth.Volume
+				new_inner_depth.Volume = inner_depth.Volume
+
+				result.Put(new_price, &new_inner_depth)
+			}
+		}
+	}
+
+	return result
+}
+
+func (w *FeeWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
+	defer util.ExceptionFunc()
+
+	w.Process(depth_quote, configs)
+
+	if w.nextWorker != nil {
+		return w.nextWorker.Execute(depth_quote, configs)
+	} else {
+		logx.Statf("%s Worker Has No Next Worker!\n", w.WorkerName)
+		return true
+	}
+}
+
+func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
+	defer util.ExceptionFunc()
+
+	if cur_config, ok := (*configs)[depth_quote.Symbol]; ok {
+
+		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
+			logx.Statf("Symbol:%s, Config:%+v \n", depth_quote.Symbol, cur_config)
+
+			logx.Stat("\nBefore FeeCtrl: \n" + depth_quote.String(3))
+		}
+
+		new_asks := w.calc_depth_fee(depth_quote.Asks, cur_config, true)
+		depth_quote.Asks = new_asks
+
+		new_bids := w.calc_depth_fee(depth_quote.Bids, cur_config, false)
+		depth_quote.Bids = new_bids
+
+		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
+			logx.Stat("\nAfter FeeCtrl: \n" + depth_quote.String(3))
+		}
+
+	} else {
+
+		logx.Error("Symbol: " + string(depth_quote.Symbol) + " Has no config")
+		return false
+	}
+
+	// fmt.Println("FeeWorker Process")
+	return true
+}
+
+type QuotebiasWorker struct {
+	Worker
+}
+
+func calc_depth_bias(depth *treemap.Map, config *mkconfig.RiskCtrlConfig, isAsk bool) *treemap.Map {
+	defer util.ExceptionFunc()
+
+	result := treemap.NewWith(utils.Float64Comparator)
+
+	depth_iter := depth.Iterator()
+
+	PriceBiasValue := config.PriceBiasValue
+	VolumeBiasValue := config.VolumeBiasValue
+
+	if isAsk == false {
+		PriceBiasValue *= -1
+		VolumeBiasValue *= -1
+	}
+
+	for depth_iter.Begin(); depth_iter.Next(); {
+		original_price := depth_iter.Key().(float64)
+		inner_depth := depth_iter.Value().(*datastruct.InnerDepth)
+
+		// var new_inner_depth datastruct.InnerDepth
+
+		new_inner_depth := datastruct.InnerDepth{Volume: 0, ExchangeVolume: make(map[string]float64)}
+
+		new_price := get_bias_value(original_price, config.PriceBiasKind, PriceBiasValue)
+		new_volume := get_bias_value(inner_depth.Volume, config.VolumeBiasKind, VolumeBiasValue)
+
+		new_inner_depth.Volume = new_volume
+
+		for exchange, exchange_volume := range inner_depth.ExchangeVolume {
+			new_exchange_volume := get_bias_value(exchange_volume, config.VolumeBiasKind, VolumeBiasValue)
+
+			new_inner_depth.ExchangeVolume[exchange] = new_exchange_volume
+		}
+
+		result.Put(new_price, &new_inner_depth)
+	}
+
+	return result
+}
+
+func (w *QuotebiasWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
+	defer util.ExceptionFunc()
+
+	if cur_config, ok := (*configs)[depth_quote.Symbol]; ok {
+
+		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
+			logx.Stat("\nBefore QuotebiasCtrl: \n" + depth_quote.String(3))
+		}
+
+		new_asks := calc_depth_bias(depth_quote.Asks, cur_config, true)
+		depth_quote.Asks = new_asks
+
+		new_bids := calc_depth_bias(depth_quote.Bids, cur_config, false)
+		depth_quote.Bids = new_bids
+
+		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
+			logx.Stat("\nAfter QuotebiasCtrl: \n" + depth_quote.String(3))
+		}
+
+	} else {
+
+		logx.Error("Symbol: " + string(depth_quote.Symbol) + " Has no config")
+		return false
+	}
+
+	return true
+}
+
+func (w *QuotebiasWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
+	defer util.ExceptionFunc()
+
+	w.Process(depth_quote, configs)
+
+	if w.nextWorker != nil {
+		w.nextWorker.Execute(depth_quote, configs)
+	} else {
+		logx.Statf("%s Worker Has No Next Worker!\n", w.WorkerName)
+	}
+
+	return false
+}
+
+type WatermarkWorker struct {
+	Worker
+}
+
+// 每个交易所的买一卖一档，然后取买一卖一中位数的均值
+func calc_watermark(depth_quote *datastruct.DepthQuote) float64 {
+	var rst float64
+
+	ask_iter := depth_quote.Asks.Iterator()
+	bid_iter := depth_quote.Bids.Iterator()
+	ask_iter.First()
+	bid_iter.Last()
+
+	ask_minum := ask_iter.Key().(float64)
+	bid_maxum := bid_iter.Key().(float64)
+
+	ask_crossed_price_list := []float64{}
+	for ask_iter.Begin(); ask_iter.Next(); {
+		if ask_iter.Key().(float64) <= bid_maxum {
+			ask_crossed_price_list = append(ask_crossed_price_list, ask_iter.Key().(float64))
+		} else {
+			break
+		}
+	}
+
+	logx.Statf("\n------ ask_crossed_price_list:%v \n", ask_crossed_price_list)
+
+	bid_crossed_price_list := []float64{}
+	for bid_iter.End(); bid_iter.Prev(); {
+		if bid_iter.Key().(float64) >= ask_minum {
+			bid_crossed_price_list = append(bid_crossed_price_list, bid_iter.Key().(float64))
+		} else {
+			break
+		}
+	}
+	logx.Statf("\n------bid_crossed_price_list:%v \n", bid_crossed_price_list)
+
+	rst = (ask_crossed_price_list[len(ask_crossed_price_list)/2] + bid_crossed_price_list[len(bid_crossed_price_list)/2]) / 2
+
+	logx.Statf("\n-------watermark: %v \n", rst)
+
+	return rst
+}
+
+func filter_depth_by_watermark(depth *treemap.Map, watermark float64, price_minum_change float64, isAsk bool) {
+
+	crossed_price := []float64{}
+	new_inner_depth := datastruct.InnerDepth{Volume: 0, ExchangeVolume: make(map[string]float64)}
+	depth_iter := depth.Iterator()
+	new_price := watermark + float64(price_minum_change)
+
+	logx.Statf("\nNewPrice: %v\n", new_price)
+
+	if isAsk {
+
+		for depth_iter.Begin(); depth_iter.Next(); {
+			cur_price := depth_iter.Key().(float64)
+			cur_innerdepth := depth_iter.Value().(*datastruct.InnerDepth)
+
+			if cur_price <= new_price {
+				crossed_price = append(crossed_price, cur_price)
+				new_inner_depth.Add(cur_innerdepth)
+			} else {
+				break
+			}
+		}
+
+	} else {
+
+		for depth_iter.End(); depth_iter.Prev(); {
+			cur_price := depth_iter.Key().(float64)
+			cur_innerdepth := depth_iter.Value().(*datastruct.InnerDepth)
+
+			if cur_price >= new_price {
+				crossed_price = append(crossed_price, cur_price)
+				new_inner_depth.Add(cur_innerdepth)
+			} else {
+				break
+			}
+		}
+	}
+
+	if len(crossed_price) > 0 {
+		for _, price := range crossed_price {
+
+			depth.Remove(price)
+		}
+	}
+
+	if new_price != 0 {
+		depth.Put(new_price, new_inner_depth)
+	}
+}
+
+func get_sorted_key(depth *treemap.Map) []float64 {
+	var keys []float64
+
+	// for price, _ := range depth {
+
+	// 	keys = append(keys, price)
+
+	// 	for i := len(keys) - 1; i > 0; i-- {
+	// 		if keys[i] < keys[i-1] {
+	// 			tmp := keys[i]
+	// 			keys[i] = keys[i-1]
+	// 			keys[i-1] = tmp
+	// 		} else {
+	// 			break
+	// 		}
+	// 	}
+	// }
+	return keys
+}
+
+func check_cross(depth_quote *datastruct.DepthQuote) bool {
+	if depth_quote.Asks.Size() == 0 || depth_quote.Bids.Size() == 0 {
+		return false
+	}
+
+	ask_iter := depth_quote.Asks.Iterator()
+	bid_iter := depth_quote.Bids.Iterator()
+
+	if ask_iter.First() && bid_iter.Last() && ask_iter.Key().(float64) <= bid_iter.Key().(float64) {
+		return true
+	}
+	return false
+}
+
+func (w *WatermarkWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
+	defer util.ExceptionFunc()
+
+	w.Process(depth_quote, configs)
+
+	if w.nextWorker != nil {
+		w.nextWorker.Execute(depth_quote, configs)
+	} else {
+		logx.Statf("%s Worker Has No Next Worker!\n", w.WorkerName)
+	}
+
+	return false
+}
+
+func (w *WatermarkWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
+	defer util.ExceptionFunc()
+
+	if check_cross(depth_quote) == false {
+		logx.Statf("++++++ WatermarkWorker:Process Has No Cross Depth! +++++\n\n")
+		return true
+	}
+
+	if cur_config, ok := (*configs)[depth_quote.Symbol]; ok {
+
+		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
+			logx.Statf("\nBefore WatermarkWorker: \n" + depth_quote.String(3))
+		}
+
+		watermark := calc_watermark(depth_quote)
+
+		if watermark <= 0 {
+			return true
+		}
+
+		filter_depth_by_watermark(depth_quote.Asks, watermark, cur_config.PriceMinumChange, true)
+
+		filter_depth_by_watermark(depth_quote.Bids, watermark, cur_config.PriceMinumChange*-1, false)
+
+		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
+			logx.Statf("\nAfter WatermarkWorker: \n" + depth_quote.String(3))
+		}
+	} else {
+
+		logx.Error("Symbol: " + string(depth_quote.Symbol) + " Has no config")
+		return false
+	}
+	return true
+}
+
+func resize_float64(src float64, presion uint32) float64 {
+	defer util.ExceptionFunc()
+
+	x := math.Pow10(int(presion))
+	return math.Trunc(src*x) / x
+}
+
+func resize_depth_precision(depth *treemap.Map, config *mkconfig.RiskCtrlConfig) *treemap.Map {
+	defer util.ExceptionFunc()
+
+	result := treemap.NewWith(utils.Float64Comparator)
+	depth_iter := depth.Iterator()
+
+	for depth_iter.Begin(); depth_iter.Next(); {
+		original_price := depth_iter.Key().(float64)
+		inner_depth := depth_iter.Value().(*datastruct.InnerDepth)
+
+		new_inner_depth := datastruct.InnerDepth{Volume: 0, ExchangeVolume: make(map[string]float64)}
+
+		new_price := resize_float64(original_price, config.PricePrecison)
+		new_volume := resize_float64(inner_depth.Volume, config.VolumePrecison)
+
+		new_inner_depth.Volume = new_volume
+
+		for exchange, exchange_volume := range inner_depth.ExchangeVolume {
+			new_exchange_volume := float64(resize_float64(float64(exchange_volume), config.VolumePrecison))
+
+			new_inner_depth.ExchangeVolume[exchange] = new_exchange_volume
+		}
+
+		result.Put(new_price, &new_inner_depth)
+	}
+
+	return result
+}
+
+func (w *PrecisionWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
+	defer util.ExceptionFunc()
+
+	w.Process(depth_quote, configs)
+
+	if w.nextWorker != nil {
+		w.nextWorker.Execute(depth_quote, configs)
+	} else {
+		logx.Statf("%s Worker Has No Next Worker!\n", w.WorkerName)
+	}
+
+	return false
+}
+
+func (w *PrecisionWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtrlConfigMap) bool {
+	defer util.ExceptionFunc()
+
+	if cur_config, ok := (*configs)[depth_quote.Symbol]; ok {
+
+		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
+			logx.Statf("\nBefore PrecisionWorker: \n" + depth_quote.String(3))
+		}
+
+		new_asks := resize_depth_precision(depth_quote.Asks, cur_config)
+		depth_quote.Asks = new_asks
+
+		new_bids := resize_depth_precision(depth_quote.Bids, cur_config)
+		depth_quote.Bids = new_bids
+
+		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
+			logx.Statf("\nAfter PrecisionWorker: \n" + depth_quote.String(3))
+		}
+	} else {
+		logx.Error("Symbol: " + string(depth_quote.Symbol) + " Has no config")
+		return false
+	}
+	return true
+}
+
+type PrecisionWorker struct {
+	Worker
+}
+
+type RiskWorkerManager struct {
+	FeeWorker_       FeeWorker
+	QuotebiasWorker_ QuotebiasWorker
+	WatermarkWorker_ WatermarkWorker
+	PrecisionWorker_ PrecisionWorker
+
+	Worker      RiskWorkerInterface
+	RiskConfig  RiskCtrlConfigMap
+	ConfigMutex *sync.RWMutex
+}
+
+func NewRiskWorkerManager(cfg *config.Config) *RiskWorkerManager {
+
+	fee_worker := &FeeWorker{
+		Worker{WorkerName: "FeeWorker", cfg: cfg},
+	}
+
+	quotebias_worker := &QuotebiasWorker{
+		Worker{WorkerName: "QuotebiasWorker", cfg: cfg},
+	}
+
+	watermark_worker := &WatermarkWorker{
+		Worker{WorkerName: "WatermarkWorker", cfg: cfg},
+	}
+
+	precision_worker := &PrecisionWorker{
+		Worker{WorkerName: "PrecisionWorker", cfg: cfg},
+	}
+
+	r := &RiskWorkerManager{
+		ConfigMutex: new(sync.RWMutex),
+		RiskConfig:  make(map[string]*mkconfig.RiskCtrlConfig),
+		Worker:      nil,
+	}
+
+	if cfg.RiskTestConfig.FeeRiskctrlOpen {
+		r.AddWorker(fee_worker)
+	}
+
+	if cfg.RiskTestConfig.BiasRiskctrlOpen {
+		r.AddWorker(quotebias_worker)
+	}
+
+	if cfg.RiskTestConfig.WatermarkRiskctrlOpen {
+		r.AddWorker(watermark_worker)
+	}
+
+	if cfg.RiskTestConfig.PricesionRiskctrlOpen {
+		r.AddWorker(precision_worker)
+	}
+
+	return r
+}
+
+// func (r *RiskWorkerManager) Init() {
+// 	// r.FeeWorker_.WorkerName = "FeeWorker"
+// 	// r.QuotebiasWorker_.WorkerName = "QuotebiasWorker"
+// 	// r.WatermarkWorker_.WorkerName = "WatermarkWorker"
+// 	// r.PrecisionWorker_.WorkerName = "PrecisionWorker"
+
+// 	// r.FeeWorker_.SetNext(&r.QuotebiasWorker_)
+// 	// r.QuotebiasWorker_.SetNext(&r.WatermarkWorker_)
+// 	// r.WatermarkWorker_.SetNext(&r.PrecisionWorker_)
+// }
+
+func (r *RiskWorkerManager) UpdateConfig(RiskConfig *RiskCtrlConfigMap) {
+	defer r.ConfigMutex.Unlock()
+	r.ConfigMutex.Lock()
+
+	for symbol, value := range *RiskConfig {
+		// r.RiskConfig[symbol] = value
+
+		r.RiskConfig[symbol] = &mkconfig.RiskCtrlConfig{
+			HedgeConfigMap: value.HedgeConfigMap,
+
+			PricePrecison:  value.PricePrecison,
+			VolumePrecison: value.VolumePrecison,
+
+			PriceBiasValue: value.PriceBiasValue,
+			PriceBiasKind:  value.PriceBiasKind,
+
+			VolumeBiasValue: value.VolumeBiasValue,
+			VolumeBiasKind:  value.VolumeBiasKind,
+
+			PriceMinumChange: value.PriceMinumChange,
+		}
+	}
+
+	logx.Statf("\n------- r.RiskConfig: %+v\n\n", r.RiskConfig)
+}
+
+func (r *RiskWorkerManager) AddWorker(NewWorker RiskWorkerInterface) {
+	logx.Info("Try Add Worker " + NewWorker.GetWorkerName())
+	if r.Worker == nil {
+		r.Worker = NewWorker
+		logx.Info("Init First Worker " + NewWorker.GetWorkerName() + "\n")
+		return
+	}
+
+	var tmp RiskWorkerInterface
+	for tmp = r.Worker; tmp.GetNextWoker() != nil; tmp = tmp.GetNextWoker() {
+
+		// time.Sleep(time.Second * 3)
+		logx.Info("Stored Worker " + tmp.GetWorkerName())
+
+		if tmp.GetWorkerName() == NewWorker.GetWorkerName() {
+			util.LOG_WARN("Repeated Worker : " + tmp.GetWorkerName())
+			return
+		}
+	}
+	tmp.SetNext(NewWorker)
+	logx.Info("Add Worker " + NewWorker.GetWorkerName() + "\n")
+}
+
+func (r *RiskWorkerManager) Execute(depth_quote *datastruct.DepthQuote) {
+	defer r.ConfigMutex.RUnlock()
+
+	// logx.Infof("\n------- RiskWorkerManager  Executing -------- \n\n")
+
+	r.ConfigMutex.RLock()
+
+	if r.Worker == nil {
+		logx.Error("No Worker Available")
+		return
+	}
+
+	if len(r.RiskConfig) == 0 {
+		logx.Error("RiskConfig Not Available")
+		return
+	}
+
+	r.Worker.Execute(depth_quote, &r.RiskConfig)
+}

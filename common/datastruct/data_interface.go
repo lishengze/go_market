@@ -1,6 +1,6 @@
 package datastruct
 
-import "market_server/app/dataManager/rpc/config"
+import "market_server/common/config"
 
 type SerializerI interface {
 	EncodeDepth(*DepthQuote) ([]byte, error)

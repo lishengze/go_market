@@ -1,0 +1,21 @@
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"NewComm, Config: {KafkaConfig:{IP:} NetServerType: SerialType:}\n"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Try Add Worker FeeWorker"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Init First Worker FeeWorker\n"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Try Add Worker QuotebiasWorker"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Add Worker QuotebiasWorker\n"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Try Add Worker WatermarkWorker"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Stored Worker FeeWorker"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Add Worker WatermarkWorker\n"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Try Add Worker PrecisionWorker"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Stored Worker FeeWorker"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Stored Worker QuotebiasWorker"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Add Worker PrecisionWorker\n"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Aggregator start_listen_recvdata"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Aggregator start_receiver Over!"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Aggregator start_aggregate_depth!"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Aggregator start_aggregate_depth Over!"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Aggregate datastruct.Kline Start!"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Aggregate datastruct.Kline Over!"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"****************** StartNacosClient *****************"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"Connect Nacos Successfully!"}
+{"@timestamp":"2022-06-07 15:06:31","level":"info","content":"start_aggregate_depth"}

@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"market_server/app/dataManager/rpc/config"
 	"market_server/app/dataManager/rpc/types/pb"
+	"market_server/common/config"
 	"market_server/common/datastruct"
 
 	"github.com/zeromicro/go-zero/core/logx"
