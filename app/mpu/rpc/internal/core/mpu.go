@@ -212,10 +212,12 @@ func (o *mpu) dispatchDepth() {
 				})
 			}
 
-			//start := time.Now()
+			start := time.Now()
 			err = o.kafkaSyncProducer.SendMessages(msgs)
-			//fmt.Printf("send %d messages,cost:%v \n", len(msgs), time.Now().Sub(start))
-
+			cost := time.Now().Sub(start)
+			if cost > time.Second*3 {
+				logx.Errorf("write %d kline, cost:%v", len(msgs), cost)
+			}
 			if err != nil {
 				logx.Errorf("kafkaConn write depth err:%s, data:%+v", err, *depth)
 			}
@@ -259,9 +261,12 @@ func (o *mpu) dispatchTrade() {
 				})
 			}
 
-			//start := time.Now()
+			start := time.Now()
 			err = o.kafkaSyncProducer.SendMessages(msgs)
-			//fmt.Printf("send %d messages,cost:%v \n", len(msgs), time.Now().Sub(start))
+			cost := time.Now().Sub(start)
+			if cost > time.Second*3 {
+				logx.Errorf("write %d kline, cost:%v", len(msgs), cost)
+			}
 
 			if err != nil {
 				logx.Errorf("kafkaConn write trade err:%s, data:%+v", err, *trade)
@@ -303,9 +308,12 @@ func (o *mpu) dispatchKline() {
 				})
 			}
 
-			//start := time.Now()
+			start := time.Now()
 			err = o.kafkaSyncProducer.SendMessages(msgs)
-			//fmt.Printf("send %d messages,cost:%v \n", len(msgs), time.Now().Sub(start))
+			cost := time.Now().Sub(start)
+			if cost > time.Second*3 {
+				logx.Errorf("write %d kline, cost:%v", len(msgs), cost)
+			}
 
 			if err != nil {
 				logx.Errorf("kafkaConn write kline err:%s, data:%+v", err, *kline)
