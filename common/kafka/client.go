@@ -224,7 +224,7 @@ func (k *KafkaServer) start_consume() {
 }
 
 func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
-	// k.consume_lock.Lock()
+	k.consume_lock.Lock()
 
 	logx.Info("UpdateMetaData: " + fmt.Sprintf("%+v", meta_data))
 
@@ -251,7 +251,7 @@ func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
 		}
 	}
 
-	// defer k.consume_lock.Unlock()
+	defer k.consume_lock.Unlock()
 }
 
 func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
@@ -277,7 +277,7 @@ func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 	for partition := range partitionList {
 		pc, err := consumer.ConsumePartition(consume_item.Topic, int32(partition), sarama.OffsetNewest)
 
-		logx.Info("[After] ConsumePartition ")
+		// logx.Info("[After] ConsumePartition ")
 		if err != nil {
 			logx.Error(err.Error())
 			continue

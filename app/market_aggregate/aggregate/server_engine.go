@@ -285,7 +285,7 @@ func (s *ServerEngine) UpdateRiskConfigSymbolPart(SymbolConfigs []*mkconfig.Symb
 func (s *ServerEngine) UpdateRiskConfig() {
 	if s.HedgingConfigs != nil && s.MarketRiskConfigs != nil && s.SymbolConfigs != nil {
 
-		logx.Info(fmt.Sprintf("s.RiskCtrlConfigMaps: \n%s", GetRiskCtrlConfigMapString(&s.RiskCtrlConfigMaps)))
+		logx.Slow(fmt.Sprintf("s.RiskCtrlConfigMaps: \n%s", GetRiskCtrlConfigMapString(&s.RiskCtrlConfigMaps)))
 
 		s.Riskworker.UpdateConfig(&s.RiskCtrlConfigMaps)
 	}
