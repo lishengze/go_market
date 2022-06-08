@@ -224,7 +224,7 @@ func (k *KafkaServer) start_consume() {
 }
 
 func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
-	k.consume_lock.Lock()
+	// k.consume_lock.Lock()
 
 	logx.Info("UpdateMetaData: " + fmt.Sprintf("%+v", meta_data))
 
@@ -251,7 +251,7 @@ func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
 		}
 	}
 
-	defer k.consume_lock.Unlock()
+	// defer k.consume_lock.Unlock()
 }
 
 func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {

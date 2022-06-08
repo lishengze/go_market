@@ -88,7 +88,7 @@ func (c *Comm) Start() {
 func (c *Comm) UpdateMetaData(meta *datastruct.Metadata) {
 	if c.NetServer != nil {
 		logx.Info("Commer Update MetaData")
-		c.NetServer.UpdateMetaData(meta)
+		go c.NetServer.UpdateMetaData(meta)
 	} else {
 		logx.Error("c.NetServer is nil")
 	}
