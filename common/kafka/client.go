@@ -220,7 +220,7 @@ func (k *KafkaServer) start_consume() {
 		go k.ConsumeSingleTopic(consume_item)
 	}
 
-	k.consume_lock.Unlock()
+	defer k.consume_lock.Unlock()
 }
 
 func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
@@ -251,7 +251,7 @@ func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
 		}
 	}
 
-	k.consume_lock.Unlock()
+	defer k.consume_lock.Unlock()
 }
 
 func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
