@@ -12,7 +12,7 @@ update
 merge
 *.exe
 log/
-
+*.log
 
 app/userCenter/rpc/log/
 app/order/rpc/log/
