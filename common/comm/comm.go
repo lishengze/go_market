@@ -88,6 +88,8 @@ func (c *Comm) Start() {
 func (c *Comm) UpdateMetaData(meta *datastruct.Metadata) {
 	if c.NetServer != nil {
 		c.NetServer.UpdateMetaData(meta)
+	} else {
+		logx.Error("c.NetServer is nil")
 	}
 }
 
