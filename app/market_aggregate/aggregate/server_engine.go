@@ -165,7 +165,7 @@ func (s *ServerEngine) ProcessMarketriskConfigStr(data string) {
 			IsPublish:     bool(market_risk_config.Switch)}
 	}
 
-	logx.Info(fmt.Sprintf("MarketRiskChanged:\n%s \n", NewAggConfig.String()))
+	logx.Slow(fmt.Sprintf("MarketRiskChanged:\n%s \n", NewAggConfig.String()))
 
 	s.AggregateWorker.UpdateConfig(NewAggConfig)
 

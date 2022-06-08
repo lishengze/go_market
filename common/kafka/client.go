@@ -209,18 +209,17 @@ func (k *KafkaServer) Start() {
 func (k *KafkaServer) start_consume() {
 	k.consume_lock.Lock()
 
+	defer k.consume_lock.Unlock()
+
 	logx.Info("CurrConsumeSet: " + fmt.Sprintf("%+v", k.ConsumeSet))
 
 	if len(k.ConsumeSet) == 0 {
 		logx.Info("ConsumeSet is Empty!")
-		return
+	} else {
+		for _, consume_item := range k.ConsumeSet {
+			go k.ConsumeSingleTopic(consume_item)
+		}
 	}
-
-	for _, consume_item := range k.ConsumeSet {
-		go k.ConsumeSingleTopic(consume_item)
-	}
-
-	defer k.consume_lock.Unlock()
 }
 
 func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
