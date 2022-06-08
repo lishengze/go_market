@@ -16,8 +16,8 @@ import (
 
 	"github.com/zeromicro/go-zero/core/jsonx"
 
-	"bcts/internal/client/http"
-	"bcts/internal/notify"
+	"market_server/internal/client/http"
+	"market_server/internal/notify"
 
 	"github.com/pkg/errors"
 )

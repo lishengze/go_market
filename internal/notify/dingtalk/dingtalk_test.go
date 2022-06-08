@@ -11,7 +11,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/mapping"
 
-	"bcts/internal/notify"
+	"market_server/internal/notify"
 )
 
 func TestGetRobotSendUrl(t *testing.T) {

@@ -11,8 +11,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"bcts/internal/client/http"
-	"bcts/internal/notify"
+	"market_server/internal/client/http"
+	"market_server/internal/notify"
 )
 
 const Name = "sms"

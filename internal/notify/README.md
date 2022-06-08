@@ -6,7 +6,7 @@
 
 ### 邮件
 ```go
-import "bcts/internal/notify"
+import "market_server/internal/notify"
 
 notify := notify.GetNotify("email")
 data := &EmailApiPostData{
@@ -24,7 +24,7 @@ resp, err := notify.Send(context.Background(), mockServer.URL, 60, data)
 
 ### 短信
 ```go
-import "bcts/internal/notify"
+import "market_server/internal/notify"
 
 notify := notify.GetNotify("sms")
 data := &SmsApiPostData{
@@ -42,7 +42,7 @@ resp, err := notify.Send(context.Background(), mockServer.URL, 60, data)
 
 ```go
 // 接入指引：https://open.dingtalk.com/document/robots/custom-robot-access
-import "bcts/internal/notify"
+import "market_server/internal/notify"
 
 m := &LinkMessage{
     Text:       "这个即将发布的新版本，创始人xx称它为红树林。而在此之前，每当面临重大升级，产品经理们都会取一个应景的代号，这一次，为什么是红树林",

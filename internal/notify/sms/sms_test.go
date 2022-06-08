@@ -11,7 +11,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/mapping"
 
-	"bcts/internal/notify"
+	"market_server/internal/notify"
 )
 
 var mockServer = httptest.NewServer(nethttp.HandlerFunc(func(w nethttp.ResponseWriter, r *nethttp.Request) {

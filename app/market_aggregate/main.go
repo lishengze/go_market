@@ -22,6 +22,11 @@ func main() {
 	fmt.Printf("Args: %+v \n", os.Args)
 	env := os.Args[1]
 
+	is_test := false
+	if len(os.Args) > 2 {
+		is_test = true
+	}
+
 	fmt.Printf("env: %+v \n", env)
 	var configFile = flag.String("f", "etc/"+env+"/client.yaml", "the config file")
 
@@ -34,8 +39,6 @@ func main() {
 
 	ctx := svc.NewServiceContext(c)
 	svr := aggregate.NewServerEngine(ctx)
-
-	is_test := false
 
 	if is_test {
 		set_test_meta(svr)

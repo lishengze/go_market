@@ -1,11 +1,11 @@
 package email
 
 import (
-	"bcts/internal/notify"
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"market_server/internal/notify"
 	nethttp "net/http"
 	"net/http/httptest"
 	"reflect"

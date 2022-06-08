@@ -15,6 +15,8 @@ import (
 	"market_server/app/dataManager/rpc/types/pb"
 	"market_server/common/comm"
 
+	ag_config "market_server/app/market_aggregate/config"
+
 	"market_server/common/datastruct"
 	"github.com/zeromicro/go-zero/core/logx"
 
@@ -38,6 +40,8 @@ type MarketServiceServer struct {
 
 	recvDataChan *datastruct.DataChannel
 	pubDataChan  *datastruct.DataChannel
+
+	IsTest bool
 }
 
 func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
@@ -57,6 +61,7 @@ func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
 		pubDataChan: pub_data_chan,
 		commer : comm.NewComm(recv_data_chan, pub_data_chan, svcCtx.Config.Comm),
 		dbServer: dbServer,
+		IsTest: false,
 	}
 
 	return rst
@@ -64,12 +69,17 @@ func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
 
 func (m *MarketServiceServer) Start() {
 	m.dbServer.StartListenRecvdata()
-
 	m.commer.Start()
 
-	m.SetInitMeta()
+	if m.IsTest {
+		m.SetInitMeta()
+	} else {
+		go m.StartNacosClient()
+	}
+}
 
-	// go m.StartNacosClient()
+func (m *MarketServiceServer)  SetTestValue(value bool) {
+	m.IsTest = true
 }
 
 func (s *MarketServiceServer) StartNacosClient() {
@@ -94,7 +104,7 @@ func (s *MarketServiceServer) SymbolParamsChanged(namespace, group, dataId, data
 }
 
 func (s *MarketServiceServer) ProcessSymbolConfigStr(data string) {
-	symbol_configs, err := config.ParseJsonSymbolConfig(data)
+	symbol_configs, err := ag_config.ParseJsonSymbolConfig(data)
 
 	if err != nil {
 		logx.Error(err.Error())
@@ -181,8 +191,6 @@ func TestMain() {
 
 	ctx := svc.NewServiceContext(c)
 	svr := NewMarketServiceServer(ctx)
-
-	// return
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		pb.RegisterMarketServiceServer(grpcServer, svr)

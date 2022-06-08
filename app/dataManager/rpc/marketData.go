@@ -4,10 +4,17 @@ import (
 	"flag"
 	"fmt"
 	"market_server/app/dataManager/rpc/internal/server"
+	"market_server/app/dataManager/rpc/internal/svc"
+	"market_server/app/dataManager/rpc/types/pb"
 	"market_server/common/config"
 	"os"
 
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/service"
+	"github.com/zeromicro/go-zero/zrpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func test_config() {
@@ -26,39 +33,45 @@ func test_config() {
 }
 
 func main() {
-	// flag.Parse()
+	flag.Parse()
 
-	// fmt.Printf("Args: %+v \n", os.Args)
-	// env := os.Args[1]
+	fmt.Printf("Args: %+v \n", os.Args)
+	env := os.Args[1]
 
-	// fmt.Printf("env: %+v \n", env)
-	// var configFile = flag.String("f", "etc/"+env+"/marketData.yaml", "the config file")
+	is_test := false
+	if len(os.Args) > 2 {
+		is_test = true
+	}
 
-	// var c config.Config
-	// conf.MustLoad(*configFile, &c)
+	fmt.Printf("env: %+v \n", env)
+	var configFile = flag.String("f", "etc/"+env+"/marketData.yaml", "the config file")
 
-	// logx.MustSetup(c.LogConfig)
+	var c config.Config
+	conf.MustLoad(*configFile, &c)
 
-	// fmt.Printf("Log: %+v \n", c)
+	logx.MustSetup(c.LogConfig)
 
-	// ctx := svc.NewServiceContext(c)
-	// svr := server.NewMarketServiceServer(ctx)
+	fmt.Printf("Log: %+v \n", c)
 
-	// s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
-	// 	pb.RegisterMarketServiceServer(grpcServer, svr)
+	ctx := svc.NewServiceContext(c)
+	svr := server.NewMarketServiceServer(ctx)
 
-	// 	if c.Mode == service.DevMode || c.Mode == service.TestMode {
-	// 		reflection.Register(grpcServer)
-	// 	}
-	// })
-	// defer s.Stop()
+	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
+		pb.RegisterMarketServiceServer(grpcServer, svr)
 
-	// fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
+		if c.Mode == service.DevMode || c.Mode == service.TestMode {
+			reflection.Register(grpcServer)
+		}
+	})
+	defer s.Stop()
 
-	// svr.Start()
-	// s.Start()
+	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
 
-	server.TestMain()
+	svr.SetTestValue(is_test)
 
+	svr.Start()
+	s.Start()
+
+	// server.TestMain()
 	// test_config()
 }

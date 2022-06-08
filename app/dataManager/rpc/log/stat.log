@@ -1,2 +1,0 @@
-{"@timestamp":"2022-06-05 12:41:51","level":"stat","content":"CPU: 111m, MEMORY: Alloc=8.0Mi, TotalAlloc=15.7Mi, Sys=23.6Mi, NumGC=5"}
-{"@timestamp":"2022-06-05 12:41:51","level":"stat","content":"(rpc) shedding_stat [1m], cpu: 111, total: 4, pass: 4, drop: 0"}
