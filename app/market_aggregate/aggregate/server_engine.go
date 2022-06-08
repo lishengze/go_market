@@ -79,21 +79,21 @@ func (s *ServerEngine) StartNacosClient() {
 	if err != nil {
 		logx.Error(err.Error())
 	}
-	logx.Info("Requested MarketRisk: " + MarketRiskConfigStr)
+	logx.Slow("Requested MarketRisk: " + MarketRiskConfigStr)
 	s.ProcessMarketriskConfigStr(MarketRiskConfigStr)
 
 	HedgeConfigStr, err := s.NacosClientWorker.GetConfigContent("HedgeParams", datastruct.BCTS_GROUP)
 	if err != nil {
 		logx.Error(err.Error())
 	}
-	logx.Info("Requested HedgeConfigStr: " + HedgeConfigStr)
+	logx.Slow("Requested HedgeConfigStr: " + HedgeConfigStr)
 	s.ProcsssHedgeConfigStr(HedgeConfigStr)
 
 	SymbolConfigStr, err := s.NacosClientWorker.GetConfigContent("SymbolParams", datastruct.BCTS_GROUP)
 	if err != nil {
 		logx.Error(err.Error())
 	}
-	logx.Info("Requested SymbolConfigStr: " + SymbolConfigStr)
+	logx.Slow("Requested SymbolConfigStr: " + SymbolConfigStr)
 	s.ProcessSymbolConfigStr(SymbolConfigStr)
 
 	s.NacosClientWorker.ListenConfig("MarketRisk", datastruct.BCTS_GROUP, s.MarketRiskChanged)
@@ -104,7 +104,7 @@ func (s *ServerEngine) StartNacosClient() {
 }
 
 func (s *ServerEngine) HedgeParamsChanged(namespace, group, dataId, hedgingContent string) {
-	logx.Info(fmt.Sprintf("HedgeParamsChanged hedgingContent: %s\n", hedgingContent))
+	logx.Slow(fmt.Sprintf("HedgeParamsChanged hedgingContent: %s\n", hedgingContent))
 	s.ProcsssHedgeConfigStr(hedgingContent)
 }
 
@@ -126,7 +126,7 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 		}
 
 		symbol_exchange_set[hedge_config.Symbol][hedge_config.Exchange] = struct{}{}
-		logx.Info(fmt.Sprintf("New Meta: %s.%s", hedge_config.Symbol, hedge_config.Exchange))
+		logx.Slow(fmt.Sprintf("New Meta: %s.%s", hedge_config.Symbol, hedge_config.Exchange))
 	}
 
 	NewMeta.DepthMeta = symbol_exchange_set
@@ -141,7 +141,7 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 }
 
 func (s *ServerEngine) MarketRiskChanged(namespace, group, dataId, data string) {
-	logx.Info(fmt.Sprintf("MarketRiskContent: %s\n", data))
+	logx.Slow(fmt.Sprintf("MarketRiskContent: %s\n", data))
 	s.ProcessMarketriskConfigStr(data)
 }
 
@@ -173,7 +173,7 @@ func (s *ServerEngine) ProcessMarketriskConfigStr(data string) {
 }
 
 func (s *ServerEngine) SymbolParamsChanged(namespace, group, dataId, data string) {
-	logx.Info(fmt.Sprintf("SymbolContent: %s\n", data))
+	logx.Slow(fmt.Sprintf("SymbolContent: %s\n", data))
 	s.ProcessSymbolConfigStr(data)
 }
 
@@ -203,10 +203,10 @@ func (s *ServerEngine) UpdateRiskConfigHedgePart(hedge_configs []*mkconfig.Hedgi
 			s.RiskCtrlConfigMaps[hedge_config.Symbol] = &mkconfig.RiskCtrlConfig{}
 			s.RiskCtrlConfigMaps[hedge_config.Symbol].HedgeConfigMap = make(map[string]*mkconfig.HedgeConfig)
 
-			logx.Info("Risk New Symbol: " + hedge_config.Symbol + "\n")
+			logx.Slow("Risk New Symbol: " + hedge_config.Symbol + "\n")
 		}
 
-		logx.Info("Risk Update Symbol: " + hedge_config.Symbol + "\n")
+		logx.Slow("Risk Update Symbol: " + hedge_config.Symbol + "\n")
 
 		if s.RiskCtrlConfigMaps[hedge_config.Symbol].HedgeConfigMap == nil {
 			s.RiskCtrlConfigMaps[hedge_config.Symbol].HedgeConfigMap = make(map[string]*mkconfig.HedgeConfig)
