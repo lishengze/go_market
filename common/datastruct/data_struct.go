@@ -254,7 +254,7 @@ func GetTestMetadata(symbols []string) *Metadata {
 	MetaData := Metadata{}
 
 	MetaData.DepthMeta = symbol_set
-	// MetaData.TradeMeta = symbol_set
+	MetaData.TradeMeta = symbol_set
 
 	return &MetaData
 }
