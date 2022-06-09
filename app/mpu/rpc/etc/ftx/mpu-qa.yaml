@@ -28,5 +28,5 @@ NacosConf:
     TimeoutMs: 5000
     CacheDir: "./log/ftx/nacos/"
     LogDir: "./log/ftx/nacoscache/"
-    LogLevel: "debug"
+    LogLevel: "warn"
 

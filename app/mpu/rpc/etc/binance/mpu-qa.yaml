@@ -28,5 +28,5 @@ NacosConf:
     TimeoutMs: 5000
     CacheDir: "./log/binance/nacos/"
     LogDir: "./log/binance/nacoscache/"
-    LogLevel: "debug"
+    LogLevel: "warn"
 
