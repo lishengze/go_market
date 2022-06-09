@@ -1,8 +1,8 @@
 Name: mpu.rpc
-ListenOn: 0.0.0.0:8602
+ListenOn: 0.0.0.0:8601
 Timeout: 60000
 
-Exchange: "FTX"
+Exchange: "BINANCE"
 Proxy: ""
 
 Log:
@@ -10,23 +10,23 @@ Log:
   KeepDays: 0
   Level: "info"
   Mode: "file"
-  Path: "./log/ftx"
+  Path: "./log/binance"
   ServiceName: "opu"
   StackCooldownMillis: 100
 
 KafkaConf:
-  Address: "10.10.1.45:9092"
+  Address: "10.8.154.126:9117"
 
 NacosConf:
   DataId: "MPU"
   Group: "MPU_GROUP"
   Server:
-    - Host: "10.10.1.45"
+    - Host: "10.8.78.83"
       Port: 8848
   Client:
     NamespaceId: "exterior-interactor"
     TimeoutMs: 5000
-    CacheDir: "./log/ftx/nacos/"
-    LogDir: "./log/ftx/nacoscache/"
+    CacheDir: "./log/binance/nacos/"
+    LogDir: "./log/binance/nacoscache/"
     LogLevel: "debug"
 
