@@ -240,11 +240,15 @@ func (d *DepthQuote) Init() {
 	d.Bids = treemap.NewWith(utils.Float64Comparator)
 }
 
-func GetTestMetadata(symbol string) *Metadata {
+func GetTestMetadata(symbols []string) *Metadata {
 	symbol_set := make(map[string](map[string]struct{}))
 	exchange_set := make(map[string]struct{})
 	exchange_set["FTX"] = struct{}{}
-	symbol_set[symbol] = exchange_set
+
+	for _, symbol := range symbols {
+		symbol_set[symbol] = exchange_set
+	}
+
 	// symbol_set["ETH_USDT"] = exchange_set
 
 	MetaData := Metadata{}

@@ -302,7 +302,9 @@ func (s *ServerEngine) SetTestConfig() {
 
 	s.AggregateWorker.UpdateConfig(AggConfig)
 
-	meta_data := datastruct.GetTestMetadata("BTC_USDT")
+	symbols := []string{"BTC_USDT", "ETH_USDT"}
+
+	meta_data := datastruct.GetTestMetadata(symbols)
 	logx.Infof("\\nmeta_data: %+v", meta_data)
 
 	s.Commer.UpdateMetaData(meta_data)
@@ -310,7 +312,9 @@ func (s *ServerEngine) SetTestConfig() {
 
 func (s *ServerEngine) TestKafkaCancelListen() {
 
-	meta_data := datastruct.GetTestMetadata("ETH_USDT")
+	symbols := []string{"BTC_USDT", "ETH_USDT"}
+
+	meta_data := datastruct.GetTestMetadata(symbols)
 	logx.Infof("meta_data: %+v", meta_data)
 
 	s.Commer.UpdateMetaData(meta_data)
