@@ -106,6 +106,23 @@ type Trade struct {
 	Volume   float64
 }
 
+type ReqHistKline struct {
+	symbol     string
+	exchange   string
+	start_time uint64
+	end_time   uint64
+	count      uint64
+	frequency  uint64
+}
+
+type HistKline struct {
+	*ReqHistKline
+	klines []*Kline
+}
+
+type RspHistKline struct {
+}
+
 func (t *Trade) String() string {
 	res := fmt.Sprintf("%s.%s, %+v, p: %f v: %f \n", t.Exchange, t.Symbol,
 		time.Unix(int64(t.Time/NANO_PER_SECS), t.Time%NANO_PER_SECS), t.Price, t.Volume)

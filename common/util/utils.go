@@ -52,6 +52,14 @@ func TimeMinute() int64 {
 	return utc_time_min_secs
 }
 
+func TimeMinuteNanos() int64 {
+	utc_time_secs := time.Now().Unix()
+
+	utc_time_min_nanos := TimeToExactMinute(time.Unix(utc_time_secs, 0)).UTC().UnixNano()
+
+	return utc_time_min_nanos
+}
+
 func TimeToExactMinute(t time.Time) time.Time {
 	t = t.Add(-time.Nanosecond * time.Duration(t.Nanosecond()))
 	t = t.Add(-time.Second * time.Duration(t.Second()))
