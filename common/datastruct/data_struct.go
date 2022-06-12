@@ -115,12 +115,9 @@ type ReqHistKline struct {
 	Frequency uint32
 }
 
-type HistKline struct {
-	*ReqHistKline
-	Klines []*Kline
-}
-
 type RspHistKline struct {
+	ReqInfo *ReqHistKline
+	Klines  *treemap.Map
 }
 
 type ChangeInfo struct {

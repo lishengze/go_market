@@ -19,7 +19,8 @@ type DataEngine struct {
 	RecvDataChan *datastruct.DataChannel
 	config       *config.Config
 
-	cache_kline_data map[string]*PeriodData // 缓存24小时1分频率的 k 线数据，用来计算24小时的涨跌幅;
+	cache_period_data map[string]*PeriodData // 缓存24小时1分频率的 k 线数据，用来计算24小时的涨跌幅;
+	cache_kline_data  map[string](map[int]*treemap.Map)
 
 	msclient marketservice.MarketService
 
@@ -29,10 +30,10 @@ type DataEngine struct {
 func NewDataEngine(recvDataChan *datastruct.DataChannel, config *config.Config) *DataEngine {
 
 	rst := &DataEngine{
-		RecvDataChan:     recvDataChan,
-		config:           config,
-		cache_kline_data: make(map[string]*PeriodData),
-		msclient:         marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
+		RecvDataChan:      recvDataChan,
+		config:            config,
+		cache_period_data: make(map[string]*PeriodData),
+		msclient:          marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
 	}
 
 	return rst
@@ -40,14 +41,14 @@ func NewDataEngine(recvDataChan *datastruct.DataChannel, config *config.Config) 
 
 func (d *DataEngine) UpdateMeta(symbols []string) {
 	for _, symbol := range symbols {
-		if _, ok := d.cache_kline_data[symbol]; !ok {
+		if _, ok := d.cache_period_data[symbol]; !ok {
 			d.InitPeriodDara(symbol)
 		}
 	}
 }
 
 func (a *DataEngine) InitPeriodDara(symbol string) {
-	a.cache_kline_data[symbol] = &PeriodData{
+	a.cache_period_data[symbol] = &PeriodData{
 		TimeNanos:       24 * 60 * 60 * 1000000000,
 		Count:           0,
 		MaxTime:         0,
@@ -76,7 +77,7 @@ func (a *DataEngine) InitPeriodDara(symbol string) {
 
 	fmt.Printf("Rst: %+v \n", hist_klines)
 
-	a.cache_kline_data[symbol].UpdateWithPbKlines(hist_klines)
+	a.cache_period_data[symbol].UpdateWithPbKlines(hist_klines)
 }
 
 func (a *DataEngine) StartListenRecvdata() {
@@ -103,24 +104,24 @@ func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
 
 func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 
-	if _, ok := d.cache_kline_data[kline.Symbol]; !ok {
+	if _, ok := d.cache_period_data[kline.Symbol]; !ok {
 		d.InitPeriodDara(kline.Symbol)
 	}
 
-	d.cache_kline_data[kline.Symbol].UpdateWithKline(kline)
+	d.cache_period_data[kline.Symbol].UpdateWithKline(kline)
 
 	d.PublishKline(kline)
 
-	d.PublishChangeinfo(d.cache_kline_data[kline.Symbol].GetChangeInfo())
+	d.PublishChangeinfo(d.cache_period_data[kline.Symbol].GetChangeInfo())
 
 	return nil
 }
 
 func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
-	d.cache_kline_data[trade.Symbol].UpdateWithTrade(trade)
+	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
 
-	d.PublishChangeinfo(d.cache_kline_data[trade.Symbol].GetChangeInfo())
+	d.PublishChangeinfo(d.cache_period_data[trade.Symbol].GetChangeInfo())
 
 	d.PublishTrade(trade)
 	return nil
@@ -162,7 +163,7 @@ func (d *DataEngine) UnSubDepth(symbol string) {
 
 }
 
-func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *treemap.Map {
+func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
 	req_hist_info := &marketservice.ReqHishKlineInfo{
 		Symbol:    req_kline_info.Symbol,
 		Exchange:  req_kline_info.Exchange,
@@ -178,7 +179,7 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 		return nil
 	}
 
-	rst := treemap.NewWith(utils.Int64Comparator)
+	tmp := treemap.NewWith(utils.Int64Comparator)
 
 	for _, pb_kline := range hist_klines.KlineData {
 		kline := marketservice.NewKlineWithPbKline(pb_kline)
@@ -186,16 +187,26 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 			continue
 		}
 
-		rst.Put(kline.Time, kline)
+		tmp.Put(kline.Time, kline)
 	}
-	return rst
+
+	d.UpdateCacheKlinesWithHist(tmp)
+
+	return &datastruct.RspHistKline{
+		ReqInfo: req_kline_info,
+		Klines:  tmp,
+	}
+}
+
+func (d *DataEngine) UpdateCacheKlinesWithHist(klines *treemap.Map) {
+
 }
 
 func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline) {
 
 	rst := d.GetHistKlineData(req_kline_info)
 
-	// d.next_worker.PublishHistKline(rst)
+	d.next_worker.PublishHistKline(rst)
 }
 
 func (d *DataEngine) UnSubKline(req_kline_info *datastruct.ReqHistKline) {

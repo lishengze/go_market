@@ -45,6 +45,10 @@ type SubData struct {
 	KlineInfo *KlineSubInfo
 }
 
+func NewSubData() *SubData {
+	return nil
+}
+
 func (s *SubData) GetDepthPubInfoList(depth *datastruct.DepthQuote) []*DepthPubInfo {
 	var rst []*DepthPubInfo
 
@@ -86,6 +90,13 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 	return rst
 }
 
-func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.HistKline) {
+func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
+	if _, ok := s.KlineInfo.Info[hist_kline.ReqInfo.Symbol]; !ok {
+		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol] = make(map[int]*KlineSubItem)
+	}
+
+	if _, ok := s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)]; !ok {
+
+	}
 
 }

@@ -9,7 +9,7 @@ type WorkerI interface {
 	PublishTrade(*datastruct.Trade)
 	PublishKline(*datastruct.Kline)
 	PublishChangeinfo(*datastruct.ChangeInfo)
-	PublishHistKline(kline *datastruct.HistKline)
+	PublishHistKline(kline *datastruct.RspHistKline)
 
 	SubTrade(symbol string) *datastruct.Trade
 	UnSubTrade(symbol string)
@@ -17,6 +17,6 @@ type WorkerI interface {
 	SubDepth(symbol string) *datastruct.DepthQuote
 	UnSubDepth(symbol string)
 
-	SubKline(req_kline_info *datastruct.ReqHistKline) *datastruct.HistKline
+	SubKline(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline
 	UnSubKline(req_kline_info *datastruct.ReqHistKline)
 }

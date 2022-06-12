@@ -24,7 +24,7 @@ func (f *FrontEngine) PublishChangeinfo(*datastruct.ChangeInfo) {
 
 }
 
-func (f *FrontEngine) PublishHistKline(klines *datastruct.HistKline) {
+func (f *FrontEngine) PublishHistKline(klines *datastruct.RspHistKline) {
 	// d.publish_kline(kline)
 	f.sub_data.ProcessKlineHistData(klines)
 
@@ -46,7 +46,7 @@ func (f *FrontEngine) UnSubDepth(symbol string) {
 
 }
 
-func (f *FrontEngine) SubKline(req_kline_info *datastruct.ReqHistKline) *datastruct.HistKline {
+func (f *FrontEngine) SubKline(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
 	return nil
 }
 
