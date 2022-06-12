@@ -1,12 +1,15 @@
 package worker
 
-import "market_server/common/datastruct"
+import (
+	"market_server/common/datastruct"
+)
 
 type WorkerI interface {
-	publish_depth(*datastruct.DepthQuote)
-	publish_trade(*datastruct.Trade)
-	publish_kline(*datastruct.Kline)
-	publish_changeinfo(*datastruct.ChangeInfo)
+	PublishDepth(*datastruct.DepthQuote)
+	PublishTrade(*datastruct.Trade)
+	PublishKline(*datastruct.Kline)
+	PublishChangeinfo(*datastruct.ChangeInfo)
+	PublishHistKline(kline *datastruct.HistKline)
 
 	SubTrade(symbol string) *datastruct.Trade
 	UnSubTrade(symbol string)

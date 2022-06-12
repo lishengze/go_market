@@ -107,17 +107,17 @@ type Trade struct {
 }
 
 type ReqHistKline struct {
-	symbol     string
-	exchange   string
-	start_time uint64
-	end_time   uint64
-	count      uint64
-	frequency  uint64
+	Symbol    string
+	Exchange  string
+	StartTime uint64
+	EndTime   uint64
+	Count     uint32
+	Frequency uint32
 }
 
 type HistKline struct {
 	*ReqHistKline
-	klines []*Kline
+	Klines []*Kline
 }
 
 type RspHistKline struct {

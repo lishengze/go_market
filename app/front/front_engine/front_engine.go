@@ -5,44 +5,51 @@ import (
 )
 
 type FrontEngine struct {
+	sub_data *SubData
 }
 
-func (d *FrontEngine) publish_depth(*datastruct.DepthQuote) {
-
-}
-
-func (d *FrontEngine) publish_trade(*datastruct.Trade) {
+func (f *FrontEngine) PublishDepth(*datastruct.DepthQuote) {
 
 }
 
-func (d *FrontEngine) publish_kline(*datastruct.Kline) {
+func (f *FrontEngine) PublishTrade(*datastruct.Trade) {
 
 }
 
-func (d *FrontEngine) publish_changeinfo(*datastruct.ChangeInfo) {
+func (f *FrontEngine) PublishKline(*datastruct.Kline) {
 
 }
 
-func (d *FrontEngine) SubTrade(symbol string) *datastruct.Trade {
+func (f *FrontEngine) PublishChangeinfo(*datastruct.ChangeInfo) {
+
+}
+
+func (f *FrontEngine) PublishHistKline(klines *datastruct.HistKline) {
+	// d.publish_kline(kline)
+	f.sub_data.ProcessKlineHistData(klines)
+
+}
+
+func (f *FrontEngine) SubTrade(symbol string) *datastruct.Trade {
 	return nil
 }
 
-func (d *FrontEngine) UnSubTrade(symbol string) {
+func (f *FrontEngine) UnSubTrade(symbol string) {
 
 }
 
-func (d *FrontEngine) SubDepth(symbol string) *datastruct.DepthQuote {
+func (f *FrontEngine) SubDepth(symbol string) *datastruct.DepthQuote {
 	return nil
 }
 
-func (d *FrontEngine) UnSubDepth(symbol string) {
+func (f *FrontEngine) UnSubDepth(symbol string) {
 
 }
 
-func (d *FrontEngine) SubKline(req_kline_info *datastruct.ReqHistKline) *datastruct.HistKline {
+func (f *FrontEngine) SubKline(req_kline_info *datastruct.ReqHistKline) *datastruct.HistKline {
 	return nil
 }
 
-func (d *FrontEngine) UnSubKline(req_kline_info *datastruct.ReqHistKline) {
+func (f *FrontEngine) UnSubKline(req_kline_info *datastruct.ReqHistKline) {
 
 }

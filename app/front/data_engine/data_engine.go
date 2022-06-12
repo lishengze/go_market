@@ -97,7 +97,7 @@ func (a *DataEngine) StartListenRecvdata() {
 }
 
 func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
-	d.publish_depth(depth)
+	d.PublishDepth(depth)
 	return nil
 }
 
@@ -109,9 +109,9 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 
 	d.cache_kline_data[kline.Symbol].UpdateWithKline(kline)
 
-	d.publish_kline(kline)
+	d.PublishKline(kline)
 
-	d.publish_changeinfo(d.cache_kline_data[kline.Symbol].GetChangeInfo())
+	d.PublishChangeinfo(d.cache_kline_data[kline.Symbol].GetChangeInfo())
 
 	return nil
 }
@@ -120,30 +120,30 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
 	d.cache_kline_data[trade.Symbol].UpdateWithTrade(trade)
 
-	d.publish_changeinfo(d.cache_kline_data[trade.Symbol].GetChangeInfo())
+	d.PublishChangeinfo(d.cache_kline_data[trade.Symbol].GetChangeInfo())
 
-	d.publish_trade(trade)
+	d.PublishTrade(trade)
 	return nil
 }
 
-func (d *DataEngine) publish_depth(depth *datastruct.DepthQuote) {
-	d.next_worker.publish_depth(depth)
+func (d *DataEngine) PublishDepth(depth *datastruct.DepthQuote) {
+	d.next_worker.PublishDepth(depth)
 }
 
-func (d *DataEngine) publish_trade(trade *datastruct.Trade) {
-	d.next_worker.publish_trade(trade)
+func (d *DataEngine) PublishTrade(trade *datastruct.Trade) {
+	d.next_worker.PublishTrade(trade)
 }
 
-func (d *DataEngine) publish_kline(kline *datastruct.Kline) {
-	d.next_worker.publish_kline(kline)
+func (d *DataEngine) PublishKline(kline *datastruct.Kline) {
+	d.next_worker.PublishKline(kline)
 }
 
-func (d *DataEngine) publish_hist_kline(kline []*datastruct.Kline) {
+func (d *DataEngine) PublishHistKline(kline *treemap.Map) {
 	// d.publish_kline(kline)
 }
 
-func (d *DataEngine) publish_changeinfo(change_info *datastruct.ChangeInfo) {
-	d.publish_changeinfo(change_info)
+func (d *DataEngine) PublishChangeinfo(change_info *datastruct.ChangeInfo) {
+	d.next_worker.PublishChangeinfo(change_info)
 }
 
 func (d *DataEngine) SubTrade(symbol string) *datastruct.Trade {
@@ -162,14 +162,14 @@ func (d *DataEngine) UnSubDepth(symbol string) {
 
 }
 
-func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline) *datastruct.HistKline {
+func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *treemap.Map {
 	req_hist_info := &marketservice.ReqHishKlineInfo{
-		Symbol:    req_kline_info.symbol,
-		Exchange:  req_kline_info.exchange,
-		StartTime: req_kline_info.start_time,
-		EndTime:   req_kline_info.end_time,
-		Count:     req_kline_info.count,
-		Frequency: req_kline_info.frequency,
+		Symbol:    req_kline_info.Symbol,
+		Exchange:  req_kline_info.Exchange,
+		StartTime: req_kline_info.StartTime,
+		EndTime:   req_kline_info.EndTime,
+		Count:     req_kline_info.Count,
+		Frequency: req_kline_info.Frequency,
 	}
 
 	hist_klines, err := d.msclient.RequestHistKlineData(context.Background(), req_hist_info)
@@ -178,12 +178,24 @@ func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline) *datastru
 		return nil
 	}
 
+	rst := treemap.NewWith(utils.Int64Comparator)
+
 	for _, pb_kline := range hist_klines.KlineData {
 		kline := marketservice.NewKlineWithPbKline(pb_kline)
 		if kline == nil {
 			continue
 		}
+
+		rst.Put(kline.Time, kline)
 	}
+	return rst
+}
+
+func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline) {
+
+	rst := d.GetHistKlineData(req_kline_info)
+
+	// d.next_worker.PublishHistKline(rst)
 }
 
 func (d *DataEngine) UnSubKline(req_kline_info *datastruct.ReqHistKline) {

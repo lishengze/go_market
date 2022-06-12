@@ -1,6 +1,8 @@
 package front_engine
 
-import "market_server/common/datastruct"
+import (
+	"market_server/common/datastruct"
+)
 
 type WSInfo struct {
 }
@@ -76,10 +78,14 @@ func (s *SubData) GetTradePubInfoList(trade *datastruct.Trade) []*TradePubInfo {
 func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 	var rst []*KlinePubInfo
 
-	if symbol_sub_info, ok := s.KlineInfo.Info[kline.Symbol]; ok {
-		for frequency, sub_info := range symbol_sub_info {
+	// if symbol_sub_info, ok := s.KlineInfo.Info[kline.Symbol]; ok {
+	// 	for frequency, sub_info := range symbol_sub_info {
 
-		}
-	}
+	// 	}
+	// }
 	return rst
+}
+
+func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.HistKline) {
+
 }
