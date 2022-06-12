@@ -123,6 +123,13 @@ type HistKline struct {
 type RspHistKline struct {
 }
 
+type ChangeInfo struct {
+	Symbol string
+	High   float64
+	Low    float64
+	Change float64
+}
+
 func (t *Trade) String() string {
 	res := fmt.Sprintf("%s.%s, %+v, p: %f v: %f \n", t.Exchange, t.Symbol,
 		time.Unix(int64(t.Time/NANO_PER_SECS), t.Time%NANO_PER_SECS), t.Price, t.Volume)

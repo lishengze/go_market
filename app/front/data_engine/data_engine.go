@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"market_server/app/dataManager/rpc/marketservice"
 	"market_server/app/front/config"
+	"market_server/app/front/worker"
 	"market_server/common/datastruct"
 	"market_server/common/util"
 
@@ -14,153 +15,39 @@ import (
 	"github.com/zeromicro/go-zero/zrpc"
 )
 
-/*
-接受数据的接口;
-*/
-
-type AtomData struct {
-	price float64
-	time  int64
-}
-
-type SortedList struct {
-	list *[]AtomData
-}
-
-type PeriodData struct {
-	time_cache_data  *treemap.Map
-	price_cache_data *treemap.Map
-
-	Max     float64
-	MaxTime int64
-
-	Min     float64
-	MinTime int64
-
-	Start     float64
-	StartTime int64
-
-	Change float64
-
-	TimeNanos int64
-	Count     int
-
-	CurTrade *datastruct.Trade
-}
-
-func (p *PeriodData) UpdateWithTrade(trade *datastruct.Trade) {
-	p.CurTrade = trade
-
-	p.UpdateMeta()
-}
-
-func (p *PeriodData) UpdateWithKline(kline *datastruct.Kline) {
-	p.time_cache_data.Put(kline.Time, kline)
-
-	p.EraseOuttimeData()
-
-	p.UpdateMeta()
-}
-
-func (p *PeriodData) EraseOuttimeData() {
-	type outtime_data struct {
-		time  int64
-		price float64
-	}
-
-	outtime_datalist := []*outtime_data{}
-
-	begin_iter := p.time_cache_data.Iterator()
-	if ok := begin_iter.First(); !ok {
-		return
-	}
-
-	last_iter := p.time_cache_data.Iterator()
-	if ok := last_iter.Last(); !ok {
-		return
-	}
-
-	for begin_iter.Next() {
-		if last_iter.Key().(int64)-begin_iter.Key().(int64) > p.TimeNanos {
-
-			outtime_datalist = append(outtime_datalist, &outtime_data{
-				time:  begin_iter.Key().(int64),
-				price: begin_iter.Value().(*datastruct.Kline).High,
-			})
-		} else {
-			break
-		}
-	}
-
-	for _, outtime := range outtime_datalist {
-		p.time_cache_data.Remove(outtime.time)
-		p.price_cache_data.Remove(outtime.price)
-	}
-
-}
-
-func (p *PeriodData) InitCacheData(klines *marketservice.HistKlineData) {
-	for _, pb_kline := range klines.KlineData {
-		kline := marketservice.NewKlineWithPbKline(pb_kline)
-		if kline == nil {
-			continue
-		}
-
-		// if p.MaxTime == 0 || p.Max < kline.High {
-		// 	p.Max = kline.High
-		// 	p.MaxTime = kline.Time
-		// }
-
-		// if p.MinTime == 0 || p.Min > kline.Low {
-		// 	p.Min = kline.Low
-		// 	p.MinTime = kline.Time
-		// }
-
-		// if p.StartTime == 0 || p.StartTime > kline.Time {
-		// 	p.StartTime = kline.Time
-		// 	p.Start = kline.Open
-		// }
-
-		p.time_cache_data.Put(kline.Time, kline)
-		p.price_cache_data.Put(kline.High, kline)
-	}
-}
-
-func (p *PeriodData) UpdateMeta() {
-
-}
-
-func (p *PeriodData) UpdateWithPbKlines(klines *marketservice.HistKlineData) {
-	p.InitCacheData(klines)
-
-	p.EraseOuttimeData()
-
-	p.UpdateMeta()
-}
-
 type DataEngine struct {
 	RecvDataChan *datastruct.DataChannel
 	config       *config.Config
 
-	cache_data map[string]*PeriodData // 缓存24小时1分频率的 k 线数据，用来计算24小时的涨跌幅;
+	cache_kline_data map[string]*PeriodData // 缓存24小时1分频率的 k 线数据，用来计算24小时的涨跌幅;
 
 	msclient marketservice.MarketService
+
+	next_worker worker.WorkerI
 }
 
 func NewDataEngine(recvDataChan *datastruct.DataChannel, config *config.Config) *DataEngine {
 
 	rst := &DataEngine{
-		RecvDataChan: recvDataChan,
-		config:       config,
-		cache_data:   make(map[string]*PeriodData),
-		msclient:     marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
+		RecvDataChan:     recvDataChan,
+		config:           config,
+		cache_kline_data: make(map[string]*PeriodData),
+		msclient:         marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
 	}
 
 	return rst
 }
 
+func (d *DataEngine) UpdateMeta(symbols []string) {
+	for _, symbol := range symbols {
+		if _, ok := d.cache_kline_data[symbol]; !ok {
+			d.InitPeriodDara(symbol)
+		}
+	}
+}
+
 func (a *DataEngine) InitPeriodDara(symbol string) {
-	a.cache_data[symbol] = &PeriodData{
+	a.cache_kline_data[symbol] = &PeriodData{
 		TimeNanos:       24 * 60 * 60 * 1000000000,
 		Count:           0,
 		MaxTime:         0,
@@ -189,7 +76,7 @@ func (a *DataEngine) InitPeriodDara(symbol string) {
 
 	fmt.Printf("Rst: %+v \n", hist_klines)
 
-	a.cache_data[symbol].UpdateWithPbKlines(hist_klines)
+	a.cache_kline_data[symbol].UpdateWithPbKlines(hist_klines)
 }
 
 func (a *DataEngine) StartListenRecvdata() {
@@ -198,11 +85,11 @@ func (a *DataEngine) StartListenRecvdata() {
 		for {
 			select {
 			case new_depth := <-a.RecvDataChan.DepthChannel:
-				a.process_depth(new_depth)
+				go a.process_depth(new_depth)
 			case new_kline := <-a.RecvDataChan.KlineChannel:
-				a.process_kline(new_kline)
+				go a.process_kline(new_kline)
 			case new_trade := <-a.RecvDataChan.TradeChannel:
-				a.process_trade(new_trade)
+				go a.process_trade(new_trade)
 			}
 		}
 	}()
@@ -210,27 +97,53 @@ func (a *DataEngine) StartListenRecvdata() {
 }
 
 func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
+	d.publish_depth(depth)
 	return nil
 }
 
-func (d *DataEngine) process_kline(depth *datastruct.Kline) error {
+func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
+
+	if _, ok := d.cache_kline_data[kline.Symbol]; !ok {
+		d.InitPeriodDara(kline.Symbol)
+	}
+
+	d.cache_kline_data[kline.Symbol].UpdateWithKline(kline)
+
+	d.publish_kline(kline)
+
+	d.publish_changeinfo(d.cache_kline_data[kline.Symbol].GetChangeInfo())
+
 	return nil
 }
 
-func (d *DataEngine) process_trade(depth *datastruct.Trade) error {
+func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
+
+	d.cache_kline_data[trade.Symbol].UpdateWithTrade(trade)
+
+	d.publish_changeinfo(d.cache_kline_data[trade.Symbol].GetChangeInfo())
+
+	d.publish_trade(trade)
 	return nil
 }
 
-func (d *DataEngine) publish_depth(*datastruct.DepthQuote) {
-
+func (d *DataEngine) publish_depth(depth *datastruct.DepthQuote) {
+	d.next_worker.publish_depth(depth)
 }
 
-func (d *DataEngine) publish_trade(*datastruct.Trade) {
-
+func (d *DataEngine) publish_trade(trade *datastruct.Trade) {
+	d.next_worker.publish_trade(trade)
 }
 
-func (d *DataEngine) publish_kline(*datastruct.Kline) {
+func (d *DataEngine) publish_kline(kline *datastruct.Kline) {
+	d.next_worker.publish_kline(kline)
+}
 
+func (d *DataEngine) publish_hist_kline(kline []*datastruct.Kline) {
+	// d.publish_kline(kline)
+}
+
+func (d *DataEngine) publish_changeinfo(change_info *datastruct.ChangeInfo) {
+	d.publish_changeinfo(change_info)
 }
 
 func (d *DataEngine) SubTrade(symbol string) *datastruct.Trade {
@@ -250,7 +163,27 @@ func (d *DataEngine) UnSubDepth(symbol string) {
 }
 
 func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline) *datastruct.HistKline {
-	return nil
+	req_hist_info := &marketservice.ReqHishKlineInfo{
+		Symbol:    req_kline_info.symbol,
+		Exchange:  req_kline_info.exchange,
+		StartTime: req_kline_info.start_time,
+		EndTime:   req_kline_info.end_time,
+		Count:     req_kline_info.count,
+		Frequency: req_kline_info.frequency,
+	}
+
+	hist_klines, err := d.msclient.RequestHistKlineData(context.Background(), req_hist_info)
+
+	if err != nil {
+		return nil
+	}
+
+	for _, pb_kline := range hist_klines.KlineData {
+		kline := marketservice.NewKlineWithPbKline(pb_kline)
+		if kline == nil {
+			continue
+		}
+	}
 }
 
 func (d *DataEngine) UnSubKline(req_kline_info *datastruct.ReqHistKline) {

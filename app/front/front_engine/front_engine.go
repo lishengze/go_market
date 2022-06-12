@@ -19,6 +19,10 @@ func (d *FrontEngine) publish_kline(*datastruct.Kline) {
 
 }
 
+func (d *FrontEngine) publish_changeinfo(*datastruct.ChangeInfo) {
+
+}
+
 func (d *FrontEngine) SubTrade(symbol string) *datastruct.Trade {
 	return nil
 }

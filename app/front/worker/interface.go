@@ -1,4 +1,4 @@
-package data_worker
+package worker
 
 import "market_server/common/datastruct"
 
@@ -6,6 +6,7 @@ type WorkerI interface {
 	publish_depth(*datastruct.DepthQuote)
 	publish_trade(*datastruct.Trade)
 	publish_kline(*datastruct.Kline)
+	publish_changeinfo(*datastruct.ChangeInfo)
 
 	SubTrade(symbol string) *datastruct.Trade
 	UnSubTrade(symbol string)
