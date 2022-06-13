@@ -274,6 +274,8 @@ func TestNacos() {
 	test := NewServerEngine(&c)
 
 	test.Start()
+
+	select {}
 }
 
 func main() {
