@@ -6,7 +6,7 @@ Comm:
 Nacos:
   IpAddr: "10.10.1.45"
   Port: 8848
-  NamespaceId: "bcts"
+  NamespaceId: "BCTS"
   TimeoutMs: 5000
   NotLoadCacheAtStart: true
   LogDir: ""
