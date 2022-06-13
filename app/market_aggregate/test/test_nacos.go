@@ -1,4 +1,4 @@
-package test_main
+package main
 
 import (
 	"flag"
@@ -274,4 +274,8 @@ func TestNacos() {
 	test := NewServerEngine(&c)
 
 	test.Start()
+}
+
+func main() {
+	TestNacos()
 }
