@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"market_server/app/dataManager/rpc/marketservice"
 	"market_server/app/front/config"
+	"market_server/app/front/net"
 	"market_server/app/front/worker"
 	"market_server/common/datastruct"
 	"market_server/common/util"
+	"sync"
 
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
@@ -19,12 +21,15 @@ type DataEngine struct {
 	RecvDataChan *datastruct.DataChannel
 	config       *config.Config
 
-	cache_period_data map[string]*PeriodData // 缓存24小时1分频率的 k 线数据，用来计算24小时的涨跌幅;
-	cache_kline_data  map[string](map[int]*treemap.Map)
-
 	msclient marketservice.MarketService
 
 	next_worker worker.WorkerI
+
+	depth_cache_map sync.Map
+	trade_cache_map sync.Map
+
+	cache_period_data map[string]*PeriodData // 缓存24小时1分频率的 k 线数据，用来计算24小时的涨跌幅;
+	cache_kline_data  map[string](map[int]*treemap.Map)
 }
 
 func NewDataEngine(recvDataChan *datastruct.DataChannel, config *config.Config) *DataEngine {
@@ -98,7 +103,9 @@ func (a *DataEngine) StartListenRecvdata() {
 }
 
 func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
-	d.PublishDepth(depth)
+	d.depth_cache_map.Store(depth.Symbol, depth)
+
+	d.PublishDepth(depth, nil)
 	return nil
 }
 
@@ -110,57 +117,58 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 
 	d.cache_period_data[kline.Symbol].UpdateWithKline(kline)
 
-	d.PublishKline(kline)
+	d.PublishKline(kline, nil)
 
-	d.PublishChangeinfo(d.cache_period_data[kline.Symbol].GetChangeInfo())
+	d.PublishChangeinfo(d.cache_period_data[kline.Symbol].GetChangeInfo(), nil)
 
 	return nil
 }
 
 func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
+	d.trade_cache_map.Store(trade.Symbol, trade)
+
 	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
 
-	d.PublishChangeinfo(d.cache_period_data[trade.Symbol].GetChangeInfo())
+	d.PublishChangeinfo(d.cache_period_data[trade.Symbol].GetChangeInfo(), nil)
 
-	d.PublishTrade(trade)
+	d.PublishTrade(trade, nil)
 	return nil
 }
 
-func (d *DataEngine) PublishDepth(depth *datastruct.DepthQuote) {
-	d.next_worker.PublishDepth(depth)
+func (d *DataEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo) {
+	d.next_worker.PublishDepth(depth, ws)
 }
 
-func (d *DataEngine) PublishTrade(trade *datastruct.Trade) {
-	d.next_worker.PublishTrade(trade)
+func (d *DataEngine) PublishTrade(trade *datastruct.Trade, ws *net.WSInfo) {
+	d.next_worker.PublishTrade(trade, ws)
 }
 
-func (d *DataEngine) PublishKline(kline *datastruct.Kline) {
-	d.next_worker.PublishKline(kline)
+func (d *DataEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
+	d.next_worker.PublishKline(kline, ws)
 }
 
-func (d *DataEngine) PublishHistKline(kline *treemap.Map) {
+func (d *DataEngine) PublishHistKline(kline *datastruct.RspHistKline, ws *net.WSInfo) {
 	// d.publish_kline(kline)
+	d.next_worker.PublishHistKline(kline, ws)
 }
 
-func (d *DataEngine) PublishChangeinfo(change_info *datastruct.ChangeInfo) {
-	d.next_worker.PublishChangeinfo(change_info)
+func (d *DataEngine) PublishChangeinfo(change_info *datastruct.ChangeInfo, ws *net.WSInfo) {
+	d.next_worker.PublishChangeinfo(change_info, ws)
 }
 
-func (d *DataEngine) SubTrade(symbol string) *datastruct.Trade {
-	return nil
+func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) {
+
+	if trade, ok := d.trade_cache_map.Load(symbol); ok {
+		d.PublishTrade(trade.(*datastruct.Trade), ws)
+	}
 }
 
-func (d *DataEngine) UnSubTrade(symbol string) {
+func (d *DataEngine) SubDepth(symbol string, ws *net.WSInfo) {
 
-}
-
-func (d *DataEngine) SubDepth(symbol string) *datastruct.DepthQuote {
-	return nil
-}
-
-func (d *DataEngine) UnSubDepth(symbol string) {
-
+	if depth, ok := d.depth_cache_map.Load(symbol); ok {
+		d.PublishDepth(depth.(*datastruct.DepthQuote), ws)
+	}
 }
 
 func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
@@ -198,17 +206,19 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 	}
 }
 
+func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, ori_klines *treemap.Map) *treemap.Map {
+	rst := treemap.NewWith(utils.Int64Comparator)
+
+	return rst
+}
+
 func (d *DataEngine) UpdateCacheKlinesWithHist(klines *treemap.Map) {
 
 }
 
-func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline) {
+func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
 
 	rst := d.GetHistKlineData(req_kline_info)
 
-	d.next_worker.PublishHistKline(rst)
-}
-
-func (d *DataEngine) UnSubKline(req_kline_info *datastruct.ReqHistKline) {
-
+	d.next_worker.PublishHistKline(rst, ws)
 }

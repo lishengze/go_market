@@ -1,42 +1,47 @@
 package front_engine
 
 import (
+	"market_server/app/front/net"
 	"market_server/common/datastruct"
+	"sync"
+
+	"github.com/emirpasic/gods/maps/treemap"
+	"github.com/emirpasic/gods/utils"
 )
 
-type WSInfo struct {
-}
-
 type DepthPubInfo struct {
-	ws_info *WSInfo
+	ws_info *net.WSInfo
 	data    *datastruct.DepthQuote
 }
 
 type TradePubInfo struct {
-	ws_info *WSInfo
+	ws_info *net.WSInfo
 	data    *datastruct.Trade
 }
 
 type KlinePubInfo struct {
-	ws_info *WSInfo
+	ws_info *net.WSInfo
 	data    *datastruct.Kline
 }
 
 type DepthSubInfo struct {
-	Info map[string][]*WSInfo
+	mutex sync.Mutex
+	Info  map[string]*treemap.Map
 }
 
 type KlineSubItem struct {
-	ws_info    []*WSInfo
+	ws_info    *treemap.Map
 	cache_data *datastruct.Kline
 }
 
 type KlineSubInfo struct {
-	Info map[string](map[int]*KlineSubItem)
+	mutex sync.Mutex
+	Info  map[string](map[int]*KlineSubItem)
 }
 
 type TradeSubInfo struct {
-	Info map[string][]*WSInfo
+	mutex sync.Mutex
+	Info  map[string]*treemap.Map
 }
 
 type SubData struct {
@@ -52,12 +57,18 @@ func NewSubData() *SubData {
 func (s *SubData) GetDepthPubInfoList(depth *datastruct.DepthQuote) []*DepthPubInfo {
 	var rst []*DepthPubInfo
 
-	if sub_list, ok := s.DepthInfo.Info[depth.Symbol]; ok {
-		for _, sub_info := range sub_list {
+	s.DepthInfo.mutex.Lock()
+	defer s.DepthInfo.mutex.Unlock()
+
+	if sub_tree, ok := s.DepthInfo.Info[depth.Symbol]; ok {
+		sub_tree_iter := sub_tree.Iterator()
+		sub_tree_iter.Begin()
+		for sub_tree_iter.Next() {
 			rst = append(rst, &DepthPubInfo{
-				ws_info: sub_info,
+				ws_info: sub_tree_iter.Value().(*net.WSInfo),
 				data:    depth,
 			})
+
 		}
 	}
 
@@ -67,10 +78,15 @@ func (s *SubData) GetDepthPubInfoList(depth *datastruct.DepthQuote) []*DepthPubI
 func (s *SubData) GetTradePubInfoList(trade *datastruct.Trade) []*TradePubInfo {
 	var rst []*TradePubInfo
 
-	if sub_list, ok := s.TradeInfo.Info[trade.Symbol]; ok {
-		for _, sub_info := range sub_list {
+	s.TradeInfo.mutex.Lock()
+	defer s.TradeInfo.mutex.Unlock()
+
+	if sub_tree, ok := s.TradeInfo.Info[trade.Symbol]; ok {
+		sub_tree_iter := sub_tree.Iterator()
+		sub_tree_iter.Begin()
+		for sub_tree_iter.Next() {
 			rst = append(rst, &TradePubInfo{
-				ws_info: sub_info,
+				ws_info: sub_tree_iter.Value().(*net.WSInfo),
 				data:    trade,
 			})
 		}
@@ -98,9 +114,11 @@ func (s *SubData) UpdateKlineCacheData(kline *datastruct.Kline) {
 func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 	var rst []*KlinePubInfo
 
+	s.KlineInfo.mutex.Lock()
+	defer s.KlineInfo.mutex.Unlock()
+
 	if _, ok := s.KlineInfo.Info[kline.Symbol]; !ok {
 		return rst
-		// s.KlineInfo.Info[kline.Symbol] = make(map[int]*KlineSubItem)
 	}
 
 	is_updated := false
@@ -115,10 +133,12 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 	}
 
 	if is_updated {
-		ws_info_list := s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].ws_info
-		for _, ws_info := range ws_info_list {
+		sub_tree := s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].ws_info
+		sub_tree_iter := sub_tree.Iterator()
+		sub_tree_iter.Begin()
+		for sub_tree_iter.Next() {
 			rst = append(rst, &KlinePubInfo{
-				ws_info: ws_info,
+				ws_info: sub_tree_iter.Value().(*net.WSInfo),
 				data:    kline,
 			})
 		}
@@ -148,4 +168,79 @@ func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 		}
 	}
 
+}
+
+func (s *SubData) SubTrade(symbol string, ws *net.WSInfo) {
+	s.TradeInfo.mutex.Lock()
+	defer s.TradeInfo.mutex.Unlock()
+
+	if _, ok := s.TradeInfo.Info[symbol]; !ok {
+		s.TradeInfo.Info[symbol] = treemap.NewWith(utils.Int64Comparator)
+	}
+
+	s.TradeInfo.Info[symbol].Put(ws.ID, ws)
+}
+
+func (s *SubData) UnSubTrade(symbol string, ws *net.WSInfo) {
+	s.TradeInfo.mutex.Lock()
+	defer s.TradeInfo.mutex.Unlock()
+
+	if _, ok := s.TradeInfo.Info[symbol]; !ok {
+		return
+	}
+
+	s.TradeInfo.Info[symbol].Remove(ws.ID)
+}
+
+func (s *SubData) SubDepth(symbol string, ws *net.WSInfo) *datastruct.DepthQuote {
+	s.DepthInfo.mutex.Lock()
+	defer s.DepthInfo.mutex.Unlock()
+
+	if _, ok := s.DepthInfo.Info[symbol]; !ok {
+		s.DepthInfo.Info[symbol] = treemap.NewWith(utils.Int64Comparator)
+	}
+
+	s.DepthInfo.Info[symbol].Put(ws.ID, ws)
+
+	return nil
+}
+
+func (s *SubData) UnSubDepth(symbol string, ws *net.WSInfo) {
+	s.DepthInfo.mutex.Lock()
+	defer s.DepthInfo.mutex.Unlock()
+	if _, ok := s.DepthInfo.Info[symbol]; !ok {
+		return
+	}
+
+	s.DepthInfo.Info[symbol].Remove(ws.ID)
+}
+
+func (s *SubData) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
+	s.KlineInfo.mutex.Lock()
+	defer s.KlineInfo.mutex.Unlock()
+
+	if _, ok := s.KlineInfo.Info[req_kline_info.Symbol]; !ok {
+
+		s.KlineInfo.Info[req_kline_info.Symbol] = make(map[int]*KlineSubItem)
+
+		s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)] = &KlineSubItem{
+			ws_info:    treemap.NewWith(utils.Int64Comparator),
+			cache_data: nil,
+		}
+	}
+
+	s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].ws_info.Put(ws.ID, ws)
+}
+
+func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
+	s.KlineInfo.mutex.Lock()
+	defer s.KlineInfo.mutex.Unlock()
+
+	if _, ok := s.KlineInfo.Info[req_kline_info.Symbol]; !ok {
+		return
+	} else if _, ok := s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)]; !ok {
+		return
+	}
+
+	s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].ws_info.Remove(ws.ID)
 }
