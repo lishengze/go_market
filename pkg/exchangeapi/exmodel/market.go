@@ -11,8 +11,8 @@ type (
 		Time      time.Time // 交易所时间
 		LocalTime time.Time // 服务器本地时间
 		Symbol    *Symbol
-		Asks      [][2]string
-		Bids      [][2]string
+		Asks      [][2]string // 价格从低到高
+		Bids      [][2]string // 价格从高到低
 	}
 
 	// StreamMarketTrade 流式 行情 trade

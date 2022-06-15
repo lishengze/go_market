@@ -52,15 +52,17 @@ func (o *symbolManager) pullSpotSymbol() error {
 		)
 
 		symbol := &exmodel.Symbol{
-			Exchange:     Name,
-			ExFormat:     exFormat,
-			StdSymbol:    stdFormat,
-			BaseCurrency: exmodel.Currency(r.BaseCurrency),
-			Type:         exmodel.SymbolTypeSpot,
-			VolumeScale:  fmt.Sprint(r.SizeIncrement),
-			PriceScale:   fmt.Sprint(r.PriceIncrement),
-			MinVolume:    fmt.Sprint(r.MinProvideSize),
-			ContractSize: "1",
+			Exchange:      Name,
+			ExFormat:      exFormat,
+			StdSymbol:     stdFormat,
+			QuoteCurrency: exmodel.NewCurrency(r.QuoteCurrency),
+			BaseCurrency:  exmodel.NewCurrency(r.BaseCurrency),
+			Type:          exmodel.SymbolTypeSpot,
+			VolumeScale:   fmt.Sprint(r.SizeIncrement),
+			PriceScale:    fmt.Sprint(r.PriceIncrement),
+			MinVolume:     fmt.Sprint(r.MinProvideSize),
+			ContractSize:  "",
+			ApiType:       exmodel.ApiTypeUnified,
 		}
 
 		//fmt.Println(symbol.ExFormat,"_____",symbol.PriceScale,"_______",symbol.VolumeScale)

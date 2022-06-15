@@ -4,11 +4,12 @@ go 1.17
 
 require (
 	github.com/Shopify/sarama v1.30.0
+	github.com/bwmarrin/snowflake v0.3.0
 	github.com/emirpasic/gods v1.18.1
 	github.com/gogo/protobuf v1.3.2
+	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/websocket v1.5.0
 	github.com/nacos-group/nacos-sdk-go v1.1.1
-	github.com/segmentio/kafka-go v0.4.31
 	github.com/shopspring/decimal v1.3.1
 	github.com/zeromicro/go-zero v1.3.1
 	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11
@@ -32,8 +33,8 @@ require (
 	github.com/go-logr/logr v1.2.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-redis/redis/v8 v8.11.4 // indirect
+	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/golang/mock v1.6.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
@@ -53,7 +54,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/openzipkin/zipkin-go v0.4.0 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
-	github.com/pierrec/lz4/v4 v4.1.14 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect

@@ -20,15 +20,17 @@ type (
 	SymbolType string
 
 	Symbol struct {
-		Exchange     Exchange
-		Type         SymbolType
-		StdSymbol    StdSymbol
-		BaseCurrency Currency
-		ExFormat     string
-		VolumeScale  string // 下单最小数量间隔
-		PriceScale   string // 下单最小价格间隔
-		MinVolume    string // 最小 量
-		ContractSize string // 合约面值
+		Exchange      Exchange
+		Type          SymbolType
+		StdSymbol     StdSymbol
+		BaseCurrency  Currency
+		QuoteCurrency Currency
+		ApiType       ApiType
+		ExFormat      string
+		VolumeScale   string // 下单最小数量间隔
+		PriceScale    string // 下单最小价格间隔
+		MinVolume     string // 最小 量
+		ContractSize  string // 合约面值
 	}
 )
 
@@ -42,5 +44,13 @@ func ConvertStrsToStdSymbols(s []string) []StdSymbol {
 }
 
 func (o StdSymbol) String() string {
+	return string(o)
+}
+
+func (o ApiType) String() string {
+	return string(o)
+}
+
+func (o SymbolType) String() string {
 	return string(o)
 }

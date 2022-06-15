@@ -15,6 +15,7 @@ import (
 type (
 	// WsSubscriber websocket 订阅器, 封装了断线重连和重新订阅的功能，且是并发安全的
 	WsSubscriber interface {
+		writeMsg(msg []byte) error
 		LeftTopics() int // 剩余可订阅数量
 		Sub(topics ...string) error
 		UnSub(topics ...string) error
@@ -99,6 +100,15 @@ func NewWsSubscriber(url_ string, subFn, unsubFn TopicsToMsgFn,
 
 	go ws.readAndWrite()
 	return ws, nil
+}
+
+func (o *wsSubscriber) writeMsg(msg []byte) error {
+	if !o.isClosed() {
+		o.writeCh <- msg
+		return nil
+	} else {
+		return fmt.Errorf("[wsSubscriber] tag:%s is closed ", o.Tag)
+	}
 }
 
 func (o *wsSubscriber) LeftTopics() int {

@@ -50,8 +50,8 @@ type (
 		exchange       exmodel.Exchange
 		symbol         *exmodel.Symbol
 		lastUpdateTime time.Time
-		asks           *treemap.Map // 价格从高到低, key 必须为 float64
-		bids           *treemap.Map // 价格从低到高, key 必须为 float64
+		asks           *treemap.Map //  key 必须为 float64
+		bids           *treemap.Map //  key 必须为 float64
 		outputCh       chan *exmodel.StreamDepth
 		priceScale     int32
 		status         int32

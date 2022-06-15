@@ -13,6 +13,10 @@ type requestInterceptor struct{}
 func (o requestInterceptor) BeforeRequest(meta extools.Meta, request httptools.Request) error {
 	if request.GetIntegralParam().Header.Get(httptools.ContentType) == "" {
 		request.SetParams(func(params *httptools.IntegralParam) error {
+			if len(params.JsonBody) != 0 {
+				params.Header.Set(httptools.ContentType, httptools.ContentTypeJson)
+				return nil
+			}
 			params.Header.Set(httptools.ContentType, httptools.ContentTypeForm)
 			return nil
 		})

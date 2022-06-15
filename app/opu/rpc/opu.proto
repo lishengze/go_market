@@ -1,0 +1,230 @@
+syntax = "proto3";
+
+package opupb;
+
+option go_package = "opupb";
+
+import public "google/protobuf/timestamp.proto";
+
+message GetSymbolReq {
+  string symbol = 1; // 不填获取所有
+  string exchange = 2; // 不填获取所有
+}
+
+message GetSymbolRsp {
+  repeated Symbol symbols = 1;
+}
+
+
+message Symbol {
+  string  exchange = 1;
+  string  exFormat = 2;
+  string  stdFormat = 3;
+  string  type = 4;
+  string  volumeScale = 5; // 下单最小数量间隔
+  string  priceScale = 6;   // 下单最小价格间隔
+  string  minVolume = 7 ;
+  string  contractSize = 11 ;// 合约面值
+  string  baseCurrency = 12 ;// 基币
+  string  quoteCurrency = 13 ;
+}
+
+message RegisterAccountReq {
+  string alias = 1; // 唯一
+  string key = 2;
+  string secret = 3;
+  string passphrase = 4;
+  string exchange = 5;
+}
+
+message RegisterAccountRsp {
+  string account_id = 1;
+}
+
+message UpdateAccountReq {
+  string account_id = 1; // account_id, account_alias 填一个参数即可, account_id 优先
+  string account_alias = 2;
+  string key = 3;
+  string secret = 4;
+  string passphrase = 5;
+  string exchange = 6;
+}
+
+message GetAccountReq {
+  string account_id = 1; // account_id, account_alias 填一个参数即可, account_id 优先，都不填，获取所有
+  string account_alias = 2;
+}
+
+message GetAccountRsp {
+  repeated Account accounts = 1;
+}
+
+message PlaceOrderReq {
+  string account_id = 1; // account_id, account_alias 填一个参数即可, account_id 优先
+  string account_alias = 2;
+  string client_order_id = 3; // 需要 唯一
+  string std_symbol = 4;
+  string volume = 5;
+  string price = 6;
+  string type = 7; // LIMIT:限价单
+  string side = 8;
+  string exchange = 9;
+}
+
+message CancelOrderReq {
+  string account_id = 1; // account_id, account_alias 填一个参数即可, account_id 优先
+  string account_alias = 2;
+  string client_order_id = 3;
+}
+
+message QueryOrderReq {
+  string account_id = 1; // account_id, account_alias 填一个参数即可, account_id 优先
+  string account_alias = 2;
+  string client_order_id = 3;
+}
+
+message QueryOrderRsp {
+  string account_id = 1; // account_id, account_alias 填一个参数即可, account_id 优先
+  string account_alias = 2;
+  Order order = 3;
+  repeated Trade trades = 4;
+}
+
+message QueryTradeReq {
+  string account_id = 1; // account_id, account_alias 填一个参数即可, account_id 优先
+  string account_alias = 2;
+  string client_order_id = 3;
+  string std_symbol = 5;
+  google.protobuf.Timestamp start_time = 6;
+  google.protobuf.Timestamp end_time = 7;
+}
+
+message QueryTradeRsp {
+  string account_id = 1; // account_id, account_alias 填一个参数即可, account_id 优先
+  string account_alias = 2;
+  Order order = 3;
+  repeated Trade trades = 4;
+}
+
+
+message QueryBalanceReq {
+  string account_id = 1; // account_id, account_alias 填一个参数即可, account_id 优先
+  string account_alias = 2;
+  string wallet_type = 3;
+}
+
+message QueryBalanceRsp {
+  repeated Balance balances = 1;
+
+}
+
+message EmptyReq {
+}
+
+message EmptyRsp {
+}
+
+message Order {
+  string id = 1;
+  string account_id = 2;
+  string account_alias = 3;
+  string client_order_id = 4;
+  string ex_order_id = 5;
+  string exchange = 6;
+  string volume = 7;
+  string price = 8;
+  string symbol = 9;
+  string side = 10;
+  string status = 11; // UNKNOWN:未知类型,若出现需要排查问题 PENDING:未发送到交易所 SENT:交易所已接收 CANCELLING:正在撤单
+  // CANCELED:已撤单(终态,需关注已成交数量) REJECTED:拒单/下单失败(终态) FILLED:完全成交(终态) PARTIAL:部分成交
+  string type = 12; // UNKNOWN:未知类型,若出现需要排查问题 LIMIT:限价单
+  string filled_volume = 13;
+  google.protobuf.Timestamp create_time = 14;
+  google.protobuf.Timestamp update_time = 15;
+}
+
+message Trade {
+  string id = 1;
+  string ex_trade_id = 2;
+  string volume = 3;
+  string price = 4;
+  string liquidity = 5; // TAKER MAKER
+  string fee = 6;
+  string fee_currency = 7;
+  google.protobuf.Timestamp trade_time = 8;
+}
+
+message Account {
+  string id = 1;
+  string exchange = 2;
+  string alias = 3;
+  google.protobuf.Timestamp create_time = 8;
+  google.protobuf.Timestamp update_time = 15;
+}
+
+// OrderTradeUpdate 订单或者成交推送
+message OrderTradesUpdate {
+  string update_type = 1; // 推送的消息类型 TRADE_UPDATE ORDER_UPDATE
+  string order_id = 2;
+  string account_id = 3;
+  string account_alias = 4;
+  string client_order_id = 5;
+  string ex_order_id = 6;
+  string exchange = 8;
+  string volume = 9;
+  string price = 10;
+  string symbol = 11;
+  string side = 12;
+  string order_type = 13; // UNKNOWN:未知类型,若出现需要排查问题 LIMIT:限价单
+  string reject_reason = 14; // 拒单原因
+  google.protobuf.Timestamp create_time = 15;
+
+  OrderUpdate order_update = 16;
+  TradesUpdate trade_update = 17;
+}
+
+// 订单更新推送
+message OrderUpdate {
+  string status = 1; // UNKNOWN:未知类型,若出现需要排查问题 PENDING:未发送到交易所 SENT:交易所已接收 CANCELLING:正在撤单
+  // CANCELED:已撤单(终态,需关注已成交数量) REJECTED:拒单/下单失败(终态) FILLED:完全成交(终态) PARTIAL:部分成交
+  string filled_volume = 2;
+  google.protobuf.Timestamp update_time = 3;
+}
+
+// TradesUpdate 成交推送
+message TradesUpdate {
+  string id = 1;
+  string ex_trade_id = 2;
+  string volume = 3; // 本次成交数量
+  string price = 4;
+  string liquidity = 5;
+  string trade_fee = 6 ; // 本笔成交数手续费
+  string fee_currency = 7;
+  google.protobuf.Timestamp trade_time = 8;
+}
+
+message Balance {
+  string wallet_type = 1;
+  repeated BalanceDetail balance_details = 2;
+}
+
+message BalanceDetail {
+  string currency = 1;
+  string available = 2;
+  string total = 3;
+}
+
+service Opu {
+  rpc GetSymbol(GetSymbolReq) returns (GetSymbolRsp);
+
+  rpc RegisterAccount(RegisterAccountReq) returns (RegisterAccountRsp);
+  rpc UpdateAccount(UpdateAccountReq) returns (EmptyRsp);
+  rpc GetAccount(GetAccountReq) returns (GetAccountRsp);
+
+  rpc QueryOrder(QueryOrderReq) returns (QueryOrderRsp);
+  rpc QueryTrade(QueryTradeReq) returns (QueryTradeRsp);
+  rpc PlaceOrder(PlaceOrderReq) returns (EmptyRsp);
+  rpc CancelOrder(CancelOrderReq) returns (EmptyRsp);
+
+  rpc QueryBalance(QueryBalanceReq) returns (QueryBalanceRsp);
+}

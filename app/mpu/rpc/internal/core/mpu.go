@@ -36,7 +36,6 @@ type (
 		extools.DepthManager
 		extools.MarketTradeManager
 		extools.KlineGenerator
-
 		kafkaSyncProducer sarama.SyncProducer
 		nacosClient       nacosconfigclient.IConfigClient
 	}

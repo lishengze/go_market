@@ -48,8 +48,8 @@ type (
 		startUpdateId  int64 // 从 ws 获取到的 startUpdateId
 		endUpdateId    int64 // 从 ws 获取到的 endUpdateId
 		lastUpdateTime time.Time
-		asks           *treemap.Map // 价格从高到低, key 必须为 float64
-		bids           *treemap.Map // 价格从低到高, key 必须为 float64
+		asks           *treemap.Map //  key 必须为 float64
+		bids           *treemap.Map //  key 必须为 float64
 		outputCh       chan *exmodel.StreamDepth
 	}
 )

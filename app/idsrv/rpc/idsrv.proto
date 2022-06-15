@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package idsrvpb;
+
+message EmptyReq {
+}
+
+message GetIdRsp {
+  string id =1;
+}
+
+service IdSrv {
+  rpc GetId(EmptyReq) returns (GetIdRsp);
+}

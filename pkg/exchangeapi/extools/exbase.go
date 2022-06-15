@@ -10,6 +10,7 @@ import (
 
 type (
 	ExBaseConfig struct {
+		exmodel.AccountConfig
 		exmodel.Exchange
 		*httptools.HttpClient
 	}

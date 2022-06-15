@@ -15,8 +15,9 @@ func NewFtxBase(config exmodel.AccountConfig) extools.ExBase {
 	return &FtxBase{
 		FtxSigner: signer,
 		ExBase: extools.NewExBase(signer, extools.ExBaseConfig{
-			Exchange:   exmodel.FTX,
-			HttpClient: Client,
+			AccountConfig: config,
+			Exchange:      exmodel.FTX,
+			HttpClient:    Client,
 		}, requestInterceptor{}),
 	}
 }

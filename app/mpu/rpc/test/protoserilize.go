@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	a:=mpupb.Trade{
+	a := mpupb.Trade{
 		Timestamp: timestamppb.Now(),
 		Exchange:  "BINANCE",
 		Symbol:    "BTC_USDT",
@@ -18,15 +18,15 @@ func main() {
 	}
 	fmt.Println(a)
 
-	msg,err:= proto.Marshal(&a)
-	if err!=nil	{
-		log.Fatalln(err,"----------1")
+	msg, err := proto.Marshal(&a)
+	if err != nil {
+		log.Fatalln(err, "----------1")
 	}
 
-	a2:=mpupb.Trade{}
-	err = proto.Unmarshal(msg,&a2)
-	if err!=nil	{
-		log.Fatalln(err,"-------------2")
+	a2 := mpupb.Trade{}
+	err = proto.Unmarshal(msg, &a2)
+	if err != nil {
+		log.Fatalln(err, "-------------2")
 	}
 
 	fmt.Println(a2)

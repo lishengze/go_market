@@ -80,15 +80,17 @@ func (o *symbolManager) pullSpotSymbol() error {
 		}
 
 		symbol := &exmodel.Symbol{
-			Exchange:     exmodel.BINANCE,
-			ExFormat:     exFormat,
-			StdSymbol:    stdFormat,
-			BaseCurrency: exmodel.Currency(r.BaseAsset),
-			Type:         exmodel.SymbolTypeSpot,
-			VolumeScale:  qtyScale,
-			PriceScale:   pxScale,
-			MinVolume:    minVolume,
-			ContractSize: "1",
+			Exchange:      exmodel.BINANCE,
+			ExFormat:      exFormat,
+			StdSymbol:     stdFormat,
+			QuoteCurrency: exmodel.NewCurrency(r.QuoteAsset),
+			BaseCurrency:  exmodel.NewCurrency(r.BaseAsset),
+			Type:          exmodel.SymbolTypeSpot,
+			VolumeScale:   qtyScale,
+			PriceScale:    pxScale,
+			MinVolume:     minVolume,
+			ApiType:       exmodel.ApiTypeSpot,
+			ContractSize:  "1",
 		}
 
 		o.Std.Store(stdFormat, symbol)

@@ -24,16 +24,13 @@ const (
 
 var EmptyReq = struct{}{}
 
-/*
-示例
+// Req 请求 示例 写法 支持 param, form, json
 type Req struct {
-	Name1  string `form:"Name,optional"`
-	Name2 string `json:"Name2,omitempty"`
-	Name3 string `json:"Name3,default=3"`
-	Name4 string `param:"Name4,default=3"`
-	Name5 string `param:"Name4,options=5|6"`
+	Name1 string `param:"Name1,required"`    // 表示 此字段如果是某种类型初始值时，也发送此字段的初始值
+	Name2 string `json:"Name2,omitempty"`    // 表示 此字段如果是某种类型初始值时，不发送此字段
+	Name3 string `json:"Name3,default=3"`    // 表示 此字段如果是某种类型初始值时，使用默认值
+	Name4 string `param:"Name4,options=5|6"` // 表示 此字段只能使用 options 中的枚举值
 }
-*/
 
 type (
 	// IntegralParam 包含一次http 请求所有 参数
@@ -51,7 +48,7 @@ type (
 		omitempty bool
 		required  bool
 		default_  string
-		options   map[string]interface{}
+		options   map[string]struct{}
 	}
 
 	JsonBody map[string]interface{}
@@ -80,17 +77,19 @@ func (o JsonBody) TrimmedString() (string, error) {
 	return string(bodyBytes), nil
 }
 
+// verifyValue 校验给的值 是否在 options 选项中
 func (o *tagValue) verifyValue(v string) error {
 	if len(o.options) > 0 {
 		_, ok := o.options[v]
 		if !ok {
-			fmt.Println(v, "-----------")
+			//fmt.Println(v, "-----------")
 			return fmt.Errorf("field:%s vaule:%s not in options:%v", o.field, v, o.options)
 		}
 	}
 	return nil
 }
 
+// ParseReqParam 解析 请求参数
 func ParseReqParam(req interface{}) (*IntegralParam, error) {
 	ip := NewIntegralParam()
 	if req == EmptyReq {
@@ -181,7 +180,7 @@ func parseTagValue(v string) (*tagValue, error) {
 		field:     "",
 		omitempty: false,
 		default_:  "",
-		options:   map[string]interface{}{},
+		options:   map[string]struct{}{},
 	}
 	l := strings.Split(v, ",")
 	if len(l) == 0 {

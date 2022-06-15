@@ -19,4 +19,17 @@ type (
 		Sub(symbols ...exmodel.StdSymbol)
 		OutputCh() <-chan *exmodel.StreamDepth
 	}
+
+	TradeManager interface {
+		PlaceOrder(req exmodel.PlaceOrderReq) (*exmodel.PlaceOrderRsp, error)
+		CancelOrder(req exmodel.CancelOrderReq) (*exmodel.CancelOrderRsp, error)
+		QueryOrder(req exmodel.QueryOrderReq) (*exmodel.Order, error)
+		QueryTrades(req exmodel.QueryTradeReq) ([]*exmodel.Trade, error)
+		OutputUpdateCh() <-chan *exmodel.OrderTradesUpdate
+		Close()
+	}
+
+	WalletManager interface {
+		QueryBalance(req exmodel.QueryBalanceReq) (*exmodel.QueryBalanceRsp, error)
+	}
 )

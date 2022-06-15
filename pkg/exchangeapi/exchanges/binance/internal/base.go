@@ -15,8 +15,9 @@ func NewBinanceBase(config exmodel.AccountConfig) extools.ExBase {
 	return &BinanceBase{
 		BinanceSigner: signer,
 		ExBase: extools.NewExBase(signer, extools.ExBaseConfig{
-			Exchange:   exmodel.BINANCE,
-			HttpClient: Client,
+			AccountConfig: config,
+			Exchange:      exmodel.BINANCE,
+			HttpClient:    Client,
 		}, requestInterceptor{}),
 	}
 }

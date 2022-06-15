@@ -1,0 +1,30 @@
+Name: mpu.rpc
+ListenOn: 0.0.0.0:8606
+Timeout: 60000
+
+Exchange: "FTX"
+Proxy: ""
+
+Log:
+  Compress: true
+  KeepDays: 0
+  Level: "info"
+  Mode: "file"
+  Path: "./log/ftx"
+  ServiceName: "opu"
+  StackCooldownMillis: 100
+
+KafkaConf:
+  Address: "10.8.154.126:9117"
+
+IdSrvRpcConf:
+  Endpoints:
+    - localhost:8611
+
+Mysql:
+  DataSource: broker:devBroker321@tcp(10.8.91.149:3306)/opu?charset=utf8mb4&parseTime=true&loc=UTC
+
+Cache:
+  - Host: localhost:6380
+
+
