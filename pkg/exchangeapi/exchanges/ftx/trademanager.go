@@ -59,6 +59,9 @@ func (o *tradeManager) run() {
 			return
 		case data := <-orderCh:
 			order := data.(*ftxapi.WsOrders)
+			if order.Type == "subscribed" {
+				continue
+			}
 			update := &exmodel.OrderTradesUpdate{
 				Type:          exmodel.OrderUpdate,
 				OrderId:       fmt.Sprint(order.Data.Id),
@@ -73,6 +76,9 @@ func (o *tradeManager) run() {
 			o.outputUpdateCh <- update
 		case data := <-tradeCh:
 			trade := data.(*ftxapi.WsFills)
+			if trade.Type == "subscribed" {
+				continue
+			}
 			update := &exmodel.OrderTradesUpdate{
 				Type:            exmodel.TradesUpdate,
 				OrderId:         fmt.Sprint(trade.Data.OrderId),

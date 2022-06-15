@@ -33,7 +33,7 @@ func testRegisterAccount() {
 		Secret:         "A3US9cW3biFIO9xQYfRdTFpD4UX0gNCcTyzY2F5W",
 		Passphrase:     "",
 		Exchange:       "FTX",
-		SubAccountName: "XpertRFQ",
+		SubAccountName: "Xpert RFQ",
 	})
 
 	if err != nil {
