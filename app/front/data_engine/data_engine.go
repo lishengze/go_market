@@ -103,6 +103,8 @@ func (a *DataEngine) StartListenRecvdata() {
 }
 
 func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
+	depth.Time = depth.Time / 1000000000
+
 	d.depth_cache_map.Store(depth.Symbol, depth)
 
 	d.PublishDepth(depth, nil)
@@ -110,6 +112,7 @@ func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
 }
 
 func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
+	kline.Time = kline.Time / 1000000000
 
 	if _, ok := d.cache_period_data[kline.Symbol]; !ok {
 		d.InitPeriodDara(kline.Symbol)
@@ -125,6 +128,7 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 }
 
 func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
+	trade.Time = trade.Time / 1000000000
 
 	d.trade_cache_map.Store(trade.Symbol, trade)
 
@@ -208,6 +212,73 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 
 func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, ori_klines *treemap.Map) *treemap.Map {
 	rst := treemap.NewWith(utils.Int64Comparator)
+	resolution := req_kline_info.Frequency
+
+	iter := ori_klines.Iterator()
+	var open float64 = -1
+	var high float64 = -1
+	var low float64 = -1
+	var close float64 = -1
+	var volume float64 = 0
+
+	for iter.Begin(); iter.Next(); {
+		cur_time := iter.Key().(int64)
+		cur_kline := iter.Value().(*datastruct.Kline)
+
+		if open == -1 {
+			open = cur_kline.Open
+		}
+
+		if close == -1 {
+			close = cur_kline.Close
+		}
+
+		if high == -1 || high < cur_kline.High {
+			high = cur_kline.High
+		}
+
+		if low == -1 || low > cur_kline.Low {
+			low = cur_kline.Low
+		}
+
+		volume += cur_kline.Volume
+
+		if uint32(cur_time)%resolution == 0 {
+			new_kline := &datastruct.Kline{
+				Exchange:   req_kline_info.Exchange,
+				Symbol:     req_kline_info.Symbol,
+				Time:       cur_time,
+				Open:       open,
+				High:       high,
+				Low:        low,
+				Close:      close,
+				Volume:     volume,
+				Resolution: int(resolution),
+			}
+			rst.Put(cur_time, new_kline)
+
+			open = -1
+			high = -1
+			low = -1
+			close = -1
+			volume = -1
+		}
+
+		if open != -1 {
+			new_kline := &datastruct.Kline{
+				Exchange:   req_kline_info.Exchange,
+				Symbol:     req_kline_info.Symbol,
+				Time:       cur_time - cur_time%int64(resolution),
+				Open:       open,
+				High:       high,
+				Low:        low,
+				Close:      close,
+				Volume:     volume,
+				Resolution: int(resolution),
+			}
+			rst.Put(new_kline.Time, new_kline)
+		}
+	}
 
 	return rst
 }
