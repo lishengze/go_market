@@ -25,7 +25,8 @@ func main() {
 
 	//testRegisterAccount()
 	//testGetBalance()
-	testPlaceOrder()
+	//testPlaceOrder()
+	testCancelOrder()
 
 	select {}
 }
@@ -48,6 +49,20 @@ func testPlaceOrder() {
 		Price:         "12000",
 		Type:          "LIMIT",
 		Side:          "BUY",
+	})
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println(rsp)
+}
+
+func testCancelOrder() {
+	rsp, err := o.CancelOrder(context.Background(), &opu.CancelOrderReq{
+		AccountId:     "",
+		AccountAlias:  "FTX_MCA_OTC_TRADING",
+		ClientOrderId: "12345",
 	})
 
 	if err != nil {
@@ -98,7 +113,7 @@ func subUpdate() {
 		fmt.Printf("fail to get list of partition:err%v\n", err)
 		return
 	}
-	fmt.Println(partitionList)
+	//fmt.Println(partitionList)
 	for partition := range partitionList {
 		// 遍历所有的分区
 		// 针对每个分区创建一个对应的分区消费者

@@ -54,6 +54,7 @@ func toPbOrderUpdate(order *model.Order) *opupb.OrderTradesUpdate {
 		UpdateType:    exmodel.OrderUpdate.String(),
 		OrderId:       order.Id,
 		AccountId:     order.AccountId,
+		AccountAlias:  order.AccountAlias,
 		ClientOrderId: order.ClientOrderId,
 		ExOrderId:     order.ExOrderId,
 		Exchange:      order.Exchange,
