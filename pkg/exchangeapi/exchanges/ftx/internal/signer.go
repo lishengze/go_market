@@ -28,7 +28,15 @@ func (o FtxSigner) Sign() func(params *httptools.IntegralParam) error {
 			return err
 		}
 
-		signData := fmt.Sprintf("%s%s%s%s", ts, params.HttpMethod, params.Url.String(), bodyStr)
+		var pathWithParam string
+
+		if params.Param.Encode() == "" {
+			pathWithParam = params.Url.Path
+		} else {
+			pathWithParam = fmt.Sprintf("%s?%s", params.Url.Path, params.Param.Encode())
+		}
+
+		signData := fmt.Sprintf("%s%s%s%s", ts, params.HttpMethod, pathWithParam, bodyStr)
 		signature, err := extools.GetParamHmacSHA256Sign(o.Secret, signData)
 		if err != nil {
 			return err

@@ -14,7 +14,8 @@ const (
 )
 
 func main() {
-	testRegisterAccount()
+	//testRegisterAccount()
+	testGetBalance()
 }
 
 func getOpu(address string) opu.Opu {
