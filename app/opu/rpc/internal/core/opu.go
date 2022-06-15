@@ -132,18 +132,18 @@ func (o *opu) RegisterAccount(req *opupb.RegisterAccountReq) (*opupb.RegisterAcc
 		return nil, err
 	}
 
+	secret, err := xencrypt.EncryptByAes(req.Secret)
+	if err != nil {
+		return nil, err
+	}
+	passphrase, err := xencrypt.EncryptByAes(req.Passphrase)
+	if err != nil {
+		return nil, err
+	}
+
 	account, err := o.svcCtx.AccountModel.FindOneByAlias(req.Alias)
 	switch err {
 	case model.ErrNotFound:
-		secret, err := xencrypt.EncryptByAes(req.Secret)
-		if err != nil {
-			return nil, err
-		}
-		passphrase, err := xencrypt.EncryptByAes(req.Passphrase)
-		if err != nil {
-			return nil, err
-		}
-
 		account = &model.Account{
 			Id:             o.svcCtx.IdSrv.MustGetId(),
 			Alias:          req.Alias,
@@ -166,7 +166,7 @@ func (o *opu) RegisterAccount(req *opupb.RegisterAccountReq) (*opupb.RegisterAcc
 			AccountId: account.Id,
 		}, nil
 	case nil:
-		if req.Key == account.Key && req.Secret == req.Secret && req.Passphrase == account.Passphrase {
+		if key == account.Key && secret == req.Secret && passphrase == account.Passphrase {
 			return &opupb.RegisterAccountRsp{
 				AccountId: account.Id,
 			}, nil
