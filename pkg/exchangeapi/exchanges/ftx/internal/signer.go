@@ -5,7 +5,6 @@ import (
 	"exterior-interactor/pkg/exchangeapi/extools"
 	"exterior-interactor/pkg/httptools"
 	"fmt"
-	"github.com/zeromicro/go-zero/core/logx"
 	"time"
 )
 
@@ -37,7 +36,7 @@ func (o FtxSigner) Sign() func(params *httptools.IntegralParam) error {
 			pathWithParam = fmt.Sprintf("%s?%s", params.Url.Path, params.Param.Encode())
 		}
 		signData := fmt.Sprintf("%s%s%s%s", ts, params.HttpMethod, pathWithParam, bodyStr)
-		logx.Infof("signData: %s", signData)
+		//logx.Infof("signData: %s", signData)
 		signature, err := extools.GetParamHmacSHA256Sign(o.Secret, signData)
 		if err != nil {
 			return err

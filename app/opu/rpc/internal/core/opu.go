@@ -308,7 +308,7 @@ func (o *opu) PlaceOrder(req *opupb.PlaceOrderReq) (*opupb.EmptyRsp, error) {
 		return nil, err
 	}
 
-	symbol, err := o.svcCtx.SymbolModel.FindOneByStdSymbolExchange(req.StdSymbol, req.Exchange)
+	symbol, err := o.svcCtx.SymbolModel.FindOneByStdSymbolExchange(req.StdSymbol, o.exchange)
 	switch err {
 	case model.ErrNotFound:
 		return nil, fmt.Errorf("wrong symbol or exchange")
@@ -335,7 +335,7 @@ func (o *opu) PlaceOrder(req *opupb.PlaceOrderReq) (*opupb.EmptyRsp, error) {
 		SendFlag:      "UNSENT",
 		StdSymbol:     symbol.StdSymbol,
 		ExSymbol:      symbol.ExFormat,
-		Exchange:      req.Exchange,
+		Exchange:      o.exchange,
 	}
 
 	_, err = o.svcCtx.OrderModel.Insert(order)

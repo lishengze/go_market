@@ -70,7 +70,6 @@ message PlaceOrderReq {
   string price = 6;
   string type = 7; // LIMIT:限价单
   string side = 8;
-  string exchange = 9;
 }
 
 message CancelOrderReq {
