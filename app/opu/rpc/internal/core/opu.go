@@ -165,7 +165,7 @@ func (o *opu) RegisterAccount(req *opupb.RegisterAccountReq) (*opupb.RegisterAcc
 			AccountId: account.Id,
 		}, nil
 	case nil:
-		if key == account.Key && secret == req.Secret && passphrase == account.Passphrase && req.SubAccountName == account.SubAccountName {
+		if key == account.Key && secret == account.Secret && passphrase == account.Passphrase && req.SubAccountName == account.SubAccountName {
 			return &opupb.RegisterAccountRsp{
 				AccountId: account.Id,
 			}, nil
