@@ -1,4 +1,4 @@
-Name: mpu.rpc
+Name: opu.rpc
 ListenOn: 0.0.0.0:8606
 Timeout: 60000
 
