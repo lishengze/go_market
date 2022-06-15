@@ -21,11 +21,12 @@ const (
 var o = getOpu(opuAddress)
 
 func main() {
-	subUpdate()
+	//subUpdate()
 
 	//testRegisterAccount()
-	//testGetBalance()
-	testPlaceOrder()
+	testGetBalance()
+
+	//testPlaceOrder()
 
 	//testCancelOrder()
 

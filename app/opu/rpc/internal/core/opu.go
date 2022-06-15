@@ -478,9 +478,15 @@ func (o *opu) loadUnClosedOrders() error {
 			return err
 		}
 
+		trades, err := o.svcCtx.TradeModel.FindMany(modelext.NewQuery().Equal("order_id", order.Id))
+		if err != nil {
+			logx.Error(err)
+			return err
+		}
+
 		om := newOrderManagerWithoutSend(func(order *model.Order) (*accountManager, error) {
 			return o.getAccountManager(order.AccountId, "")
-		}, o.svcCtx, o.outputCh, symbol, order, []*model.Trade{})
+		}, o.svcCtx, o.outputCh, symbol, order, trades)
 
 		o.unClosedOrdersMap.Store(order.Id, om)
 	}

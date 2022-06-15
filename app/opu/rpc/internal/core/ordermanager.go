@@ -234,6 +234,10 @@ func (o *orderManager) updateOrder(exOrderId, filledVolume, rejectReason string,
 	defer o.mutex.Unlock()
 	o.mutex.Lock()
 
+	if exmodel.OrderStatus(o.order.Status).IsClosed() {
+		return
+	}
+
 	//  保存订单信息 并 推送订单
 	saveAndOutputOrderUpdate := func() {
 		err := o.svcCtx.OrderModel.Update(o.order, func() {
