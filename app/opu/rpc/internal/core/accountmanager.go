@@ -48,14 +48,18 @@ func newAccountManager(account *model.Account, proxy string, outputCh chan<- *ex
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	return &accountManager{
+	am := &accountManager{
 		Account:       account,
 		TradeManager:  tm,
 		WalletManager: wm,
 		outputCh:      outputCh,
 		cancel:        cancel,
 		ctx:           ctx,
-	}, nil
+	}
+
+	go am.run()
+
+	return am, nil
 }
 
 func (o *accountManager) run() {
@@ -67,14 +71,6 @@ func (o *accountManager) run() {
 		case update := <-updateCh:
 			o.outputCh <- update
 		}
-	}
-}
-
-func (o *accountManager) processUpdate(update *exmodel.OrderTradesUpdate) {
-	switch update.Type {
-	case exmodel.OrderUpdate:
-	case exmodel.TradesUpdate:
-
 	}
 }
 
