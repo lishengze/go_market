@@ -231,10 +231,8 @@ func (o *orderManager) updateOrder(exOrderId, filledVolume, rejectReason string,
 	defer o.mutex.Unlock()
 	o.mutex.Lock()
 
-	// 推送订单 并 保存订单信息
-	outputOrderUpdateAndSave := func() {
-		o.outputOrderUpdate() // 推送订单更新
-
+	//  保存订单信息 并 推送订单
+	saveAndOutputOrderUpdate := func() {
 		err := o.svcCtx.OrderModel.Update(o.order, func() {
 			o.order.ExOrderId = exOrderId
 			o.order.FilledVolume = filledVolume
@@ -244,6 +242,8 @@ func (o *orderManager) updateOrder(exOrderId, filledVolume, rejectReason string,
 		if err != nil {
 			logx.Errorf("update order to DB failed, err:%v, order:%+v", err, *o.order)
 		}
+
+		o.outputOrderUpdate() // 推送订单更新
 	}
 
 	switch exmodel.OrderStatus(o.order.Status) {
@@ -252,14 +252,14 @@ func (o *orderManager) updateOrder(exOrderId, filledVolume, rejectReason string,
 		case exmodel.OrderStatusPending: // 不管
 		case exmodel.OrderStatusRejected, exmodel.OrderStatusSent,
 			exmodel.OrderStatusCancelling, exmodel.OrderStatusPartial:
-			outputOrderUpdateAndSave()
+			saveAndOutputOrderUpdate()
 		case exmodel.OrderStatusCancelled, exmodel.OrderStatusFilled:
 			if !o.tradesFilledVolume().Equal(xmath.MustDecimal(filledVolume)) {
 				logx.Errorf("[tradesFilledVolume:%s != filledVolume:%s ] order:%+v", o.tradesFilledVolume(), filledVolume, o.order)
 				trades := o.mustQueryTrades()
 				o.processQueryTradeRsp(trades) // 这里会先推送遗漏的trade
 			}
-			outputOrderUpdateAndSave()
+			saveAndOutputOrderUpdate()
 
 		default:
 			logx.Errorf("order:%+v, rcv wrong status :%s", o.order, status)
@@ -268,14 +268,14 @@ func (o *orderManager) updateOrder(exOrderId, filledVolume, rejectReason string,
 		switch status {
 		case exmodel.OrderStatusSent: //  再次收到 sent, 不管
 		case exmodel.OrderStatusCancelling, exmodel.OrderStatusPartial, exmodel.OrderStatusRejected:
-			outputOrderUpdateAndSave()
+			saveAndOutputOrderUpdate()
 		case exmodel.OrderStatusCancelled, exmodel.OrderStatusFilled:
 			if !o.tradesFilledVolume().Equal(xmath.MustDecimal(filledVolume)) {
 				logx.Errorf("[tradesFilledVolume:%s is not equal filledVolume:%s ] order:%+v", o.tradesFilledVolume(), filledVolume, o.order)
 				trades := o.mustQueryTrades()
 				o.processQueryTradeRsp(trades) // 这里会先推送遗漏的trade
 			}
-			outputOrderUpdateAndSave()
+			saveAndOutputOrderUpdate()
 		default:
 			logx.Errorf("order:%+v, rcv wrong status :%s", o.order, status)
 		}
@@ -284,19 +284,19 @@ func (o *orderManager) updateOrder(exOrderId, filledVolume, rejectReason string,
 		case exmodel.OrderStatusPartial:
 			// 比较一下filledVolume
 			if xmath.MustDecimal(filledVolume).GreaterThan(xmath.MustDecimal(o.order.FilledVolume)) {
-				outputOrderUpdateAndSave()
+				saveAndOutputOrderUpdate()
 			} else {
 				logx.Errorf("rcv a delay partial status msg, order:%+v, [filledVolume:%s]", o.order, filledVolume)
 			}
 		case exmodel.OrderStatusCancelling, exmodel.OrderStatusRejected:
-			outputOrderUpdateAndSave()
+			saveAndOutputOrderUpdate()
 		case exmodel.OrderStatusCancelled, exmodel.OrderStatusFilled:
 			if !o.tradesFilledVolume().Equal(xmath.MustDecimal(filledVolume)) {
 				logx.Errorf("[tradesFilledVolume:%s != filledVolume:%s ] order:%+v", o.tradesFilledVolume(), filledVolume, o.order)
 				trades := o.mustQueryTrades()
 				o.processQueryTradeRsp(trades) // 这里会先推送遗漏的trade
 			}
-			outputOrderUpdateAndSave()
+			saveAndOutputOrderUpdate()
 		default:
 			logx.Errorf("order:%+v, rcv wrong status :%s", o.order, status)
 		}
@@ -308,13 +308,17 @@ func (o *orderManager) updateOrder(exOrderId, filledVolume, rejectReason string,
 				trades := o.mustQueryTrades()
 				o.processQueryTradeRsp(trades) // 这里会先推送遗漏的trade
 			}
-			outputOrderUpdateAndSave()
+			saveAndOutputOrderUpdate()
 		default:
 			logx.Errorf("order:%+v, rcv wrong status :%s", o.order, status)
 		}
 	default:
 		// 这个状态的 order 不再接收 order update 了
 		logx.Errorf("order:%+v, rcv wrong status :%s", o.order, status)
+	}
+
+	if exmodel.OrderStatus(o.order.Status).IsClosed() {
+		o.close()
 	}
 }
 
@@ -359,7 +363,6 @@ func (o *orderManager) updateTrade(tradeId, fee, feeCurrency, volume, price stri
 	if err != nil {
 		logx.Errorf("insert trade err:%v, trade:%+v", err, *trade)
 	}
-
 }
 
 func (o *orderManager) tradesFilledVolume() decimal.Decimal {
