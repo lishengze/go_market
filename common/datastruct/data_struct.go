@@ -140,6 +140,36 @@ func (k *Kline) String() string {
 	return res
 }
 
+func NewKlineWithKline(kline *Kline) *Kline {
+	return &Kline{
+		Exchange:   kline.Exchange,
+		Symbol:     kline.Symbol,
+		Time:       kline.Time,
+		Open:       kline.Open,
+		High:       kline.High,
+		Low:        kline.Low,
+		Close:      kline.Close,
+		Volume:     kline.Volume,
+		Resolution: kline.Resolution,
+	}
+}
+
+func IsNewKlineStart(kline *Kline, resolution int64) bool {
+	if kline.Time%resolution == 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func IsOldKlineEnd(kline *Kline, resolution int64) bool {
+	if (int64(kline.Resolution)+kline.Time)%resolution == 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
 func GetDepthString(m *treemap.Map, numb int) string {
 	str := "TreeMap\nmap["
 	it := m.Iterator()

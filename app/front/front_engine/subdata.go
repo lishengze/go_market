@@ -3,10 +3,12 @@ package front_engine
 import (
 	"market_server/app/front/net"
 	"market_server/common/datastruct"
+	"market_server/common/util"
 	"sync"
 
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type DepthPubInfo struct {
@@ -111,6 +113,22 @@ func (s *SubData) UpdateKlineCacheData(kline *datastruct.Kline) {
 	}
 }
 
+/*
+判断是否是之前的 k 线数据结束;
+逻辑描述:
+	1. 原始的K 线数据，是由trade数据聚合而成，比如15分频的 9:45 的数据，是由 [9:45, 10:00) 的数据聚合而成;
+	2. 若是 用15分频的数据聚合60分频, 9:45 的原始K线数据来时，时间已经到了10:00, 需要立刻结合当前的累计的高开低收，然后发布数据;
+	3. 所以对于新来的原始k 线，有三种状态: 旧的聚合区间的最后一个数据， 新的聚合区间的第一个数据, 旧的聚合区间的中间的数据，
+	4. 旧的聚合区间的最后一个数据： (kline.resolution + kline.time) % cur_resolution == 0;
+		4.1 需要判断是否需要进行累计计算-不同聚合：kline.resolution == cur_resolution, 可以直接发布;
+		4.2 否则: 与当前累计数据一起计算高低收， 发布;
+	5. 新的聚合区间的第一个数据: kline.resolution % cur_resolution == 0;
+		5.1 已经过滤掉了不用聚合直接发布的情况;
+		5.2 将当前 cache 的数据更新为当前的数据;
+	6. 旧的聚合区间的中间的数据
+		根据规则更新 cache 的 高低收;
+*/
+
 func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 	var rst []*KlinePubInfo
 
@@ -121,26 +139,44 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 		return rst
 	}
 
-	is_updated := false
-
 	for resolution, sub_info := range s.KlineInfo.Info[kline.Symbol] {
 		cache_kline := sub_info.cache_data
 
-		if kline.Time-cache_kline.Time >= int64(resolution) {
-			s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].cache_data = kline
-			is_updated = true
+		if kline.Time <= cache_kline.Time {
+			logx.Errorf("NewKLineTime: %d, CachedKlineTime: %d")
+			continue
 		}
-	}
 
-	if is_updated {
-		sub_tree := s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].ws_info
-		sub_tree_iter := sub_tree.Iterator()
-		sub_tree_iter.Begin()
-		for sub_tree_iter.Next() {
-			rst = append(rst, &KlinePubInfo{
-				ws_info: sub_tree_iter.Value().(*net.WSInfo),
-				data:    kline,
-			})
+		if datastruct.IsOldKlineEnd(kline, int64(resolution)) {
+			var pub_kline *datastruct.Kline
+			if kline.Resolution != resolution {
+				cache_kline.Close = kline.Close
+				cache_kline.Low = util.MinFloat64(cache_kline.Low, kline.Low)
+				cache_kline.High = util.MaxFloat64(cache_kline.High, kline.High)
+				cache_kline.Volume += kline.Volume
+
+				pub_kline = datastruct.NewKlineWithKline(cache_kline)
+			} else {
+				pub_kline = datastruct.NewKlineWithKline(kline)
+			}
+
+			sub_tree := s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].ws_info
+			sub_tree_iter := sub_tree.Iterator()
+			for sub_tree_iter.Begin(); sub_tree_iter.Next(); {
+				rst = append(rst, &KlinePubInfo{
+					ws_info: sub_tree_iter.Value().(*net.WSInfo),
+					data:    pub_kline,
+				})
+			}
+			s.KlineInfo.Info[kline.Symbol][resolution].cache_data = datastruct.NewKlineWithKline(pub_kline)
+
+		} else if datastruct.IsNewKlineStart(kline, int64(resolution)) {
+			s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].cache_data = datastruct.NewKlineWithKline(kline)
+			s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].cache_data.Resolution = resolution
+		} else {
+			cache_kline.Close = kline.Close
+			cache_kline.Low = util.MinFloat64(cache_kline.Low, kline.Low)
+			cache_kline.High = util.MaxFloat64(cache_kline.High, kline.High)
 		}
 	}
 

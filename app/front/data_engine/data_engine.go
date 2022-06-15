@@ -212,71 +212,47 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 
 func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, ori_klines *treemap.Map) *treemap.Map {
 	rst := treemap.NewWith(utils.Int64Comparator)
-	resolution := req_kline_info.Frequency
+	resolution := int(req_kline_info.Frequency)
+
+	if ori_klines.Size() == 0 {
+		return rst
+	}
 
 	iter := ori_klines.Iterator()
-	var open float64 = -1
-	var high float64 = -1
-	var low float64 = -1
-	var close float64 = -1
-	var volume float64 = 0
+	iter.Begin()
 
-	for iter.Begin(); iter.Next(); {
-		cur_time := iter.Key().(int64)
+	cache_kline := iter.Value().(*datastruct.Kline)
+
+	if !datastruct.IsNewKlineStart(cache_kline, int64(resolution)) {
+		cache_kline.Time = cache_kline.Time - cache_kline.Time%int64(resolution)
+	}
+
+	for iter.Next() {
 		cur_kline := iter.Value().(*datastruct.Kline)
 
-		if open == -1 {
-			open = cur_kline.Open
-		}
+		if datastruct.IsOldKlineEnd(cur_kline, int64(resolution)) {
+			var pub_kline *datastruct.Kline
 
-		if close == -1 {
-			close = cur_kline.Close
-		}
+			if cur_kline.Resolution != resolution {
+				cache_kline.Close = cur_kline.Close
+				cache_kline.Low = util.MinFloat64(cache_kline.Low, cur_kline.Low)
+				cache_kline.High = util.MaxFloat64(cache_kline.High, cur_kline.High)
+				cache_kline.Volume += cur_kline.Volume
 
-		if high == -1 || high < cur_kline.High {
-			high = cur_kline.High
-		}
-
-		if low == -1 || low > cur_kline.Low {
-			low = cur_kline.Low
-		}
-
-		volume += cur_kline.Volume
-
-		if uint32(cur_time)%resolution == 0 {
-			new_kline := &datastruct.Kline{
-				Exchange:   req_kline_info.Exchange,
-				Symbol:     req_kline_info.Symbol,
-				Time:       cur_time,
-				Open:       open,
-				High:       high,
-				Low:        low,
-				Close:      close,
-				Volume:     volume,
-				Resolution: int(resolution),
+				pub_kline = datastruct.NewKlineWithKline(cache_kline)
+			} else {
+				pub_kline = datastruct.NewKlineWithKline(cur_kline)
 			}
-			rst.Put(cur_time, new_kline)
 
-			open = -1
-			high = -1
-			low = -1
-			close = -1
-			volume = -1
-		}
-
-		if open != -1 {
-			new_kline := &datastruct.Kline{
-				Exchange:   req_kline_info.Exchange,
-				Symbol:     req_kline_info.Symbol,
-				Time:       cur_time - cur_time%int64(resolution),
-				Open:       open,
-				High:       high,
-				Low:        low,
-				Close:      close,
-				Volume:     volume,
-				Resolution: int(resolution),
-			}
-			rst.Put(new_kline.Time, new_kline)
+			cache_kline = datastruct.NewKlineWithKline(pub_kline)
+			rst.Put(pub_kline.Time, pub_kline)
+		} else if datastruct.IsNewKlineStart(cur_kline, int64(resolution)) {
+			cache_kline = cur_kline
+			cache_kline.Resolution = resolution
+		} else {
+			cache_kline.Close = cur_kline.Close
+			cache_kline.Low = util.MinFloat64(cache_kline.Low, cur_kline.Low)
+			cache_kline.High = util.MaxFloat64(cache_kline.High, cur_kline.High)
 		}
 	}
 
