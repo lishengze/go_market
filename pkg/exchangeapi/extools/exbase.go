@@ -44,9 +44,9 @@ func (o *defaultExBase) Config() ExBaseConfig {
 }
 
 func (o *defaultExBase) Request(req, res interface{}, meta Meta, fns ...func(params *httptools.IntegralParam) error) error {
-	request := httptools.NewRequestWithHttpClient(o.ExBaseConfig.HttpClient).
-		SetHttpMethod(meta.HttpMethod()).SetReq(req).
+	request := httptools.NewRequestWithHttpClient(o.ExBaseConfig.HttpClient).SetReq(req).
 		SetParams(func(params *httptools.IntegralParam) error {
+			params.HttpMethod = meta.HttpMethod()
 			u, err := url.Parse(meta.Url())
 			params.Url = u
 			return err
