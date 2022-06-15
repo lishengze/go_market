@@ -228,7 +228,8 @@ type WsLoginReq struct {
 }
 
 type WsLoginArgs struct {
-	Key  string `json:"key"`
-	Sign string `json:"sign"`
-	Time int64  `json:"time"`
+	Key        string `json:"key"`
+	Sign       string `json:"sign"`
+	Time       int64  `json:"time"`
+	SubAccount string `json:"subaccount,omitempty"`
 }

@@ -225,9 +225,10 @@ func (o *Api) GetTradeWsTransceiver() (httptools.WsTransceiver, error) {
 
 	loginReq := WsLoginReq{
 		WsLoginArgs: WsLoginArgs{
-			Key:  o.base.Config().AccountConfig.Key,
-			Sign: signature,
-			Time: now,
+			Key:        o.base.Config().AccountConfig.Key,
+			Sign:       signature,
+			Time:       now,
+			SubAccount: o.base.Config().AccountConfig.SubAccountName,
 		},
 		Op: "login",
 	}
@@ -280,9 +281,10 @@ func (o *Api) GetOrderWsTransceiver() (httptools.WsTransceiver, error) {
 
 	loginReq := WsLoginReq{
 		WsLoginArgs: WsLoginArgs{
-			Key:  o.base.Config().AccountConfig.Key,
-			Sign: signature,
-			Time: now,
+			Key:        o.base.Config().AccountConfig.Key,
+			Sign:       signature,
+			Time:       now,
+			SubAccount: o.base.Config().AccountConfig.SubAccountName,
 		},
 		Op: "login",
 	}

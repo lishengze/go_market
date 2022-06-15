@@ -267,7 +267,7 @@ func (o *tradeManager) parseLiquidity(in string) exmodel.Liquidity {
 	case "maker":
 		return exmodel.LiquidityMaker
 	default:
-		logx.Errorf("ftx parse a unknown trade tm:%s", in)
+		logx.Errorf("ftx parse a unknown Liquidity:%s", in)
 		return exmodel.LiquidityUnknown
 	}
 }
