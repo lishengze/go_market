@@ -265,7 +265,7 @@ func (m *defaultOrderModel) Update(data *Order, update func()) error {
 	_, err := m.Exec(func(conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, orderRowsWithPlaceHolder)
 		return conn.Exec(query, data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.SendFlag, data.CancelFlag, data.LastSyncTime, data.Id)
-	}, orderIdKey, orderAccountIdClientOrderIdKey)
+	}, orderAccountIdClientOrderIdKey, orderIdKey)
 	return err
 }
 
@@ -274,7 +274,7 @@ func (m *defaultOrderModel) TxUpdate(data *Order, update func()) func() (interfa
 	insertSql := fmt.Sprintf("update %s set %s where `id` = ?", m.table, orderRowsWithPlaceHolder)
 	orderIdKey := fmt.Sprintf("%s%v", cacheOrderIdPrefix, data.Id)
 	orderAccountIdClientOrderIdKey := fmt.Sprintf("%s%v:%v", cacheOrderAccountIdClientOrderIdPrefix, data.AccountId, data.ClientOrderId)
-	keys = append(keys, orderIdKey, orderAccountIdClientOrderIdKey)
+	keys = append(keys, orderAccountIdClientOrderIdKey, orderIdKey)
 	update()
 	args := []interface{}{data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.SendFlag, data.CancelFlag, data.LastSyncTime, data.Id}
 	return func() (interface{}, error) {

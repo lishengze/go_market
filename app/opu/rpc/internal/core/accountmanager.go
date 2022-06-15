@@ -31,10 +31,11 @@ func newAccountManager(account *model.Account, proxy string, outputCh chan<- *ex
 		secret, _ := xencrypt.DecryptByAes(account.Secret)
 
 		api := ftx.NewNativeApiWithProxy(exmodel.AccountConfig{
-			Alias:      account.Alias,
-			Key:        key,
-			Secret:     secret,
-			PassPhrase: account.Passphrase,
+			Alias:          account.Alias,
+			Key:            key,
+			Secret:         secret,
+			PassPhrase:     account.Passphrase,
+			SubAccountName: account.SubAccountName,
 		}, proxy)
 
 		tm = ftx.NewTradeManager(api)

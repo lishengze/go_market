@@ -145,12 +145,13 @@ func (o *opu) RegisterAccount(req *opupb.RegisterAccountReq) (*opupb.RegisterAcc
 		}
 
 		account = &model.Account{
-			Id:         o.svcCtx.IdSrv.MustGetId(),
-			Alias:      req.Alias,
-			Key:        key,
-			Secret:     secret,
-			Passphrase: passphrase,
-			Exchange:   req.Exchange,
+			Id:             o.svcCtx.IdSrv.MustGetId(),
+			Alias:          req.Alias,
+			Key:            key,
+			Secret:         secret,
+			Passphrase:     passphrase,
+			Exchange:       req.Exchange,
+			SubAccountName: req.SubAccountName,
 		}
 
 		_, err = o.svcCtx.AccountModel.Insert(account)
@@ -158,6 +159,8 @@ func (o *opu) RegisterAccount(req *opupb.RegisterAccountReq) (*opupb.RegisterAcc
 		if err != nil {
 			return nil, err
 		}
+
+		o.loadAccountToMemory(account)
 
 		return &opupb.RegisterAccountRsp{
 			AccountId: account.Id,

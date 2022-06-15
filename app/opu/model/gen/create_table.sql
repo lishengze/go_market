@@ -1,13 +1,14 @@
-CREATE TABLE `account`
+CREATE TABLE IF NOT EXISTS `account`
 (
-    `id`          VARCHAR(64)  NOT NULL COMMENT 'id',
-    `alias`       VARCHAR(64)  NOT NULL COMMENT 'alias',
-    `key`         VARCHAR(128) NOT NULL COMMENT 'key',
-    `secret`      VARCHAR(128) NOT NULL COMMENT 'secret',
-    `passphrase`  VARCHAR(128) NOT NULL COMMENT 'passphrase',
-    `exchange`    VARCHAR(32)  NOT NULL COMMENT 'exchange',
-    `create_time` DATETIME(6)  NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
-    `update_time` DATETIME(6)  NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+    `id`               VARCHAR(64)  NOT NULL COMMENT 'id',
+    `alias`            VARCHAR(64)  NOT NULL COMMENT 'alias',
+    `key`              VARCHAR(128) NOT NULL COMMENT 'key',
+    `secret`           VARCHAR(128) NOT NULL COMMENT 'secret',
+    `passphrase`       VARCHAR(128) NOT NULL COMMENT 'passphrase',
+    `sub_account_name` VARCHAR(128) NOT NULL COMMENT 'sub_account_name',
+    `exchange`         VARCHAR(32)  NOT NULL COMMENT 'exchange',
+    `create_time`      DATETIME(6)  NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+    `update_time`      DATETIME(6)  NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `alias` (`alias`),
     UNIQUE KEY `alias-key` (`alias`, `key`)
@@ -16,7 +17,7 @@ CREATE TABLE `account`
   CHARSET = utf8mb4
   COLLATE = utf8mb4_bin COMMENT 'account';
 
-CREATE TABLE `order`
+CREATE TABLE IF NOT EXISTS `order`
 (
     `id`              VARCHAR(64) NOT NULL COMMENT 'id, 同时是报给交易所的 order id',
     `account_id`      VARCHAR(64) NOT NULL COMMENT 'account_id',
@@ -46,7 +47,7 @@ CREATE TABLE `order`
   COLLATE = utf8mb4_bin COMMENT 'order';
 
 
-CREATE TABLE `trade`
+CREATE TABLE IF NOT EXISTS `trade`
 (
     `id`           VARCHAR(64) NOT NULL COMMENT 'id',
     `order_id`     VARCHAR(64) NOT NULL COMMENT 'order_id',
@@ -69,7 +70,7 @@ CREATE TABLE `trade`
   COLLATE = utf8mb4_bin COMMENT 'trade';
 
 
-CREATE TABLE `symbol`
+CREATE TABLE IF NOT EXISTS `symbol`
 (
     `id`             VARCHAR(64) NOT NULL COMMENT 'id',
     `type`           VARCHAR(32) NOT NULL COMMENT 'type',
