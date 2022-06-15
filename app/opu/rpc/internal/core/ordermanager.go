@@ -249,10 +249,10 @@ func (o *orderManager) updateOrder(exOrderId, filledVolume, rejectReason string,
 	switch exmodel.OrderStatus(o.order.Status) {
 	case exmodel.OrderStatusPending: // 当前为 pending
 		switch status {
+		case exmodel.OrderStatusPending: // 不管
 		case exmodel.OrderStatusRejected, exmodel.OrderStatusSent,
 			exmodel.OrderStatusCancelling, exmodel.OrderStatusPartial:
 			outputOrderUpdateAndSave()
-
 		case exmodel.OrderStatusCancelled, exmodel.OrderStatusFilled:
 			if !o.tradesFilledVolume().Equal(xmath.MustDecimal(filledVolume)) {
 				logx.Errorf("[tradesFilledVolume:%s != filledVolume:%s ] order:%+v", o.tradesFilledVolume(), filledVolume, o.order)

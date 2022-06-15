@@ -517,7 +517,7 @@ func (o *opu) run() {
 			)
 
 			_, _, err = o.kafkaSyncProducer.SendMessage(msg)
-
+			logx.Infof("send update to kafka, topic:%s, msg:%v", kafkaTopic, update)
 			if err != nil {
 				logx.Errorf("kafkaConn write update err:%s, update:%v", err, update)
 			}

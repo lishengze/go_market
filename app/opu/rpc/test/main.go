@@ -25,8 +25,9 @@ func main() {
 
 	//testRegisterAccount()
 	//testGetBalance()
-	//testPlaceOrder()
-	testCancelOrder()
+	testPlaceOrder()
+
+	//testCancelOrder()
 
 	select {}
 }
@@ -43,7 +44,7 @@ func testPlaceOrder() {
 	rsp, err := o.PlaceOrder(context.Background(), &opu.PlaceOrderReq{
 		AccountId:     "",
 		AccountAlias:  "FTX_MCA_OTC_TRADING",
-		ClientOrderId: "12345",
+		ClientOrderId: "12346",
 		StdSymbol:     "BTC_USDT",
 		Volume:        "0.01",
 		Price:         "12000",
@@ -62,7 +63,7 @@ func testCancelOrder() {
 	rsp, err := o.CancelOrder(context.Background(), &opu.CancelOrderReq{
 		AccountId:     "",
 		AccountAlias:  "FTX_MCA_OTC_TRADING",
-		ClientOrderId: "12345",
+		ClientOrderId: "12346",
 	})
 
 	if err != nil {
