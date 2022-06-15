@@ -131,7 +131,6 @@ func (o *opu) RegisterAccount(req *opupb.RegisterAccountReq) (*opupb.RegisterAcc
 	if err != nil {
 		return nil, err
 	}
-
 	secret, err := xencrypt.EncryptByAes(req.Secret)
 	if err != nil {
 		return nil, err
@@ -166,7 +165,7 @@ func (o *opu) RegisterAccount(req *opupb.RegisterAccountReq) (*opupb.RegisterAcc
 			AccountId: account.Id,
 		}, nil
 	case nil:
-		if key == account.Key && secret == req.Secret && passphrase == account.Passphrase {
+		if key == account.Key && secret == req.Secret && passphrase == account.Passphrase && req.SubAccountName == account.SubAccountName {
 			return &opupb.RegisterAccountRsp{
 				AccountId: account.Id,
 			}, nil
