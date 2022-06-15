@@ -71,9 +71,9 @@ func NewAccountModel(conn sqlx.SqlConn, c cache.CacheConf) AccountModel {
 }
 
 func (m *defaultAccountModel) Insert(data *Account) (sql.Result, error) {
+	accountIdKey := fmt.Sprintf("%s%v", cacheAccountIdPrefix, data.Id)
 	accountAliasKeyKey := fmt.Sprintf("%s%v:%v", cacheAccountAliasKeyPrefix, data.Alias, data.Key)
 	accountAliasKey := fmt.Sprintf("%s%v", cacheAccountAliasPrefix, data.Alias)
-	accountIdKey := fmt.Sprintf("%s%v", cacheAccountIdPrefix, data.Id)
 	ret, err := m.Exec(func(conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?)", m.table, accountRowsExpectAutoSet)
 		return conn.Exec(query, data.Id, data.Alias, data.Key, data.Secret, data.Passphrase, data.SubAccountName, data.Exchange)
@@ -85,9 +85,9 @@ func (m *defaultAccountModel) TxInsert(data *Account) func() (interface{}, error
 	keys := make([]string, 0)
 	args := []interface{}{data.Id, data.Alias, data.Key, data.Secret, data.Passphrase, data.SubAccountName, data.Exchange}
 	insertSql := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?)", m.table, accountRowsExpectAutoSet)
+	accountIdKey := fmt.Sprintf("%s%v", cacheAccountIdPrefix, data.Id)
 	accountAliasKeyKey := fmt.Sprintf("%s%v:%v", cacheAccountAliasKeyPrefix, data.Alias, data.Key)
 	accountAliasKey := fmt.Sprintf("%s%v", cacheAccountAliasPrefix, data.Alias)
-	accountIdKey := fmt.Sprintf("%s%v", cacheAccountIdPrefix, data.Id)
 	keys = append(keys, accountIdKey, accountAliasKeyKey, accountAliasKey)
 	return func() (interface{}, error) {
 		return &txPrepare_{
@@ -110,9 +110,9 @@ func (m *defaultAccountModel) BulkInsert(accounts []*Account) error {
 		placeHolders = make([]string, 0)
 	)
 	for _, data := range accounts {
+		accountIdKey := fmt.Sprintf("%s%v", cacheAccountIdPrefix, data.Id)
 		accountAliasKeyKey := fmt.Sprintf("%s%v:%v", cacheAccountAliasKeyPrefix, data.Alias, data.Key)
 		accountAliasKey := fmt.Sprintf("%s%v", cacheAccountAliasPrefix, data.Alias)
-		accountIdKey := fmt.Sprintf("%s%v", cacheAccountIdPrefix, data.Id)
 		keys = append(keys, accountIdKey, accountAliasKeyKey, accountAliasKey)
 		args = append(args, data.Id, data.Alias, data.Key, data.Secret, data.Passphrase, data.SubAccountName, data.Exchange)
 		placeHolders = append(placeHolders, "(?, ?, ?, ?, ?, ?, ?)")
@@ -139,9 +139,9 @@ func (m *defaultAccountModel) TxBulkInsert(accounts []*Account) func() (interfac
 		placeHolders = make([]string, 0)
 	)
 	for _, data := range accounts {
+		accountIdKey := fmt.Sprintf("%s%v", cacheAccountIdPrefix, data.Id)
 		accountAliasKeyKey := fmt.Sprintf("%s%v:%v", cacheAccountAliasKeyPrefix, data.Alias, data.Key)
 		accountAliasKey := fmt.Sprintf("%s%v", cacheAccountAliasPrefix, data.Alias)
-		accountIdKey := fmt.Sprintf("%s%v", cacheAccountIdPrefix, data.Id)
 		keys = append(keys, accountIdKey, accountAliasKeyKey, accountAliasKey)
 		args = append(args, data.Id, data.Alias, data.Key, data.Secret, data.Passphrase, data.SubAccountName, data.Exchange)
 		placeHolders = append(placeHolders, "(?, ?, ?, ?, ?, ?, ?)")
@@ -273,24 +273,24 @@ func (m *defaultAccountModel) FindOneByAlias(alias string) (*Account, error) {
 }
 
 func (m *defaultAccountModel) Update(data *Account, update func()) error {
+	accountIdKey := fmt.Sprintf("%s%v", cacheAccountIdPrefix, data.Id)
 	accountAliasKeyKey := fmt.Sprintf("%s%v:%v", cacheAccountAliasKeyPrefix, data.Alias, data.Key)
 	accountAliasKey := fmt.Sprintf("%s%v", cacheAccountAliasPrefix, data.Alias)
-	accountIdKey := fmt.Sprintf("%s%v", cacheAccountIdPrefix, data.Id)
 	update()
 	_, err := m.Exec(func(conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, accountRowsWithPlaceHolder)
 		return conn.Exec(query, data.Alias, data.Key, data.Secret, data.Passphrase, data.SubAccountName, data.Exchange, data.Id)
-	}, accountAliasKey, accountIdKey, accountAliasKeyKey)
+	}, accountIdKey, accountAliasKeyKey, accountAliasKey)
 	return err
 }
 
 func (m *defaultAccountModel) TxUpdate(data *Account, update func()) func() (interface{}, error) {
 	keys := make([]string, 0)
 	insertSql := fmt.Sprintf("update %s set %s where `id` = ?", m.table, accountRowsWithPlaceHolder)
+	accountIdKey := fmt.Sprintf("%s%v", cacheAccountIdPrefix, data.Id)
 	accountAliasKeyKey := fmt.Sprintf("%s%v:%v", cacheAccountAliasKeyPrefix, data.Alias, data.Key)
 	accountAliasKey := fmt.Sprintf("%s%v", cacheAccountAliasPrefix, data.Alias)
-	accountIdKey := fmt.Sprintf("%s%v", cacheAccountIdPrefix, data.Id)
-	keys = append(keys, accountAliasKey, accountIdKey, accountAliasKeyKey)
+	keys = append(keys, accountIdKey, accountAliasKeyKey, accountAliasKey)
 	update()
 	args := []interface{}{data.Alias, data.Key, data.Secret, data.Passphrase, data.SubAccountName, data.Exchange, data.Id}
 	return func() (interface{}, error) {

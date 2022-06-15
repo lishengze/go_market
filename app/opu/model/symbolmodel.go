@@ -82,7 +82,7 @@ func (m *defaultSymbolModel) Insert(data *Symbol) (sql.Result, error) {
 	ret, err := m.Exec(func(conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, symbolRowsExpectAutoSet)
 		return conn.Exec(query, data.Id, data.Tp, data.ApiType, data.StdSymbol, data.ExFormat, data.BaseCurrency, data.QuoteCurrency, data.Exchange, data.VolumeScale, data.PriceScale, data.MinVolume, data.ContractSize)
-	}, symbolIdKey, symbolExFormatApiTypeExchangeKey, symbolStdSymbolExchangeKey)
+	}, symbolStdSymbolExchangeKey, symbolIdKey, symbolExFormatApiTypeExchangeKey)
 	return ret, err
 }
 
@@ -93,7 +93,7 @@ func (m *defaultSymbolModel) TxInsert(data *Symbol) func() (interface{}, error) 
 	symbolIdKey := fmt.Sprintf("%s%v", cacheSymbolIdPrefix, data.Id)
 	symbolExFormatApiTypeExchangeKey := fmt.Sprintf("%s%v:%v:%v", cacheSymbolExFormatApiTypeExchangePrefix, data.ExFormat, data.ApiType, data.Exchange)
 	symbolStdSymbolExchangeKey := fmt.Sprintf("%s%v:%v", cacheSymbolStdSymbolExchangePrefix, data.StdSymbol, data.Exchange)
-	keys = append(keys, symbolIdKey, symbolExFormatApiTypeExchangeKey, symbolStdSymbolExchangeKey)
+	keys = append(keys, symbolStdSymbolExchangeKey, symbolIdKey, symbolExFormatApiTypeExchangeKey)
 	return func() (interface{}, error) {
 		return &txPrepare_{
 			sql:  insertSql,
@@ -118,7 +118,7 @@ func (m *defaultSymbolModel) BulkInsert(symbols []*Symbol) error {
 		symbolIdKey := fmt.Sprintf("%s%v", cacheSymbolIdPrefix, data.Id)
 		symbolExFormatApiTypeExchangeKey := fmt.Sprintf("%s%v:%v:%v", cacheSymbolExFormatApiTypeExchangePrefix, data.ExFormat, data.ApiType, data.Exchange)
 		symbolStdSymbolExchangeKey := fmt.Sprintf("%s%v:%v", cacheSymbolStdSymbolExchangePrefix, data.StdSymbol, data.Exchange)
-		keys = append(keys, symbolIdKey, symbolExFormatApiTypeExchangeKey, symbolStdSymbolExchangeKey)
+		keys = append(keys, symbolStdSymbolExchangeKey, symbolIdKey, symbolExFormatApiTypeExchangeKey)
 		args = append(args, data.Id, data.Tp, data.ApiType, data.StdSymbol, data.ExFormat, data.BaseCurrency, data.QuoteCurrency, data.Exchange, data.VolumeScale, data.PriceScale, data.MinVolume, data.ContractSize)
 		placeHolders = append(placeHolders, "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	}
@@ -147,7 +147,7 @@ func (m *defaultSymbolModel) TxBulkInsert(symbols []*Symbol) func() (interface{}
 		symbolIdKey := fmt.Sprintf("%s%v", cacheSymbolIdPrefix, data.Id)
 		symbolExFormatApiTypeExchangeKey := fmt.Sprintf("%s%v:%v:%v", cacheSymbolExFormatApiTypeExchangePrefix, data.ExFormat, data.ApiType, data.Exchange)
 		symbolStdSymbolExchangeKey := fmt.Sprintf("%s%v:%v", cacheSymbolStdSymbolExchangePrefix, data.StdSymbol, data.Exchange)
-		keys = append(keys, symbolIdKey, symbolExFormatApiTypeExchangeKey, symbolStdSymbolExchangeKey)
+		keys = append(keys, symbolStdSymbolExchangeKey, symbolIdKey, symbolExFormatApiTypeExchangeKey)
 		args = append(args, data.Id, data.Tp, data.ApiType, data.StdSymbol, data.ExFormat, data.BaseCurrency, data.QuoteCurrency, data.Exchange, data.VolumeScale, data.PriceScale, data.MinVolume, data.ContractSize)
 		placeHolders = append(placeHolders, "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	}
@@ -278,9 +278,9 @@ func (m *defaultSymbolModel) FindOneByStdSymbolExchange(stdSymbol string, exchan
 }
 
 func (m *defaultSymbolModel) Update(data *Symbol, update func()) error {
+	symbolIdKey := fmt.Sprintf("%s%v", cacheSymbolIdPrefix, data.Id)
 	symbolExFormatApiTypeExchangeKey := fmt.Sprintf("%s%v:%v:%v", cacheSymbolExFormatApiTypeExchangePrefix, data.ExFormat, data.ApiType, data.Exchange)
 	symbolStdSymbolExchangeKey := fmt.Sprintf("%s%v:%v", cacheSymbolStdSymbolExchangePrefix, data.StdSymbol, data.Exchange)
-	symbolIdKey := fmt.Sprintf("%s%v", cacheSymbolIdPrefix, data.Id)
 	update()
 	_, err := m.Exec(func(conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, symbolRowsWithPlaceHolder)
@@ -292,9 +292,9 @@ func (m *defaultSymbolModel) Update(data *Symbol, update func()) error {
 func (m *defaultSymbolModel) TxUpdate(data *Symbol, update func()) func() (interface{}, error) {
 	keys := make([]string, 0)
 	insertSql := fmt.Sprintf("update %s set %s where `id` = ?", m.table, symbolRowsWithPlaceHolder)
+	symbolIdKey := fmt.Sprintf("%s%v", cacheSymbolIdPrefix, data.Id)
 	symbolExFormatApiTypeExchangeKey := fmt.Sprintf("%s%v:%v:%v", cacheSymbolExFormatApiTypeExchangePrefix, data.ExFormat, data.ApiType, data.Exchange)
 	symbolStdSymbolExchangeKey := fmt.Sprintf("%s%v:%v", cacheSymbolStdSymbolExchangePrefix, data.StdSymbol, data.Exchange)
-	symbolIdKey := fmt.Sprintf("%s%v", cacheSymbolIdPrefix, data.Id)
 	keys = append(keys, symbolIdKey, symbolExFormatApiTypeExchangeKey, symbolStdSymbolExchangeKey)
 	update()
 	args := []interface{}{data.Tp, data.ApiType, data.StdSymbol, data.ExFormat, data.BaseCurrency, data.QuoteCurrency, data.Exchange, data.VolumeScale, data.PriceScale, data.MinVolume, data.ContractSize, data.Id}
@@ -313,9 +313,9 @@ func (m *defaultSymbolModel) Delete(id string) error {
 		return err
 	}
 
-	symbolExFormatApiTypeExchangeKey := fmt.Sprintf("%s%v:%v:%v", cacheSymbolExFormatApiTypeExchangePrefix, data.ExFormat, data.ApiType, data.Exchange)
 	symbolStdSymbolExchangeKey := fmt.Sprintf("%s%v:%v", cacheSymbolStdSymbolExchangePrefix, data.StdSymbol, data.Exchange)
 	symbolIdKey := fmt.Sprintf("%s%v", cacheSymbolIdPrefix, id)
+	symbolExFormatApiTypeExchangeKey := fmt.Sprintf("%s%v:%v:%v", cacheSymbolExFormatApiTypeExchangePrefix, data.ExFormat, data.ApiType, data.Exchange)
 	_, err = m.Exec(func(conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
 		return conn.Exec(query, id)
@@ -330,9 +330,9 @@ func (m *defaultSymbolModel) TxDelete(id string) func() (interface{}, error) {
 			return nil, err
 		}
 	}
-	symbolExFormatApiTypeExchangeKey := fmt.Sprintf("%s%v:%v:%v", cacheSymbolExFormatApiTypeExchangePrefix, data.ExFormat, data.ApiType, data.Exchange)
 	symbolStdSymbolExchangeKey := fmt.Sprintf("%s%v:%v", cacheSymbolStdSymbolExchangePrefix, data.StdSymbol, data.Exchange)
 	symbolIdKey := fmt.Sprintf("%s%v", cacheSymbolIdPrefix, id)
+	symbolExFormatApiTypeExchangeKey := fmt.Sprintf("%s%v:%v:%v", cacheSymbolExFormatApiTypeExchangePrefix, data.ExFormat, data.ApiType, data.Exchange)
 	deleteSql := fmt.Sprintf("delete from %s where `id` = ?", m.table)
 	args := []interface{}{id}
 	keys := make([]string, 0)

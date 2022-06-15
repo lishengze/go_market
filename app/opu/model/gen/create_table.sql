@@ -37,7 +37,6 @@ CREATE TABLE IF NOT EXISTS `order`
     `reject_reason`   TEXT        NOT NULL COMMENT 'reject_reason',
     `send_flag`       VARCHAR(16) NOT NULL DEFAULT 'UNSENT' COMMENT 'send_flag,表示订单是否发送至交易所 UNSENT|SENT',
     `cancel_flag`     VARCHAR(16) NOT NULL DEFAULT 'UNSET' COMMENT 'cancel_flag,表示客户是否下达撤单指令 UNSET|SET',
-    `last_sync_time`  DATETIME(6) NULL     DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'last_sync_time,上次和交易所同步状态的时间',
     `create_time`     DATETIME(6) NULL     DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
     `update_time`     DATETIME(6) NULL     DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
     PRIMARY KEY (`id`),

@@ -79,7 +79,7 @@ func (m *defaultTradeModel) Insert(data *Trade) (sql.Result, error) {
 	ret, err := m.Exec(func(conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tradeRowsExpectAutoSet)
 		return conn.Exec(query, data.Id, data.OrderId, data.ExTradeId, data.Exchange, data.StdSymbol, data.Liquidity, data.Side, data.Volume, data.Price, data.Fee, data.FeeCurrency, data.TradeTime)
-	}, tradeOrderIdExTradeIdKey, tradeIdKey)
+	}, tradeIdKey, tradeOrderIdExTradeIdKey)
 	return ret, err
 }
 
@@ -89,7 +89,7 @@ func (m *defaultTradeModel) TxInsert(data *Trade) func() (interface{}, error) {
 	insertSql := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tradeRowsExpectAutoSet)
 	tradeIdKey := fmt.Sprintf("%s%v", cacheTradeIdPrefix, data.Id)
 	tradeOrderIdExTradeIdKey := fmt.Sprintf("%s%v:%v", cacheTradeOrderIdExTradeIdPrefix, data.OrderId, data.ExTradeId)
-	keys = append(keys, tradeOrderIdExTradeIdKey, tradeIdKey)
+	keys = append(keys, tradeIdKey, tradeOrderIdExTradeIdKey)
 	return func() (interface{}, error) {
 		return &txPrepare_{
 			sql:  insertSql,
@@ -113,7 +113,7 @@ func (m *defaultTradeModel) BulkInsert(trades []*Trade) error {
 	for _, data := range trades {
 		tradeIdKey := fmt.Sprintf("%s%v", cacheTradeIdPrefix, data.Id)
 		tradeOrderIdExTradeIdKey := fmt.Sprintf("%s%v:%v", cacheTradeOrderIdExTradeIdPrefix, data.OrderId, data.ExTradeId)
-		keys = append(keys, tradeOrderIdExTradeIdKey, tradeIdKey)
+		keys = append(keys, tradeIdKey, tradeOrderIdExTradeIdKey)
 		args = append(args, data.Id, data.OrderId, data.ExTradeId, data.Exchange, data.StdSymbol, data.Liquidity, data.Side, data.Volume, data.Price, data.Fee, data.FeeCurrency, data.TradeTime)
 		placeHolders = append(placeHolders, "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	}
@@ -141,7 +141,7 @@ func (m *defaultTradeModel) TxBulkInsert(trades []*Trade) func() (interface{}, e
 	for _, data := range trades {
 		tradeIdKey := fmt.Sprintf("%s%v", cacheTradeIdPrefix, data.Id)
 		tradeOrderIdExTradeIdKey := fmt.Sprintf("%s%v:%v", cacheTradeOrderIdExTradeIdPrefix, data.OrderId, data.ExTradeId)
-		keys = append(keys, tradeOrderIdExTradeIdKey, tradeIdKey)
+		keys = append(keys, tradeIdKey, tradeOrderIdExTradeIdKey)
 		args = append(args, data.Id, data.OrderId, data.ExTradeId, data.Exchange, data.StdSymbol, data.Liquidity, data.Side, data.Volume, data.Price, data.Fee, data.FeeCurrency, data.TradeTime)
 		placeHolders = append(placeHolders, "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	}
@@ -285,8 +285,8 @@ func (m *defaultTradeModel) Delete(id string) error {
 		return err
 	}
 
-	tradeIdKey := fmt.Sprintf("%s%v", cacheTradeIdPrefix, id)
 	tradeOrderIdExTradeIdKey := fmt.Sprintf("%s%v:%v", cacheTradeOrderIdExTradeIdPrefix, data.OrderId, data.ExTradeId)
+	tradeIdKey := fmt.Sprintf("%s%v", cacheTradeIdPrefix, id)
 	_, err = m.Exec(func(conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
 		return conn.Exec(query, id)
@@ -301,8 +301,8 @@ func (m *defaultTradeModel) TxDelete(id string) func() (interface{}, error) {
 			return nil, err
 		}
 	}
-	tradeIdKey := fmt.Sprintf("%s%v", cacheTradeIdPrefix, id)
 	tradeOrderIdExTradeIdKey := fmt.Sprintf("%s%v:%v", cacheTradeOrderIdExTradeIdPrefix, data.OrderId, data.ExTradeId)
+	tradeIdKey := fmt.Sprintf("%s%v", cacheTradeIdPrefix, id)
 	deleteSql := fmt.Sprintf("delete from %s where `id` = ?", m.table)
 	args := []interface{}{id}
 	keys := make([]string, 0)

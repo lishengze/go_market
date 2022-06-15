@@ -24,7 +24,10 @@ func main() {
 	subUpdate()
 
 	//testRegisterAccount()
-	testGetBalance()
+	//testGetBalance()
+	testPlaceOrder()
+
+	select {}
 }
 
 func getOpu(address string) opu.Opu {
@@ -35,7 +38,7 @@ func getOpu(address string) opu.Opu {
 	return opu.NewOpu(client)
 }
 
-func placeOrder() {
+func testPlaceOrder() {
 	rsp, err := o.PlaceOrder(context.Background(), &opu.PlaceOrderReq{
 		AccountId:     "",
 		AccountAlias:  "FTX_MCA_OTC_TRADING",
