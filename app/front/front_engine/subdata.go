@@ -105,7 +105,7 @@ func (s *SubData) UpdateKlineCacheData(kline *datastruct.Kline) {
 	} else {
 		cache_kline := s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].cache_data
 
-		if kline.Time-cache_kline.Time >= int64(kline.Resolution*1000000000) {
+		if kline.Time-cache_kline.Time >= int64(kline.Resolution) {
 			s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].cache_data = kline
 		}
 	}
@@ -126,7 +126,7 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 	for resolution, sub_info := range s.KlineInfo.Info[kline.Symbol] {
 		cache_kline := sub_info.cache_data
 
-		if kline.Time-cache_kline.Time >= int64(resolution*1000000000) {
+		if kline.Time-cache_kline.Time >= int64(resolution) {
 			s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].cache_data = kline
 			is_updated = true
 		}
@@ -160,12 +160,6 @@ func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 	if _, ok := s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)]; !ok {
 
 		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data = last_kline
-	} else {
-		cache_kline := s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data
-
-		if last_kline.Time-cache_kline.Time >= int64(hist_kline.ReqInfo.Frequency*1000000000) {
-			s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data = last_kline
-		}
 	}
 
 }
