@@ -314,7 +314,7 @@ func (m *defaultAccountModel) Delete(id string) error {
 	_, err = m.Exec(func(conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
 		return conn.Exec(query, id)
-	}, accountIdKey, accountAliasKeyKey, accountAliasKey)
+	}, accountAliasKey, accountIdKey, accountAliasKeyKey)
 	return err
 }
 
@@ -331,7 +331,7 @@ func (m *defaultAccountModel) TxDelete(id string) func() (interface{}, error) {
 	deleteSql := fmt.Sprintf("delete from %s where `id` = ?", m.table)
 	args := []interface{}{id}
 	keys := make([]string, 0)
-	keys = append(keys, accountIdKey, accountAliasKeyKey, accountAliasKey)
+	keys = append(keys, accountAliasKey, accountIdKey, accountAliasKeyKey)
 
 	return func() (interface{}, error) {
 		return &txPrepare_{

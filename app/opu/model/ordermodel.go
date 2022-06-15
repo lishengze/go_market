@@ -65,7 +65,6 @@ type (
 		ExSymbol      string    `db:"ex_symbol"`       // ex_symbol
 		Exchange      string    `db:"exchange"`        // exchange
 		RejectReason  string    `db:"reject_reason"`   // reject_reason
-		SendFlag      string    `db:"send_flag"`       // send_flag,表示订单是否发送至交易所 UNSENT|SENT
 		CancelFlag    string    `db:"cancel_flag"`     // cancel_flag,表示客户是否下达撤单指令 UNSET|SET
 		CreateTime    time.Time `db:"create_time"`     // 创建时间
 		UpdateTime    time.Time `db:"update_time"`     // 更新时间
@@ -83,16 +82,16 @@ func (m *defaultOrderModel) Insert(data *Order) (sql.Result, error) {
 	orderIdKey := fmt.Sprintf("%s%v", cacheOrderIdPrefix, data.Id)
 	orderAccountIdClientOrderIdKey := fmt.Sprintf("%s%v:%v", cacheOrderAccountIdClientOrderIdPrefix, data.AccountId, data.ClientOrderId)
 	ret, err := m.Exec(func(conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, orderRowsExpectAutoSet)
-		return conn.Exec(query, data.Id, data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.SendFlag, data.CancelFlag)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, orderRowsExpectAutoSet)
+		return conn.Exec(query, data.Id, data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.CancelFlag)
 	}, orderIdKey, orderAccountIdClientOrderIdKey)
 	return ret, err
 }
 
 func (m *defaultOrderModel) TxInsert(data *Order) func() (interface{}, error) {
 	keys := make([]string, 0)
-	args := []interface{}{data.Id, data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.SendFlag, data.CancelFlag}
-	insertSql := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, orderRowsExpectAutoSet)
+	args := []interface{}{data.Id, data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.CancelFlag}
+	insertSql := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, orderRowsExpectAutoSet)
 	orderIdKey := fmt.Sprintf("%s%v", cacheOrderIdPrefix, data.Id)
 	orderAccountIdClientOrderIdKey := fmt.Sprintf("%s%v:%v", cacheOrderAccountIdClientOrderIdPrefix, data.AccountId, data.ClientOrderId)
 	keys = append(keys, orderIdKey, orderAccountIdClientOrderIdKey)
@@ -120,8 +119,8 @@ func (m *defaultOrderModel) BulkInsert(orders []*Order) error {
 		orderIdKey := fmt.Sprintf("%s%v", cacheOrderIdPrefix, data.Id)
 		orderAccountIdClientOrderIdKey := fmt.Sprintf("%s%v:%v", cacheOrderAccountIdClientOrderIdPrefix, data.AccountId, data.ClientOrderId)
 		keys = append(keys, orderIdKey, orderAccountIdClientOrderIdKey)
-		args = append(args, data.Id, data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.SendFlag, data.CancelFlag)
-		placeHolders = append(placeHolders, "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+		args = append(args, data.Id, data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.CancelFlag)
+		placeHolders = append(placeHolders, "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	}
 
 	insertSql += strings.Join(placeHolders, ",")
@@ -148,8 +147,8 @@ func (m *defaultOrderModel) TxBulkInsert(orders []*Order) func() (interface{}, e
 		orderIdKey := fmt.Sprintf("%s%v", cacheOrderIdPrefix, data.Id)
 		orderAccountIdClientOrderIdKey := fmt.Sprintf("%s%v:%v", cacheOrderAccountIdClientOrderIdPrefix, data.AccountId, data.ClientOrderId)
 		keys = append(keys, orderIdKey, orderAccountIdClientOrderIdKey)
-		args = append(args, data.Id, data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.SendFlag, data.CancelFlag)
-		placeHolders = append(placeHolders, "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+		args = append(args, data.Id, data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.CancelFlag)
+		placeHolders = append(placeHolders, "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	}
 
 	insertSql += strings.Join(placeHolders, ",")
@@ -263,7 +262,7 @@ func (m *defaultOrderModel) Update(data *Order, update func()) error {
 	update()
 	_, err := m.Exec(func(conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, orderRowsWithPlaceHolder)
-		return conn.Exec(query, data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.SendFlag, data.CancelFlag, data.Id)
+		return conn.Exec(query, data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.CancelFlag, data.Id)
 	}, orderIdKey, orderAccountIdClientOrderIdKey)
 	return err
 }
@@ -275,7 +274,7 @@ func (m *defaultOrderModel) TxUpdate(data *Order, update func()) func() (interfa
 	orderAccountIdClientOrderIdKey := fmt.Sprintf("%s%v:%v", cacheOrderAccountIdClientOrderIdPrefix, data.AccountId, data.ClientOrderId)
 	keys = append(keys, orderIdKey, orderAccountIdClientOrderIdKey)
 	update()
-	args := []interface{}{data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.SendFlag, data.CancelFlag, data.Id}
+	args := []interface{}{data.AccountId, data.AccountAlias, data.ClientOrderId, data.ExOrderId, data.ApiType, data.Side, data.Status, data.Volume, data.FilledVolume, data.Price, data.Tp, data.StdSymbol, data.ExSymbol, data.Exchange, data.RejectReason, data.CancelFlag, data.Id}
 	return func() (interface{}, error) {
 		return &txPrepare_{
 			sql:  insertSql,

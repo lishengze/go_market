@@ -101,6 +101,7 @@ func (o *orderManager) sendOrder() {
 		logx.Errorf("place order err:%s, req:%+v, order:%+v", err, req, o.order)
 		// todo 向交易所查询订单是否下单真的失败了
 		o.updateOrder("", "0", err.Error(), exmodel.OrderStatusRejected)
+		return
 	}
 }
 
@@ -164,7 +165,9 @@ func (o *orderManager) run() {
 				o.updateOrder(update.OrderId, update.FilledVolume, "", update.OrderStatus)
 			case exmodel.TradesUpdate:
 				feeCurrency := o.getFeeCurrency(update)
+				o.mutex.Lock() // 此处加锁
 				o.updateTrade(update.TradeId, update.Fee, feeCurrency, update.Volume, update.Price, update.Liquidity, update.TradeTime)
+				o.mutex.Unlock()
 			}
 		}
 	}
@@ -322,12 +325,9 @@ func (o *orderManager) updateOrder(exOrderId, filledVolume, rejectReason string,
 	}
 }
 
-// updateTrade 更新成交, 需要获取锁
+// updateTrade 更新成交，此方法中未加锁
 func (o *orderManager) updateTrade(tradeId, fee, feeCurrency, volume, price string,
 	liquidity exmodel.Liquidity, tradeTime time.Time) {
-
-	defer o.mutex.Unlock()
-	o.mutex.Lock()
 
 	var m = map[string]struct{}{}
 	for _, t := range o.trades {

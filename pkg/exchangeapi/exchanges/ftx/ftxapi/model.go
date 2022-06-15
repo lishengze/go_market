@@ -183,19 +183,20 @@ type QueryTradesRsp struct {
 type WsFills struct {
 	Channel string `json:"channel"`
 	Data    struct {
-		Fee       float64   `json:"fee"`
-		FeeRate   float64   `json:"feeRate"`
-		Future    string    `json:"future"`
-		Id        int       `json:"id"`
-		Liquidity string    `json:"liquidity"`
-		Market    string    `json:"market"`
-		OrderId   int       `json:"orderId"`
-		TradeId   int       `json:"tradeId"`
-		Price     float64   `json:"price"`
-		Side      string    `json:"side"`
-		Size      float64   `json:"size"`
-		Time      time.Time `json:"time"`
-		Type      string    `json:"type"`
+		Fee           float64   `json:"fee"`
+		FeeRate       float64   `json:"feeRate"`
+		Future        string    `json:"future"`
+		Id            int       `json:"id"`
+		Liquidity     string    `json:"liquidity"`
+		Market        string    `json:"market"`
+		OrderId       int       `json:"orderId"`
+		TradeId       int       `json:"tradeId"`
+		ClientOrderId string    `json:"clientOrderId"`
+		Price         float64   `json:"price"`
+		Side          string    `json:"side"`
+		Size          float64   `json:"size"`
+		Time          time.Time `json:"time"`
+		Type          string    `json:"type"`
 	} `json:"data"`
 	Type string `json:"type"`
 }

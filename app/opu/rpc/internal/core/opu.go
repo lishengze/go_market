@@ -332,7 +332,6 @@ func (o *opu) PlaceOrder(req *opupb.PlaceOrderReq) (*opupb.EmptyRsp, error) {
 		Price:         req.Price,
 		Tp:            req.Type,
 		CancelFlag:    "UNSET",
-		SendFlag:      "UNSENT",
 		StdSymbol:     symbol.StdSymbol,
 		ExSymbol:      symbol.ExFormat,
 		Exchange:      o.exchange,

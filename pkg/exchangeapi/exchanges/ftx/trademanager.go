@@ -73,7 +73,10 @@ func (o *tradeManager) run() {
 				},
 				TradesUpdateInfo: nil,
 			}
-			o.outputUpdateCh <- update
+			// 延迟 50ms 再推送订单更新
+			time.AfterFunc(time.Millisecond*50, func() {
+				o.outputUpdateCh <- update
+			})
 		case data := <-tradeCh:
 			trade := data.(*ftxapi.WsFills)
 			if trade.Type == "subscribed" {
@@ -82,7 +85,7 @@ func (o *tradeManager) run() {
 			update := &exmodel.OrderTradesUpdate{
 				Type:            exmodel.TradesUpdate,
 				OrderId:         fmt.Sprint(trade.Data.OrderId),
-				ClientOrderId:   "",
+				ClientOrderId:   fmt.Sprint(trade.Data.ClientOrderId),
 				OrderUpdateInfo: nil,
 				TradesUpdateInfo: &exmodel.TradesUpdateInfo{
 					TradeId:     fmt.Sprint(trade.Data.TradeId),
