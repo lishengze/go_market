@@ -25,6 +25,6 @@ Mysql:
   DataSource: broker:devBroker321@tcp(10.8.91.149:3306)/opu?charset=utf8mb4&parseTime=true&loc=UTC
 
 Cache:
-  - Host: localhost:6380
+  - Host: 10.8.91.149:6380
 
 
