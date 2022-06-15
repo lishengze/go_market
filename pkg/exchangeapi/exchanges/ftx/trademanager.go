@@ -152,7 +152,7 @@ func (o *tradeManager) CancelOrder(req exmodel.CancelOrderReq) (*exmodel.CancelO
 }
 
 func (o *tradeManager) QueryOrder(req exmodel.QueryOrderReq) (*exmodel.Order, error) {
-	rsp, err := o.api.QueryOrder(req.OrderId)
+	rsp, err := o.api.QueryOrderByClientOrderId(req.ClientOrderId)
 	if err != nil {
 		logx.Error(err)
 		return nil, err

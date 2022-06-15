@@ -163,6 +163,18 @@ func (o *Api) QueryOrder(orderId string) (*QueryOrderRsp, error) {
 	return res, err
 }
 
+// QueryOrderByClientOrderId 根据客户订单id查单
+func (o *Api) QueryOrderByClientOrderId(clientOrderId string) (*QueryOrderRsp, error) {
+	var (
+		meta = extools.NewMetaWithOneWeight(http.MethodGet,
+			fmt.Sprintf("%s/by_client_id/%s", urlOrders, clientOrderId), extools.ReqTypeWait, true)
+		res = &QueryOrderRsp{}
+	)
+
+	err := o.base.Request(httptools.EmptyReq, &res, meta)
+	return res, err
+}
+
 // CancelOrder 撤单
 func (o *Api) CancelOrder(orderId string) (*CancelOrderRsp, error) {
 	var (

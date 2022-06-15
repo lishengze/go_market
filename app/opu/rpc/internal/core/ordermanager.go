@@ -215,9 +215,10 @@ func (o *orderManager) syncOrder() {
 	order, err := account.TradeManager.QueryOrder(req)
 	if err != nil {
 		logx.Errorf("queryOrder err:%s, req:%+v, order:%+v", err, req, o.order)
-		o.updateOrder(order.OrderId, order.FilledVolume, "", order.Status)
+		return
 	}
 
+	o.updateOrder(order.OrderId, order.FilledVolume, "", order.Status)
 }
 
 // inputUpdate 把订单的更新传给 orderManager
