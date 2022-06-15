@@ -15,18 +15,18 @@ Log:
   StackCooldownMillis: 100
 
 KafkaConf:
-  Address: "10.8.154.126:9117"
+  Address: "10.10.1.45:9092"
 
 NacosConf:
   DataId: "MPU"
   Group: "MPU_GROUP"
   Server:
-    - Host: "10.8.78.83"
+    - Host: "10.10.1.45"
       Port: 8848
   Client:
     NamespaceId: "exterior-interactor"
     TimeoutMs: 5000
     CacheDir: "./log/ftx/nacos/"
     LogDir: "./log/ftx/nacoscache/"
-    LogLevel: "debug"
+    LogLevel: "warn"
 
