@@ -43,8 +43,8 @@ func newOrderManager(getAccountManagerFn func(order *model.Order) (*accountManag
 		mutex:               sync.Mutex{},
 	}
 
-	om.sendOrder() // 发送订单
-
+	om.outputOrderUpdate()
+	go om.sendOrder() // 发送订单
 	go om.run()
 	go om.startStatusHeartBeat()
 

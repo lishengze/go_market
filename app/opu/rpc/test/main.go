@@ -21,14 +21,16 @@ const (
 var o = getOpu(opuAddress)
 
 func main() {
-	//subUpdate()
+	subUpdate()
 
 	//testRegisterAccount()
-	testGetBalance()
+	//testGetBalance()
 
 	//testPlaceOrder()
 
-	//testCancelOrder()
+	testCancelOrder()
+
+	//testQueryOrder()
 
 	select {}
 }
@@ -45,12 +47,26 @@ func testPlaceOrder() {
 	rsp, err := o.PlaceOrder(context.Background(), &opu.PlaceOrderReq{
 		AccountId:     "",
 		AccountAlias:  "FTX_MCA_OTC_TRADING",
-		ClientOrderId: "12348",
+		ClientOrderId: "12351",
 		StdSymbol:     "ETH_USDT",
-		Volume:        "0.01",
-		Price:         "1150",
+		Volume:        "0.005",
+		Price:         "850",
 		Type:          "LIMIT",
 		Side:          "BUY",
+	})
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println(rsp)
+}
+
+func testQueryOrder() {
+	rsp, err := o.QueryOrder(context.Background(), &opu.QueryOrderReq{
+		AccountId:     "",
+		AccountAlias:  "FTX_MCA_OTC_TRADING",
+		ClientOrderId: "12351",
 	})
 
 	if err != nil {
@@ -64,7 +80,7 @@ func testCancelOrder() {
 	rsp, err := o.CancelOrder(context.Background(), &opu.CancelOrderReq{
 		AccountId:     "",
 		AccountAlias:  "FTX_MCA_OTC_TRADING",
-		ClientOrderId: "12348",
+		ClientOrderId: "12351",
 	})
 
 	if err != nil {

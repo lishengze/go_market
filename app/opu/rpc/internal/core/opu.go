@@ -369,7 +369,7 @@ func (o *opu) CancelOrder(req *opupb.CancelOrderReq) (*opupb.EmptyRsp, error) {
 
 	om, ok := o.unClosedOrdersMap.Load(order.Id)
 	if ok {
-		om.(*orderManager).cancelOrder() // 撤单
+		go om.(*orderManager).cancelOrder() // 撤单
 		return &opupb.EmptyRsp{}, nil
 	}
 
