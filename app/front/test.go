@@ -55,14 +55,14 @@ func TestEngine() {
 func StartTest(svr *server.ServerEngine) {
 	test_map := make(map[string]struct{})
 	// test_map[datastruct.KLINE_TYPE] = struct{}{}
-	// test_map[datastruct.TRADE_TYPE] = struct{}{}
-	test_map[datastruct.DEPTH_TYPE] = struct{}{}
+	test_map[datastruct.TRADE_TYPE] = struct{}{}
+	// test_map[datastruct.DEPTH_TYPE] = struct{}{}
 
 	logx.Statf("test_map: %+v \n", test_map)
 
 	go StartPublishTestData(svr.RecvDataChan, test_map)
 
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 4)
 
 	go StartSubTest(svr, test_map)
 }
@@ -73,9 +73,11 @@ func StartSubTest(svr *server.ServerEngine, test_map map[string]struct{}) {
 }
 
 func PubDepthTestData(depth_chan chan *datastruct.DepthQuote) {
-	timer := time.Tick(1 * time.Second)
+	timer := time.Tick(3 * time.Second)
 
 	symbols := []string{"BTC_USDT", "ETH_USDT", "USDT_USD"}
+
+	// symbols := []string{"BTC_USDT"}
 
 	for {
 		select {
@@ -88,7 +90,7 @@ func PubDepthTestData(depth_chan chan *datastruct.DepthQuote) {
 }
 
 func PubTradeTestData(trade_chan chan *datastruct.Trade) {
-	timer := time.Tick(1 * time.Second)
+	timer := time.Tick(3 * time.Second)
 
 	symbols := []string{"BTC_USDT", "ETH_USDT", "USDT_USD"}
 
@@ -103,7 +105,7 @@ func PubTradeTestData(trade_chan chan *datastruct.Trade) {
 }
 
 func PubKlineTestData(kline_chan chan *datastruct.Kline) {
-	timer := time.Tick(1 * time.Second)
+	timer := time.Tick(3 * time.Second)
 
 	symbols := []string{"BTC_USDT", "ETH_USDT", "USDT_USD"}
 

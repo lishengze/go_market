@@ -116,6 +116,11 @@ type ReqHistKline struct {
 	Frequency uint32
 }
 
+func (r *ReqHistKline) String() string {
+	result := fmt.Sprintf("%s, count: %d, resolution: %d", r.Symbol, r.Count, r.Frequency)
+	return result
+}
+
 type RspHistKline struct {
 	ReqInfo *ReqHistKline
 	Klines  *treemap.Map

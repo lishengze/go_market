@@ -1,6 +1,7 @@
 package front_engine
 
 import (
+	"fmt"
 	"market_server/app/front/net"
 	"market_server/common/datastruct"
 	"market_server/common/util"
@@ -16,9 +17,17 @@ type DepthPubInfo struct {
 	data    *datastruct.DepthQuote
 }
 
+func (d *DepthPubInfo) String() string {
+	return fmt.Sprintf("ws_info: %s, depth: %s", d.ws_info.String(), d.data.String(3))
+}
+
 type SymbolPubInfo struct {
 	ws_info *net.WSInfo
 	data    []string
+}
+
+func (d *SymbolPubInfo) String() string {
+	return fmt.Sprintf("ws_info: %s, symbol_list: %+v", d.ws_info.String(), d.data)
 }
 
 type TradePubInfo struct {
@@ -26,14 +35,33 @@ type TradePubInfo struct {
 	data    *datastruct.Trade
 }
 
+func (d *TradePubInfo) String() string {
+	return fmt.Sprintf("ws_info: %s, trade: %s", d.ws_info.String(), d.data.String())
+}
+
 type KlinePubInfo struct {
 	ws_info *net.WSInfo
 	data    *datastruct.Kline
 }
 
+func (d *KlinePubInfo) String() string {
+	return fmt.Sprintf("ws_info: %s, kline: %s", d.ws_info.String(), d.data.String())
+}
+
 type SymbolSubInfo struct {
 	mutex   sync.Mutex
 	ws_info *treemap.Map
+}
+
+func (d *SymbolSubInfo) String() string {
+	rst := "SymbolSubInfo: "
+
+	iter := d.ws_info.Iterator()
+	for iter.Begin(); iter.Next(); {
+		rst = rst + fmt.Sprintf("ws: %d", iter.Key().(int64)) + ","
+	}
+
+	return rst
 }
 
 func NewSymbolSubInfo() *SymbolSubInfo {
@@ -45,6 +73,19 @@ func NewSymbolSubInfo() *SymbolSubInfo {
 type DepthSubInfo struct {
 	mutex sync.Mutex
 	Info  map[string]*treemap.Map
+}
+
+func (d *DepthSubInfo) String() string {
+	rst := "DepthSubInfo: "
+	for symbol, ws_map := range d.Info {
+		rst = rst + symbol + ":"
+
+		iter := ws_map.Iterator()
+		for iter.Begin(); iter.Next(); {
+			rst = rst + fmt.Sprintf("ws: %d", iter.Key().(int64)) + ","
+		}
+	}
+	return rst
 }
 
 func NewDepthSubInfo() *DepthSubInfo {
@@ -69,6 +110,23 @@ type KlineSubInfo struct {
 	Info  map[string](map[int]*KlineSubItem)
 }
 
+func (d *KlineSubInfo) String() string {
+	rst := "KlineSubInfo: "
+	for symbol, resolution_map := range d.Info {
+		rst = rst + symbol + ", "
+
+		for resolution, ws_map := range resolution_map {
+			rst = rst + fmt.Sprintf(", resolution: %d, ", resolution)
+			iter := ws_map.ws_info.Iterator()
+			for iter.Begin(); iter.Next(); {
+				rst = rst + fmt.Sprintf("ws: %d, ", iter.Key().(int64))
+			}
+		}
+
+	}
+	return rst
+}
+
 func NewKlineSubInfo() *KlineSubInfo {
 	return &KlineSubInfo{
 		Info: make(map[string](map[int]*KlineSubItem)),
@@ -78,6 +136,19 @@ func NewKlineSubInfo() *KlineSubInfo {
 type TradeSubInfo struct {
 	mutex sync.Mutex
 	Info  map[string]*treemap.Map
+}
+
+func (d *TradeSubInfo) String() string {
+	rst := "TradeSubInfo: "
+	for symbol, ws_map := range d.Info {
+		rst = rst + symbol + ":"
+
+		iter := ws_map.Iterator()
+		for iter.Begin(); iter.Next(); {
+			rst = rst + fmt.Sprintf("ws: %d, ", iter.Key().(int64))
+		}
+	}
+	return rst
 }
 
 func NewTradeSubInfo() *TradeSubInfo {
@@ -126,6 +197,8 @@ func (s *SubData) GetDepthPubInfoList(depth *datastruct.DepthQuote) []*DepthPubI
 	s.DepthInfo.mutex.Lock()
 	defer s.DepthInfo.mutex.Unlock()
 
+	logx.Statf("CurDepthSubInfo: %s", s.DepthInfo.String())
+
 	if sub_tree, ok := s.DepthInfo.Info[depth.Symbol]; ok {
 		sub_tree_iter := sub_tree.Iterator()
 		sub_tree_iter.Begin()
@@ -136,6 +209,8 @@ func (s *SubData) GetDepthPubInfoList(depth *datastruct.DepthQuote) []*DepthPubI
 			})
 
 		}
+	} else {
+		logx.Errorf("Depth Symobl: %s Not Subed!", depth.Symbol)
 	}
 
 	return rst
@@ -156,6 +231,8 @@ func (s *SubData) GetTradePubInfoList(trade *datastruct.Trade) []*TradePubInfo {
 				data:    trade,
 			})
 		}
+	} else {
+		logx.Errorf("Depth Symobl: %s Not Subed!", trade.Symbol)
 	}
 
 	return rst
@@ -271,6 +348,8 @@ func (s *SubData) SubSymbol(ws *net.WSInfo) {
 	if _, ok := s.SymbolInfo.ws_info.Get(ws.ID); !ok {
 		s.SymbolInfo.ws_info.Put(ws.ID, ws)
 	}
+
+	logx.Statf("After Sub %s, %s", ws.String(), s.SymbolInfo.String())
 }
 
 func (s *SubData) UnSubSymbol(ws *net.WSInfo) {
@@ -284,28 +363,6 @@ func (s *SubData) UnSubSymbol(ws *net.WSInfo) {
 	s.SymbolInfo.ws_info.Remove(ws.ID)
 }
 
-func (s *SubData) SubTrade(symbol string, ws *net.WSInfo) {
-	s.TradeInfo.mutex.Lock()
-	defer s.TradeInfo.mutex.Unlock()
-
-	if _, ok := s.TradeInfo.Info[symbol]; !ok {
-		s.TradeInfo.Info[symbol] = treemap.NewWith(utils.Int64Comparator)
-	}
-
-	s.TradeInfo.Info[symbol].Put(ws.ID, ws)
-}
-
-func (s *SubData) UnSubTrade(symbol string, ws *net.WSInfo) {
-	s.TradeInfo.mutex.Lock()
-	defer s.TradeInfo.mutex.Unlock()
-
-	if _, ok := s.TradeInfo.Info[symbol]; !ok {
-		return
-	}
-
-	s.TradeInfo.Info[symbol].Remove(ws.ID)
-}
-
 func (s *SubData) SubDepth(symbol string, ws *net.WSInfo) *datastruct.DepthQuote {
 	s.DepthInfo.mutex.Lock()
 	defer s.DepthInfo.mutex.Unlock()
@@ -315,6 +372,8 @@ func (s *SubData) SubDepth(symbol string, ws *net.WSInfo) *datastruct.DepthQuote
 	}
 
 	s.DepthInfo.Info[symbol].Put(ws.ID, ws)
+
+	logx.Statf("After Sub %s, %s, %s", symbol, ws.String(), s.DepthInfo.String())
 
 	return nil
 }
@@ -327,6 +386,30 @@ func (s *SubData) UnSubDepth(symbol string, ws *net.WSInfo) {
 	}
 
 	s.DepthInfo.Info[symbol].Remove(ws.ID)
+}
+
+func (s *SubData) SubTrade(symbol string, ws *net.WSInfo) {
+	s.TradeInfo.mutex.Lock()
+	defer s.TradeInfo.mutex.Unlock()
+
+	if _, ok := s.TradeInfo.Info[symbol]; !ok {
+		s.TradeInfo.Info[symbol] = treemap.NewWith(utils.Int64Comparator)
+	}
+
+	s.TradeInfo.Info[symbol].Put(ws.ID, ws)
+
+	logx.Statf("After Sub %s, %s, %s", symbol, ws.String(), s.TradeInfo.String())
+}
+
+func (s *SubData) UnSubTrade(symbol string, ws *net.WSInfo) {
+	s.TradeInfo.mutex.Lock()
+	defer s.TradeInfo.mutex.Unlock()
+
+	if _, ok := s.TradeInfo.Info[symbol]; !ok {
+		return
+	}
+
+	s.TradeInfo.Info[symbol].Remove(ws.ID)
 }
 
 func (s *SubData) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
@@ -344,6 +427,8 @@ func (s *SubData) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSIn
 	}
 
 	s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].ws_info.Put(ws.ID, ws)
+
+	logx.Statf("After Sub %s, %s,%s", req_kline_info.String(), ws.String(), s.KlineInfo.String())
 }
 
 func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {

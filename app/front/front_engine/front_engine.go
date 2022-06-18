@@ -39,7 +39,9 @@ func (f *FrontEngine) PublishSymbol(symbol_list []string, ws *net.WSInfo) {
 	} else {
 		symbol_pub_list := f.sub_data.GetSymbolPubInfoList(symbol_list)
 
-		logx.Statf("symbol_pub_list: %+v \n", symbol_pub_list)
+		for _, info := range symbol_pub_list {
+			logx.Statf("symbol_pub_info: %s \n", info.String())
+		}
 	}
 
 }
@@ -48,9 +50,14 @@ func (f *FrontEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo)
 	if ws != nil {
 
 	} else {
+
+		// logx.Statf("front depth: %s", depth.String(2))
+
 		depth_pub_list := f.sub_data.GetDepthPubInfoList(depth)
 
-		logx.Statf("depth_pub_list: %+v \n", depth_pub_list)
+		for _, info := range depth_pub_list {
+			logx.Infof("depth_pub_info: %s \n", info.String())
+		}
 	}
 
 }
@@ -61,7 +68,9 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, ws *net.WSInfo) {
 	} else {
 		trade_pub_list := f.sub_data.GetTradePubInfoList(trade)
 
-		logx.Statf("trade_pub_list: %+v \n", trade_pub_list)
+		for _, info := range trade_pub_list {
+			logx.Infof("trade_pub_info: %s \n", info.String())
+		}
 	}
 
 }
@@ -72,7 +81,9 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 	} else {
 		kline_pub_list := f.sub_data.GetKlinePubInfoList(kline)
 
-		logx.Statf("kline_pub_list: %+v \n", kline_pub_list)
+		for _, info := range kline_pub_list {
+			logx.Infof("kline_pub_info: %s \n", info.String())
+		}
 	}
 
 }
