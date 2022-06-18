@@ -11,15 +11,11 @@ import (
 	"market_server/common/comm"
 	config "market_server/common/config"
 	"market_server/common/datastruct"
-	"market_server/common/pb"
 	"os"
+	"time"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/service"
-	"github.com/zeromicro/go-zero/zrpc"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 type ServerEngine struct {
@@ -119,7 +115,28 @@ func (s *ServerEngine) SetTestConfig() {
 }
 
 func (s *ServerEngine) Start() {
+	s.Commer.Start()
 
+	if !s.IsTest {
+		go s.StartNacosClient()
+	} else {
+		StartPublishTestData()
+	}
+}
+
+func StartPublishTestData(data_chan *datastruct.DataChannel) {
+	timer := time.Tick(1 * time.Second)
+
+	// index := 0
+	for {
+		select {
+		case <-timer:
+			// depth_quote := datastruct.GetTestDepth()
+			// index++
+			// RecvDataChan.DepthChannel <- depth_quote
+			data_chan.TradeChannel <- datastruct.GetTestTrade()
+		}
+	}
 }
 
 func TestEngine() {
@@ -148,20 +165,14 @@ func TestEngine() {
 	ctx := svc.NewServiceContext(c)
 	svr := NewServerEngine(ctx)
 
-	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
-		pb.RegisterMarketServiceServer(grpcServer, svr)
-
-		if c.Mode == service.DevMode || c.Mode == service.TestMode {
-			reflection.Register(grpcServer)
-		}
-	})
-	defer s.Stop()
-
-	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
-
+	svr.SetTestFlag(true)
 	svr.Start()
 
-	s.Start()
+	time.Sleep(time.Second * 3)
 
 	select {}
+}
+
+func StartSubTest() {
+
 }
