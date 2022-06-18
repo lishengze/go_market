@@ -36,9 +36,21 @@ type SymbolSubInfo struct {
 	ws_info *treemap.Map
 }
 
+func NewSymbolSubInfo() *SymbolSubInfo {
+	return &SymbolSubInfo{
+		ws_info: treemap.NewWith(utils.Int64Comparator),
+	}
+}
+
 type DepthSubInfo struct {
 	mutex sync.Mutex
 	Info  map[string]*treemap.Map
+}
+
+func NewDepthSubInfo() *DepthSubInfo {
+	return &DepthSubInfo{
+		Info: make(map[string]*treemap.Map),
+	}
 }
 
 type KlineSubItem struct {
@@ -46,14 +58,32 @@ type KlineSubItem struct {
 	cache_data *datastruct.Kline
 }
 
+func NewKlineWithKline() *KlineSubItem {
+	return &KlineSubItem{
+		ws_info: treemap.NewWith(utils.Int64Comparator),
+	}
+}
+
 type KlineSubInfo struct {
 	mutex sync.Mutex
 	Info  map[string](map[int]*KlineSubItem)
 }
 
+func NewKlineSubInfo() *KlineSubInfo {
+	return &KlineSubInfo{
+		Info: make(map[string](map[int]*KlineSubItem)),
+	}
+}
+
 type TradeSubInfo struct {
 	mutex sync.Mutex
 	Info  map[string]*treemap.Map
+}
+
+func NewTradeSubInfo() *TradeSubInfo {
+	return &TradeSubInfo{
+		Info: make(map[string]*treemap.Map),
+	}
 }
 
 type SubData struct {
@@ -64,7 +94,12 @@ type SubData struct {
 }
 
 func NewSubData() *SubData {
-	return nil
+	return &SubData{
+		SymbolInfo: NewSymbolSubInfo(),
+		DepthInfo:  NewDepthSubInfo(),
+		TradeInfo:  NewTradeSubInfo(),
+		KlineInfo:  NewKlineSubInfo(),
+	}
 }
 
 func (s *SubData) GetSymbolPubInfoList(symbollist []string) []*SymbolPubInfo {

@@ -7,7 +7,6 @@ import (
 	"context"
 
 	"market_server/app/dataManager/rpc/types/pb"
-	"market_server/common/datastruct"
 
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"

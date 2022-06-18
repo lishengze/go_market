@@ -168,8 +168,10 @@ func GetTestHistKline(req_kline_info *ReqHistKline) *RspHistKline {
 	klines := treemap.NewWith(utils.Int64Comparator)
 	cur_time := int64(0)
 
+	real_count := req_kline_info.Count * (req_kline_info.Frequency / SECS_PER_MIN)
+
 	if req_kline_info.Count != 0 {
-		for i := 0; i < int(req_kline_info.Count); i++ {
+		for i := 0; i < int(real_count); i++ {
 			cur_time += SECS_PER_MIN * NANO_PER_SECS
 
 			klines.Put(cur_time, &Kline{

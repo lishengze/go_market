@@ -85,6 +85,8 @@ func (k *KafkaServer) UpdateStatisticInfo() {
 
 	logx.Infof("Statistic Start: %+v \n", k.statistic_start)
 
+	// if k.rcv_statistic_info.
+
 	k.rcv_statistic_info.Range(k.OutputRcvInfo)
 
 	k.pub_statistic_info.Range(k.OutputPubInfo)

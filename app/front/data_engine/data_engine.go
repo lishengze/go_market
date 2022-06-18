@@ -14,7 +14,6 @@ import (
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/zrpc"
 )
 
 type DataEngine struct {
@@ -43,10 +42,16 @@ func NewDataEngine(recvDataChan *datastruct.DataChannel, config *config.Config) 
 		config:            config,
 		cache_period_data: make(map[string]*PeriodData),
 		cache_kline_data:  make(map[string]map[int]*treemap.Map),
-		msclient:          marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
+		// msclient:          marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
 	}
 
 	return rst
+}
+
+func (d *DataEngine) Start() {
+	logx.Infof("DataEngine Start!")
+
+	d.StartListenRecvdata()
 }
 
 func (d *DataEngine) SetNextWorker(next_worker worker.WorkerI) {
@@ -213,13 +218,15 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 		return datastruct.GetTestHistKline(req_kline_info)
 	}
 
+	rate := req_kline_info.Frequency / datastruct.SECS_PER_MIN
+
 	req_hist_info := &marketservice.ReqHishKlineInfo{
 		Symbol:    req_kline_info.Symbol,
 		Exchange:  req_kline_info.Exchange,
 		StartTime: req_kline_info.StartTime,
 		EndTime:   req_kline_info.EndTime,
-		Count:     req_kline_info.Count,
-		Frequency: req_kline_info.Frequency,
+		Count:     req_kline_info.Count * rate,
+		Frequency: datastruct.SECS_PER_MIN,
 	}
 
 	hist_klines, err := d.msclient.RequestHistKlineData(context.Background(), req_hist_info)

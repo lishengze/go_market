@@ -1,9 +1,7 @@
-package main
+package server
 
 import (
-	"flag"
 	"fmt"
-	fconfig "market_server/app/front/config"
 	"market_server/app/front/data_engine"
 	"market_server/app/front/front_engine"
 	"market_server/app/front/svc"
@@ -11,10 +9,7 @@ import (
 	"market_server/common/comm"
 	config "market_server/common/config"
 	"market_server/common/datastruct"
-	"os"
-	"time"
 
-	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -28,8 +23,8 @@ type ServerEngine struct {
 	HedgingConfigs    []*mkconfig.HedgingConfig
 	NacosClientWorker *config.NacosClient
 
-	FrontEngine *front_engine.FrontEngine
-	DataEngine  *data_engine.DataEngine
+	FrontEngineWorker *front_engine.FrontEngine
+	DataEngineWorker  *data_engine.DataEngine
 
 	IsTest bool
 }
@@ -41,6 +36,12 @@ func NewServerEngine(svcCtx *svc.ServiceContext) *ServerEngine {
 	s.RecvDataChan = datastruct.NewDataChannel()
 
 	s.PubDataChan = datastruct.NewDataChannel()
+
+	s.FrontEngineWorker = front_engine.NewFrontEngine(&svcCtx.Config)
+	s.DataEngineWorker = data_engine.NewDataEngine(s.RecvDataChan, &svcCtx.Config)
+
+	s.FrontEngineWorker.SetNextWorker(s.DataEngineWorker)
+	s.DataEngineWorker.SetNextWorker(s.FrontEngineWorker)
 
 	s.HedgingConfigs = nil
 	s.IsTest = false
@@ -109,70 +110,17 @@ func (s *ServerEngine) SetTestConfig() {
 	symbols := []string{"BTC_USDT", "ETH_USDT"}
 
 	meta_data := datastruct.GetTestMetadata(symbols)
-	logx.Infof("\\nmeta_data: %+v", meta_data)
+	logx.Infof("\\meta_data: %+v", meta_data)
 
-	s.Commer.UpdateMetaData(meta_data)
+	// s.Commer.UpdateMetaData(meta_data)
 }
 
 func (s *ServerEngine) Start() {
 	s.Commer.Start()
+	s.DataEngineWorker.Start()
+	s.FrontEngineWorker.Start()
 
 	if !s.IsTest {
 		go s.StartNacosClient()
-	} else {
-		StartPublishTestData()
 	}
-}
-
-func StartPublishTestData(data_chan *datastruct.DataChannel) {
-	timer := time.Tick(1 * time.Second)
-
-	// index := 0
-	for {
-		select {
-		case <-timer:
-			// depth_quote := datastruct.GetTestDepth()
-			// index++
-			// RecvDataChan.DepthChannel <- depth_quote
-			data_chan.TradeChannel <- datastruct.GetTestTrade()
-		}
-	}
-}
-
-func TestEngine() {
-	flag.Parse()
-
-	env := "local"
-
-	for _, v := range os.Args {
-		env = v
-	}
-
-	fmt.Printf("env: %+v \n", env)
-	var configFile = flag.String("f", "etc/"+env+"/marketData.yaml", "the config file")
-
-	fmt.Println(*configFile)
-
-	var c fconfig.Config
-	conf.MustLoad(*configFile, &c)
-
-	fmt.Printf("config: %+v \n", c)
-
-	logx.MustSetup(c.LogConfig)
-
-	logx.Infof("config: %+v \n", c)
-
-	ctx := svc.NewServiceContext(c)
-	svr := NewServerEngine(ctx)
-
-	svr.SetTestFlag(true)
-	svr.Start()
-
-	time.Sleep(time.Second * 3)
-
-	select {}
-}
-
-func StartSubTest() {
-
 }
