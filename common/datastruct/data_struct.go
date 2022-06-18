@@ -23,6 +23,9 @@ const (
 
 const (
 	NANO_PER_SECS = 1000000000
+	SECS_PER_MIN  = 60
+	MIN_PER_HOUR  = 60
+	HOUR_PER_DAY  = 24
 )
 
 type TestData struct {
@@ -168,6 +171,37 @@ func IsOldKlineEnd(kline *Kline, resolution int64) bool {
 	} else {
 		return false
 	}
+}
+
+func GetTestHistKline(req_kline_info *ReqHistKline) *RspHistKline {
+
+	klines := treemap.NewWith(utils.Int64Comparator)
+	cur_time := int64(0)
+
+	if req_kline_info.Count != 0 {
+		for i := 0; i < int(req_kline_info.Count); i++ {
+			cur_time += SECS_PER_MIN * NANO_PER_SECS
+
+			klines.Put(cur_time, &Kline{
+				Exchange:   req_kline_info.Exchange,
+				Symbol:     req_kline_info.Symbol,
+				Time:       cur_time,
+				Open:       float64(1000 + rand.Intn(100)),
+				High:       float64(1200 + rand.Intn(100)),
+				Low:        float64(800 + rand.Intn(100)),
+				Close:      float64(1000 + rand.Intn(100)),
+				Volume:     float64(rand.Intn(100)),
+				Resolution: SECS_PER_MIN,
+			})
+		}
+
+		return &RspHistKline{
+			ReqInfo: req_kline_info,
+			Klines:  klines,
+		}
+	}
+
+	return nil
 }
 
 func GetDepthString(m *treemap.Map, numb int) string {

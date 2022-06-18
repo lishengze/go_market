@@ -16,6 +16,11 @@ type DepthPubInfo struct {
 	data    *datastruct.DepthQuote
 }
 
+type SymbolPubInfo struct {
+	ws_info *net.WSInfo
+	data    []string
+}
+
 type TradePubInfo struct {
 	ws_info *net.WSInfo
 	data    *datastruct.Trade
@@ -24,6 +29,11 @@ type TradePubInfo struct {
 type KlinePubInfo struct {
 	ws_info *net.WSInfo
 	data    *datastruct.Kline
+}
+
+type SymbolSubInfo struct {
+	mutex   sync.Mutex
+	ws_info *treemap.Map
 }
 
 type DepthSubInfo struct {
@@ -47,13 +57,32 @@ type TradeSubInfo struct {
 }
 
 type SubData struct {
-	DepthInfo *DepthSubInfo
-	TradeInfo *TradeSubInfo
-	KlineInfo *KlineSubInfo
+	SymbolInfo *SymbolSubInfo
+	DepthInfo  *DepthSubInfo
+	TradeInfo  *TradeSubInfo
+	KlineInfo  *KlineSubInfo
 }
 
 func NewSubData() *SubData {
 	return nil
+}
+
+func (s *SubData) GetSymbolPubInfoList(symbollist []string) []*SymbolPubInfo {
+	var rst []*SymbolPubInfo
+
+	s.SymbolInfo.mutex.Lock()
+	defer s.SymbolInfo.mutex.Unlock()
+
+	iter := s.SymbolInfo.ws_info.Iterator()
+
+	for iter.Begin(); iter.Next(); {
+		rst = append(rst, &SymbolPubInfo{
+			ws_info: iter.Value().(*net.WSInfo),
+			data:    symbollist,
+		})
+	}
+
+	return rst
 }
 
 func (s *SubData) GetDepthPubInfoList(depth *datastruct.DepthQuote) []*DepthPubInfo {
@@ -198,6 +227,26 @@ func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data = last_kline
 	}
 
+}
+
+func (s *SubData) SubSymbol(ws *net.WSInfo) {
+	s.SymbolInfo.mutex.Lock()
+	defer s.SymbolInfo.mutex.Unlock()
+
+	if _, ok := s.SymbolInfo.ws_info.Get(ws.ID); !ok {
+		s.SymbolInfo.ws_info.Put(ws.ID, ws)
+	}
+}
+
+func (s *SubData) UnSubSymbol(ws *net.WSInfo) {
+	s.SymbolInfo.mutex.Lock()
+	defer s.SymbolInfo.mutex.Unlock()
+
+	if _, ok := s.SymbolInfo.ws_info.Get(ws.ID); !ok {
+		return
+	}
+
+	s.SymbolInfo.ws_info.Remove(ws.ID)
 }
 
 func (s *SubData) SubTrade(symbol string, ws *net.WSInfo) {

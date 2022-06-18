@@ -15,4 +15,5 @@ type Config struct {
 	Comm      comm_config.CommConfig
 	Cache     CacheConfig
 	LogConfig logx.LogConf
+	Nacos     comm_config.NacosConfig
 }

@@ -1,15 +1,38 @@
 package front_engine
 
 import (
+	"market_server/app/front/config"
 	"market_server/app/front/net"
 	"market_server/app/front/worker"
 	"market_server/common/datastruct"
 )
 
 type FrontEngine struct {
-	sub_data *SubData
-
+	sub_data    *SubData
 	next_worker worker.WorkerI
+	config      *config.Config
+}
+
+func NewFrontEngine(config *config.Config) *FrontEngine {
+
+	rst := &FrontEngine{
+		config: config,
+	}
+
+	return rst
+}
+
+func (f *FrontEngine) SetNextWorker(next_worker worker.WorkerI) {
+	f.next_worker = next_worker
+}
+
+func (f *FrontEngine) PublishSymbol(symbol_list []string, ws *net.WSInfo) {
+	if ws != nil {
+
+	} else {
+		// symbol_pub_list := f.sub_data.GetSymbolPubInfoList(symbol_list)
+	}
+
 }
 
 func (f *FrontEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo) {
@@ -47,7 +70,14 @@ func (f *FrontEngine) PublishHistKline(klines *datastruct.RspHistKline, ws *net.
 	// d.publish_kline(kline)
 	f.sub_data.ProcessKlineHistData(klines)
 
+	if ws != nil {
+
+	}
 	// publish his kline to client;
+}
+
+func (f *FrontEngine) SubSymbol(ws *net.WSInfo) {
+	f.sub_data.SubSymbol(ws)
 }
 
 func (f *FrontEngine) SubTrade(symbol string, ws *net.WSInfo) {

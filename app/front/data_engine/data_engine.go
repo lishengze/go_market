@@ -28,8 +28,12 @@ type DataEngine struct {
 	depth_cache_map sync.Map
 	trade_cache_map sync.Map
 
-	cache_period_data map[string]*PeriodData // 缓存24小时1分频率的 k 线数据，用来计算24小时的涨跌幅;
-	cache_kline_data  map[string](map[int]*treemap.Map)
+	cache_period_data       map[string]*PeriodData // 缓存24小时1分频率的 k 线数据，用来计算24小时的涨跌幅;
+	cache_period_data_mutex sync.Mutex
+
+	cache_kline_data map[string](map[int]*treemap.Map)
+
+	IsTest bool
 }
 
 func NewDataEngine(recvDataChan *datastruct.DataChannel, config *config.Config) *DataEngine {
@@ -38,10 +42,15 @@ func NewDataEngine(recvDataChan *datastruct.DataChannel, config *config.Config) 
 		RecvDataChan:      recvDataChan,
 		config:            config,
 		cache_period_data: make(map[string]*PeriodData),
+		cache_kline_data:  make(map[string]map[int]*treemap.Map),
 		msclient:          marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
 	}
 
 	return rst
+}
+
+func (d *DataEngine) SetNextWorker(next_worker worker.WorkerI) {
+	d.next_worker = next_worker
 }
 
 func (d *DataEngine) UpdateMeta(symbols []string) {
@@ -103,7 +112,7 @@ func (a *DataEngine) StartListenRecvdata() {
 }
 
 func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
-	depth.Time = depth.Time / 1000000000
+	depth.Time = depth.Time / datastruct.NANO_PER_SECS
 
 	d.depth_cache_map.Store(depth.Symbol, depth)
 
@@ -112,10 +121,13 @@ func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
 }
 
 func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
-	kline.Time = kline.Time / 1000000000
+	kline.Time = kline.Time / datastruct.NANO_PER_SECS
 
 	if _, ok := d.cache_period_data[kline.Symbol]; !ok {
 		d.InitPeriodDara(kline.Symbol)
+
+		symbol_list := d.get_symbol_list()
+		d.PublishSymbol(symbol_list, nil)
 	}
 
 	d.cache_period_data[kline.Symbol].UpdateWithKline(kline)
@@ -128,7 +140,7 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 }
 
 func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
-	trade.Time = trade.Time / 1000000000
+	trade.Time = trade.Time / datastruct.NANO_PER_SECS
 
 	d.trade_cache_map.Store(trade.Symbol, trade)
 
@@ -138,6 +150,27 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
 	d.PublishTrade(trade, nil)
 	return nil
+}
+
+func (d *DataEngine) get_symbol_list() []string {
+	d.cache_period_data_mutex.Lock()
+	defer d.cache_period_data_mutex.Unlock()
+
+	var rst []string
+	for key := range d.cache_period_data {
+		rst = append(rst, key)
+	}
+	return rst
+}
+
+func (d *DataEngine) SubSymbol(ws *net.WSInfo) {
+	symbol_list := d.get_symbol_list()
+
+	d.next_worker.PublishSymbol(symbol_list, ws)
+}
+
+func (d *DataEngine) PublishSymbol(symbol_list []string, ws *net.WSInfo) {
+	d.next_worker.PublishSymbol(symbol_list, ws)
 }
 
 func (d *DataEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo) {
@@ -153,7 +186,6 @@ func (d *DataEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 }
 
 func (d *DataEngine) PublishHistKline(kline *datastruct.RspHistKline, ws *net.WSInfo) {
-	// d.publish_kline(kline)
 	d.next_worker.PublishHistKline(kline, ws)
 }
 
@@ -176,6 +208,11 @@ func (d *DataEngine) SubDepth(symbol string, ws *net.WSInfo) {
 }
 
 func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
+
+	if d.IsTest {
+		return datastruct.GetTestHistKline(req_kline_info)
+	}
+
 	req_hist_info := &marketservice.ReqHishKlineInfo{
 		Symbol:    req_kline_info.Symbol,
 		Exchange:  req_kline_info.Exchange,
@@ -204,9 +241,11 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 
 	d.UpdateCacheKlinesWithHist(tmp)
 
+	trans_kline := d.TrasOriKlineData(req_kline_info, tmp)
+
 	return &datastruct.RspHistKline{
 		ReqInfo: req_kline_info,
-		Klines:  tmp,
+		Klines:  trans_kline,
 	}
 }
 
