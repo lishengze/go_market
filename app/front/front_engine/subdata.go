@@ -281,6 +281,11 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 	}
 
 	for resolution, sub_info := range s.KlineInfo.Info[kline.Symbol] {
+		if sub_info.cache_data == nil {
+			logx.Errorf("Hisk Kline %s, %d , cache_data empty", kline.Symbol, resolution)
+			continue
+		}
+
 		cache_kline := sub_info.cache_data
 
 		if kline.Time <= cache_kline.Time {
@@ -326,6 +331,8 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 
 func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 
+	logx.Statf("SubData: Hist: %s", datastruct.HistKlineString(hist_kline.Klines))
+
 	iter := hist_kline.Klines.Iterator()
 	iter.Last()
 	last_kline := iter.Value().(*datastruct.Kline)
@@ -336,7 +343,12 @@ func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 
 	if _, ok := s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)]; !ok {
 
-		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data = last_kline
+		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data = datastruct.NewKlineWithKline(last_kline)
+		logx.Statf("[Store] %s ", last_kline.String())
+	} else if s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data == nil {
+
+		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data = datastruct.NewKlineWithKline(last_kline)
+		logx.Statf("[Store] %s ", last_kline.String())
 	}
 
 }

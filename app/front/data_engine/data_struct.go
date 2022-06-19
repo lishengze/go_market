@@ -5,11 +5,14 @@
 package data_engine
 
 import (
+	"fmt"
 	"market_server/app/dataManager/rpc/marketservice"
 	"market_server/common/datastruct"
 	"sync"
+	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type AtomData struct {
@@ -99,6 +102,17 @@ type PeriodData struct {
 	mutex sync.Mutex
 }
 
+func (p *PeriodData) String() string {
+	return fmt.Sprintf("%s, Max: %f, MaxTime: %+v, Min: %f, MinTime: %+v, Change: %f", p.Symbol,
+		p.Max, time.Unix(int64(p.MaxTime/datastruct.NANO_PER_SECS), p.MaxTime%datastruct.NANO_PER_SECS),
+		p.Min, time.Unix(int64(p.MinTime/datastruct.NANO_PER_SECS), p.MinTime%datastruct.NANO_PER_SECS),
+		p.Change)
+}
+
+func NewPeriodData() *PeriodData {
+	return nil
+}
+
 func (p *PeriodData) UpdateWithTrade(trade *datastruct.Trade) {
 
 	p.UpdateMeta()
@@ -123,6 +137,8 @@ func (p *PeriodData) AddTradeData(trade *datastruct.Trade) {
 func (p *PeriodData) AddCacheData(kline *datastruct.Kline) {
 	p.mutex.Lock()
 
+	logx.Statf("[Add] Kline: %s", kline.String())
+
 	p.time_cache_data.Put(kline.Time, kline)
 
 	p.high_price_cache_data.Add(&AtomData{
@@ -144,13 +160,13 @@ func (p *PeriodData) EraseOuttimeData() {
 
 	defer p.mutex.Unlock()
 
-	type outtime_data struct {
-		time int64
-		high float64
-		low  float64
-	}
+	// type outtime_data struct {
+	// 	time int64
+	// 	high float64
+	// 	low  float64
+	// }
 
-	outtime_datalist := []*outtime_data{}
+	var outtime_datalist []*datastruct.Kline
 
 	begin_iter := p.time_cache_data.Iterator()
 	if ok := begin_iter.First(); !ok {
@@ -164,27 +180,23 @@ func (p *PeriodData) EraseOuttimeData() {
 
 	for begin_iter.Next() {
 		if last_iter.Key().(int64)-begin_iter.Key().(int64) > p.TimeNanos {
-
-			outtime_datalist = append(outtime_datalist, &outtime_data{
-				time: begin_iter.Key().(int64),
-				high: begin_iter.Value().(*datastruct.Kline).High,
-				low:  begin_iter.Value().(*datastruct.Kline).Low,
-			})
+			outtime_datalist = append(outtime_datalist, begin_iter.Value().(*datastruct.Kline))
 		} else {
 			break
 		}
 	}
 
 	for _, outtime := range outtime_datalist {
-		p.time_cache_data.Remove(outtime.time)
+		logx.Statf("[Erase] %s ", outtime.String())
+		p.time_cache_data.Remove(outtime.Time)
 
 		p.high_price_cache_data.Del(&AtomData{
-			price: outtime.high,
-			time:  outtime.time})
+			price: outtime.High,
+			time:  outtime.Time})
 
 		p.low_price_cache_data.Del(&AtomData{
-			price: outtime.low,
-			time:  outtime.time})
+			price: outtime.Low,
+			time:  outtime.Time})
 	}
 
 }
@@ -211,6 +223,47 @@ func (p *PeriodData) InitCacheData(klines *marketservice.HistKlineData) {
 			price: kline.Low,
 			time:  kline.Time})
 	}
+
+	iter := p.time_cache_data.Iterator()
+	if iter.First() {
+		logx.Statf("[Init]First : %s ", iter.Value().(*datastruct.Kline).String())
+	}
+
+	if iter.Last() {
+		logx.Statf("[Init]Last : %s ", iter.Value().(*datastruct.Kline).String())
+	}
+
+}
+
+func (p *PeriodData) InitCacheDataWithTreeMap(klines *treemap.Map) {
+
+	p.mutex.Lock()
+
+	defer p.mutex.Unlock()
+
+	iter := klines.Iterator()
+
+	for iter.Begin(); iter.Next(); {
+		kline := iter.Value().(*datastruct.Kline)
+
+		p.time_cache_data.Put(kline.Time, kline)
+
+		p.high_price_cache_data.Add(&AtomData{
+			price: kline.High,
+			time:  kline.Time})
+
+		p.low_price_cache_data.Add(&AtomData{
+			price: kline.Low,
+			time:  kline.Time})
+	}
+
+	if iter.First() {
+		logx.Statf("[Init] First: %s ", iter.Value().(*datastruct.Kline).String())
+	}
+
+	if iter.Last() {
+		logx.Statf("[Init] Last: %s ", iter.Value().(*datastruct.Kline).String())
+	}
 }
 
 func (p *PeriodData) UpdateMeta() {
@@ -231,7 +284,7 @@ func (p *PeriodData) UpdateMeta() {
 		p.Max = p.high_price_cache_data.Last().price
 		p.MaxTime = p.high_price_cache_data.Last().time
 
-		if p.CurTrade.Time > p.StartTime && p.Max < p.CurTrade.Price {
+		if p.CurTrade != nil && p.CurTrade.Time > p.StartTime && p.Max < p.CurTrade.Price {
 			p.Max = p.CurTrade.Price
 			p.MaxTime = p.CurTrade.Time
 		}
@@ -242,16 +295,31 @@ func (p *PeriodData) UpdateMeta() {
 	if p.low_price_cache_data.Size() > 0 {
 		p.Min = p.low_price_cache_data.Last().price
 		p.MinTime = p.low_price_cache_data.Last().time
+
+		if p.CurTrade != nil && p.CurTrade.Time > p.StartTime && p.Min > p.CurTrade.Price {
+			p.Min = p.CurTrade.Price
+			p.MinTime = p.CurTrade.Time
+		}
 	} else {
 		return
 	}
 
 	p.Change = (p.Max - p.Start) / p.Start
 	p.Count = p.time_cache_data.Size()
+
+	logx.Statf("[Meta] %s", p.String())
 }
 
 func (p *PeriodData) UpdateWithPbKlines(klines *marketservice.HistKlineData) {
 	p.InitCacheData(klines)
+
+	p.EraseOuttimeData()
+
+	p.UpdateMeta()
+}
+
+func (p *PeriodData) UpdateWithKlines(klines *treemap.Map) {
+	p.InitCacheDataWithTreeMap(klines)
 
 	p.EraseOuttimeData()
 

@@ -52,6 +52,8 @@ func NewServerEngine(svcCtx *svc.ServiceContext) *ServerEngine {
 
 func (s *ServerEngine) SetTestFlag(value bool) {
 	s.IsTest = value
+	s.DataEngineWorker.SetTestFlag(value)
+	s.FrontEngineWorker.SetTestFlag(value)
 }
 
 func (s *ServerEngine) StartNacosClient() {

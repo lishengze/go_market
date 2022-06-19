@@ -67,18 +67,18 @@ func TimeToExactMinute(t time.Time) time.Time {
 }
 
 func WaitForNextMinute() {
-	utc_time_secs := time.Now().Unix()
+	utc_time_nano_secs := time.Now().UnixNano()
 
-	utc_time_min_secs := TimeToExactMinute(time.Unix(utc_time_secs, 0)).Unix()
+	utc_time_min_nano_secs := TimeToExactMinute(time.Unix(utc_time_nano_secs/1e9, utc_time_nano_secs%1e9)).UnixNano()
 
-	delta_secs := utc_time_secs - utc_time_min_secs
+	delta_nano_secs := utc_time_nano_secs - utc_time_min_nano_secs
 
 	// fmt.Printf("\nutc_time_secs: %d, utc_time_min_secs: %d, delta_secs: %d\n",
 	// 	utc_time_secs, utc_time_min_secs, delta_secs)
 	// fmt.Println(time.Unix(utc_time_secs, 0))
 	// fmt.Println(time.Unix(utc_time_min_secs, 0))
 
-	time.Sleep(time.Duration(60-delta_secs) * time.Second)
+	time.Sleep(time.Duration(1e9*60-delta_nano_secs) * time.Nanosecond)
 }
 
 func TestTimeStr() {
@@ -103,3 +103,17 @@ func MaxFloat64(a float64, b float64) float64 {
 // func NanoTimeUInt64() uint64 {
 
 // }
+
+func TestUTCMinuteNano() {
+	t := TimeMinuteNanos()
+	t2 := time.Unix(int64(t/int64(time.Second)), t%int64(time.Second))
+
+	fmt.Printf("IntTime: %d, Time: %+v\n", t, t2)
+
+	WaitForNextMinute()
+
+	tt := UTCNanoTime()
+	tt2 := time.Unix(int64(tt/int64(time.Second)), tt%int64(time.Second))
+
+	fmt.Printf("IntTime: %d, Time: %+v\n", tt, tt2)
+}

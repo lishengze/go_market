@@ -14,6 +14,8 @@ type FrontEngine struct {
 	sub_data    *SubData
 	next_worker worker.WorkerI
 	config      *config.Config
+
+	IsTest bool
 }
 
 func NewFrontEngine(config *config.Config) *FrontEngine {
@@ -23,6 +25,10 @@ func NewFrontEngine(config *config.Config) *FrontEngine {
 		sub_data: NewSubData(),
 	}
 	return rst
+}
+
+func (f *FrontEngine) SetTestFlag(value bool) {
+	f.IsTest = value
 }
 
 func (f *FrontEngine) SetNextWorker(next_worker worker.WorkerI) {
@@ -79,10 +85,12 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 	if ws != nil {
 
 	} else {
+		logx.Statf("[PubKline]: %s", kline.String())
+
 		kline_pub_list := f.sub_data.GetKlinePubInfoList(kline)
 
 		for _, info := range kline_pub_list {
-			logx.Infof("kline_pub_info: %s \n", info.String())
+			logx.Statf("kline_pub_info: %s \n", info.String())
 		}
 	}
 
@@ -97,7 +105,7 @@ func (f *FrontEngine) PublishHistKline(klines *datastruct.RspHistKline, ws *net.
 	f.sub_data.ProcessKlineHistData(klines)
 
 	if ws != nil {
-		logx.Statf("rsp klines: %+v \n", klines)
+		// logx.Statf("rsp klines: %+v \n", klines)
 	}
 	// publish his kline to client;
 }
@@ -126,6 +134,7 @@ func (f *FrontEngine) UnSubDepth(symbol string, ws *net.WSInfo) {
 
 func (f *FrontEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
 	f.sub_data.SubKline(req_kline_info, ws)
+	f.next_worker.SubKline(req_kline_info, ws)
 }
 
 func (f *FrontEngine) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {

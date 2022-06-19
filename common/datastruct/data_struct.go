@@ -24,6 +24,15 @@ const (
 	SECS_PER_MIN  = 60
 	MIN_PER_HOUR  = 60
 	HOUR_PER_DAY  = 24
+
+	NANO_PER_MIN  = NANO_PER_SECS * SECS_PER_MIN
+	NANO_PER_HOUR = NANO_PER_MIN * MIN_PER_HOUR
+	NANO_PER_DAY  = NANO_PER_HOUR * HOUR_PER_DAY
+
+	SECS_PER_HOUR = SECS_PER_MIN * MIN_PER_HOUR
+	SECS_PER_DAY  = SECS_PER_HOUR * HOUR_PER_DAY
+
+	MIN_PER_DAY = MIN_PER_HOUR * HOUR_PER_DAY
 )
 
 type TestData struct {
@@ -146,6 +155,23 @@ func (k *Kline) String() string {
 	return res
 }
 
+func HistKlineString(hist_line *treemap.Map) string {
+
+	rst := fmt.Sprintf("HistKline, Size: %d, ", hist_line.Size())
+
+	iter := hist_line.Iterator()
+
+	if iter.First() {
+		rst = rst + fmt.Sprintf("First : %s ", iter.Value().(*Kline).String())
+	}
+
+	if iter.Last() {
+		rst = rst + fmt.Sprintf("Last : %s ", iter.Value().(*Kline).String())
+	}
+
+	return rst
+}
+
 func NewKlineWithKline(kline *Kline) *Kline {
 	return &Kline{
 		Exchange:   kline.Exchange,
@@ -161,6 +187,10 @@ func NewKlineWithKline(kline *Kline) *Kline {
 }
 
 func IsNewKlineStart(kline *Kline, resolution int64) bool {
+	if resolution < NANO_PER_SECS {
+		resolution = resolution * NANO_PER_SECS
+	}
+
 	if kline.Time%resolution == 0 {
 		return true
 	} else {
@@ -169,6 +199,10 @@ func IsNewKlineStart(kline *Kline, resolution int64) bool {
 }
 
 func IsOldKlineEnd(kline *Kline, resolution int64) bool {
+	if resolution < NANO_PER_SECS {
+		resolution = resolution * NANO_PER_SECS
+	}
+
 	if (int64(kline.Resolution)+kline.Time)%resolution == 0 {
 		return true
 	} else {

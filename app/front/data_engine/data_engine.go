@@ -42,6 +42,7 @@ func NewDataEngine(recvDataChan *datastruct.DataChannel, config *config.Config) 
 		config:            config,
 		cache_period_data: make(map[string]*PeriodData),
 		cache_kline_data:  make(map[string]map[int]*treemap.Map),
+		IsTest:            false,
 		// msclient:          marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
 	}
 
@@ -58,6 +59,10 @@ func (d *DataEngine) SetNextWorker(next_worker worker.WorkerI) {
 	d.next_worker = next_worker
 }
 
+func (d *DataEngine) SetTestFlag(value bool) {
+	d.IsTest = value
+}
+
 func (d *DataEngine) UpdateMeta(symbols []string) {
 	for _, symbol := range symbols {
 		if _, ok := d.cache_period_data[symbol]; !ok {
@@ -68,23 +73,41 @@ func (d *DataEngine) UpdateMeta(symbols []string) {
 
 func (a *DataEngine) InitPeriodDara(symbol string) {
 	a.cache_period_data[symbol] = &PeriodData{
-		TimeNanos:       24 * 60 * 60 * 1000000000,
-		Count:           0,
-		MaxTime:         0,
-		MinTime:         0,
-		time_cache_data: treemap.NewWith(utils.Int64Comparator),
+		Symbol:                symbol,
+		TimeNanos:             datastruct.NANO_PER_DAY,
+		Count:                 0,
+		MaxTime:               0,
+		MinTime:               0,
+		time_cache_data:       treemap.NewWith(utils.Int64Comparator),
+		high_price_cache_data: NewSortedList(true),
+		low_price_cache_data:  NewSortedList(false),
+	}
+
+	if a.IsTest {
+		req_hist_info := &datastruct.ReqHistKline{
+			Symbol:    symbol,
+			Exchange:  datastruct.BCTS_EXCHANGE,
+			Count:     datastruct.MIN_PER_DAY,
+			Frequency: datastruct.SECS_PER_MIN,
+		}
+
+		Klines := datastruct.GetTestHistKline(req_hist_info)
+
+		a.cache_period_data[symbol].UpdateWithKlines(Klines)
+
+		return
 	}
 
 	end_time_nanos := uint64(util.TimeMinuteNanos())
-	start_time_nanos := uint64(end_time_nanos - 24*60*1000000000)
+	start_time_nanos := uint64(end_time_nanos - datastruct.NANO_PER_DAY)
 
 	req_hist_info := &marketservice.ReqHishKlineInfo{
 		Symbol:    symbol,
 		Exchange:  datastruct.BCTS_EXCHANGE,
 		StartTime: start_time_nanos,
 		EndTime:   end_time_nanos,
-		Count:     24 * 60,
-		Frequency: 60,
+		Count:     datastruct.MIN_PER_DAY,
+		Frequency: datastruct.SECS_PER_MIN,
 	}
 
 	hist_klines, err := a.msclient.RequestHistKlineData(context.Background(), req_hist_info)
@@ -94,7 +117,7 @@ func (a *DataEngine) InitPeriodDara(symbol string) {
 		logx.Errorf("ReqHistKline Err: %+v\n", err)
 	}
 
-	fmt.Printf("Rst: %+v \n", hist_klines)
+	// fmt.Printf("Rst: %+v \n", hist_klines)
 
 	a.cache_period_data[symbol].UpdateWithPbKlines(hist_klines)
 }
@@ -117,7 +140,7 @@ func (a *DataEngine) StartListenRecvdata() {
 }
 
 func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
-	depth.Time = depth.Time / datastruct.NANO_PER_SECS
+	// depth.Time = depth.Time / datastruct.NANO_PER_SECS
 
 	d.depth_cache_map.Store(depth.Symbol, depth)
 
@@ -128,7 +151,7 @@ func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
 }
 
 func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
-	kline.Time = kline.Time / datastruct.NANO_PER_SECS
+	// kline.Time = kline.Time / datastruct.NANO_PER_SECS
 
 	logx.Statf("Rcv kline: %s", kline.String())
 
@@ -149,7 +172,7 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 }
 
 func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
-	trade.Time = trade.Time / datastruct.NANO_PER_SECS
+	// trade.Time = trade.Time / datastruct.NANO_PER_SECS
 
 	logx.Statf("Rcv trade: %s", trade.String())
 
@@ -221,7 +244,10 @@ func (d *DataEngine) SubDepth(symbol string, ws *net.WSInfo) {
 func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
 
 	if d.IsTest {
-		return datastruct.GetTestHistKline(req_kline_info)
+		return &datastruct.RspHistKline{
+			Klines:  datastruct.GetTestHistKline(req_kline_info),
+			ReqInfo: req_kline_info,
+		}
 	}
 
 	rate := req_kline_info.Frequency / datastruct.SECS_PER_MIN
@@ -318,6 +344,8 @@ func (d *DataEngine) UpdateCacheKlinesWithHist(klines *treemap.Map) {
 func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
 
 	rst := d.GetHistKlineData(req_kline_info)
+
+	logx.Statf("DataEngine: Hist: %s", datastruct.HistKlineString(rst.Klines))
 
 	d.next_worker.PublishHistKline(rst, ws)
 }

@@ -1,6 +1,7 @@
 package datastruct
 
 import (
+	"fmt"
 	"market_server/common/util"
 	"math/rand"
 	"time"
@@ -163,16 +164,17 @@ func GetTestTradeMultiSymbols(symbol_list []string, exchange string) *Trade {
 	return new_trade
 }
 
-func GetTestHistKline(req_kline_info *ReqHistKline) *RspHistKline {
+func GetTestHistKline(req_kline_info *ReqHistKline) *treemap.Map {
 
 	klines := treemap.NewWith(utils.Int64Comparator)
-	cur_time := int64(0)
 
-	real_count := req_kline_info.Count * (req_kline_info.Frequency / SECS_PER_MIN)
+	real_count := int64(req_kline_info.Count * (req_kline_info.Frequency / SECS_PER_MIN))
+
+	cur_time := util.TimeMinuteNanos() - real_count*NANO_PER_MIN
 
 	if req_kline_info.Count != 0 {
 		for i := 0; i < int(real_count); i++ {
-			cur_time += SECS_PER_MIN * NANO_PER_SECS
+			cur_time += NANO_PER_MIN
 
 			klines.Put(cur_time, &Kline{
 				Exchange:   req_kline_info.Exchange,
@@ -187,10 +189,7 @@ func GetTestHistKline(req_kline_info *ReqHistKline) *RspHistKline {
 			})
 		}
 
-		return &RspHistKline{
-			ReqInfo: req_kline_info,
-			Klines:  klines,
-		}
+		return klines
 	}
 
 	return nil
@@ -216,4 +215,25 @@ func GetTestKlineMultiSymbols(symbol_list []string, exchange string, last_time i
 	}
 
 	return &new_kline
+}
+
+func TestGetHistKlineData() {
+	req_info := &ReqHistKline{
+		Symbol:    "BTC_USDT",
+		Exchange:  BCTS_EXCHANGE,
+		Count:     MIN_PER_DAY,
+		Frequency: SECS_PER_MIN,
+	}
+
+	klines := GetTestHistKline(req_info)
+
+	iter := klines.Iterator()
+
+	if iter.First() {
+		fmt.Printf("First Kline: %s ", iter.Value().(*Kline).String())
+	}
+
+	if iter.Last() {
+		fmt.Printf("Last Kline: %s ", iter.Value().(*Kline).String())
+	}
 }
