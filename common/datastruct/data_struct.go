@@ -187,11 +187,17 @@ func NewKlineWithKline(kline *Kline) *Kline {
 }
 
 func IsNewKlineStart(kline *Kline, resolution int64) bool {
-	if resolution < NANO_PER_SECS {
-		resolution = resolution * NANO_PER_SECS
+	tmp_time := kline.Time
+
+	if resolution > NANO_PER_SECS {
+		resolution = resolution / NANO_PER_SECS
 	}
 
-	if kline.Time%resolution == 0 {
+	if tmp_time > NANO_PER_SECS {
+		tmp_time = tmp_time / NANO_PER_SECS
+	}
+
+	if tmp_time%resolution == 0 {
 		return true
 	} else {
 		return false
@@ -199,11 +205,25 @@ func IsNewKlineStart(kline *Kline, resolution int64) bool {
 }
 
 func IsOldKlineEnd(kline *Kline, resolution int64) bool {
-	if resolution < NANO_PER_SECS {
-		resolution = resolution * NANO_PER_SECS
+	tmp_time := kline.Time
+	tmp_resolution := kline.Resolution
+
+	if resolution > NANO_PER_SECS {
+		resolution = resolution / NANO_PER_SECS
 	}
 
-	if (int64(kline.Resolution)+kline.Time)%resolution == 0 {
+	if tmp_time > NANO_PER_SECS {
+		tmp_time = tmp_time / NANO_PER_SECS
+	}
+
+	if tmp_resolution > NANO_PER_SECS {
+		tmp_resolution = tmp_resolution / NANO_PER_SECS
+	}
+
+	tmp_time = tmp_time + int64(tmp_resolution)
+
+	if tmp_time%resolution == 0 {
+		// logx.Slowf("OldKlineEnd: kline: %s, resolution: %d, tmp_time: %d, ", kline.String(), resolution, tmp_time)
 		return true
 	} else {
 		return false

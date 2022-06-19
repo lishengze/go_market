@@ -167,7 +167,7 @@ func (f *FrontEngine) TestSub(test_map map[string]struct{}) {
 			StartTime: 0,
 			EndTime:   0,
 			Count:     1000,
-			Frequency: datastruct.SECS_PER_MIN,
+			Frequency: datastruct.SECS_PER_MIN * 5,
 		}
 
 		logx.Statf("Sub Kline: %+v, ws_info: %+v\n", req_kline_info, ws_info)

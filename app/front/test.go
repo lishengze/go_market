@@ -123,7 +123,7 @@ func PubKlineTestData(kline_chan chan *datastruct.Kline) {
 		select {
 		case <-timer:
 			tmp_kline := datastruct.GetTestKlineMultiSymbols(symbols, datastruct.BCTS_EXCHANGE, cur_time)
-			logx.Slowf("tmp_kline: %s \n", tmp_kline.String())
+			// logx.Slowf("tmp_kline: %s \n", tmp_kline.String())
 			kline_chan <- tmp_kline
 			cur_time += datastruct.SECS_PER_MIN * datastruct.NANO_PER_SECS
 		}

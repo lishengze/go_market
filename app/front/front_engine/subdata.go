@@ -116,7 +116,7 @@ func (d *KlineSubInfo) String() string {
 		rst = rst + symbol + ", "
 
 		for resolution, ws_map := range resolution_map {
-			rst = rst + fmt.Sprintf(", resolution: %d, ", resolution)
+			rst = rst + fmt.Sprintf(" resolution: %d, ", resolution)
 			iter := ws_map.ws_info.Iterator()
 			for iter.Begin(); iter.Next(); {
 				rst = rst + fmt.Sprintf("ws: %d, ", iter.Key().(int64))
@@ -294,6 +294,8 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 		}
 
 		if datastruct.IsOldKlineEnd(kline, int64(resolution)) {
+			logx.Slowf("Old Kline End: %s", kline.String())
+
 			var pub_kline *datastruct.Kline
 			if kline.Resolution != resolution {
 				cache_kline.Close = kline.Close
@@ -306,7 +308,9 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 				pub_kline = datastruct.NewKlineWithKline(kline)
 			}
 
-			sub_tree := s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].ws_info
+			// logx.Statf("CurKlineInfo %s", s.KlineInfo.String())
+
+			sub_tree := sub_info.ws_info
 			sub_tree_iter := sub_tree.Iterator()
 			for sub_tree_iter.Begin(); sub_tree_iter.Next(); {
 				rst = append(rst, &KlinePubInfo{
@@ -314,15 +318,20 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 					data:    pub_kline,
 				})
 			}
+
 			s.KlineInfo.Info[kline.Symbol][resolution].cache_data = datastruct.NewKlineWithKline(pub_kline)
 
 		} else if datastruct.IsNewKlineStart(kline, int64(resolution)) {
-			s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].cache_data = datastruct.NewKlineWithKline(kline)
-			s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].cache_data.Resolution = resolution
+			logx.Slowf("New Kline Start: %s", kline.String())
+
+			s.KlineInfo.Info[kline.Symbol][resolution].cache_data = datastruct.NewKlineWithKline(kline)
+			s.KlineInfo.Info[kline.Symbol][resolution].cache_data.Resolution = resolution
 		} else {
 			cache_kline.Close = kline.Close
 			cache_kline.Low = util.MinFloat64(cache_kline.Low, kline.Low)
 			cache_kline.High = util.MaxFloat64(cache_kline.High, kline.High)
+
+			logx.Slowf("Cached Kline: %s", kline.String())
 		}
 	}
 

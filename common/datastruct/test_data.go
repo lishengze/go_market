@@ -217,6 +217,18 @@ func GetTestKlineMultiSymbols(symbol_list []string, exchange string, last_time i
 	return &new_kline
 }
 
+func TestKlineTime() {
+	cur_time := util.TimeMinuteNanos()
+
+	symbol_list := []string{"BTC_USDT"}
+
+	kline := GetTestKlineMultiSymbols(symbol_list, BCTS_EXCHANGE, cur_time)
+
+	fmt.Printf("Kline: %s \n", kline.String())
+
+	fmt.Printf("IsOldKlineEnd: %+v , IsNewKline: %+v \n", IsOldKlineEnd(kline, 60), IsNewKlineStart(kline, 60))
+}
+
 func TestGetHistKlineData() {
 	req_info := &ReqHistKline{
 		Symbol:    "BTC_USDT",
