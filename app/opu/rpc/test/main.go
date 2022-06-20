@@ -47,7 +47,7 @@ func testPlaceOrder() {
 	rsp, err := o.PlaceOrder(context.Background(), &opu.PlaceOrderReq{
 		AccountId:     "",
 		AccountAlias:  "FTX_MCA_OTC_TRADING",
-		ClientOrderId: "12351",
+		ClientOrderId: "12352",
 		StdSymbol:     "ETH_USDT",
 		Volume:        "0.005",
 		Price:         "850",
@@ -80,7 +80,7 @@ func testCancelOrder() {
 	rsp, err := o.CancelOrder(context.Background(), &opu.CancelOrderReq{
 		AccountId:     "",
 		AccountAlias:  "FTX_MCA_OTC_TRADING",
-		ClientOrderId: "12351",
+		ClientOrderId: "202930519",
 	})
 
 	if err != nil {

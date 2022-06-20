@@ -185,7 +185,7 @@ func (o *opu) GetAccount(req *opupb.GetAccountReq) (*opupb.GetAccountRsp, error)
 			}
 
 			if req.AccountAlias != "" {
-				wheres.Equal("account_alias", req.AccountAlias)
+				wheres.Equal("alias", req.AccountAlias)
 			}
 		}).OrderBy("create_time", modelext.DESC))
 	if err != nil {
