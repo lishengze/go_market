@@ -2,6 +2,7 @@ package datastruct
 
 import (
 	"fmt"
+	"market_server/common/util"
 	"strings"
 	"time"
 
@@ -136,10 +137,16 @@ type RspHistKline struct {
 }
 
 type ChangeInfo struct {
-	Symbol string
-	High   float64
-	Low    float64
-	Change float64
+	Symbol     string
+	High       float64
+	Low        float64
+	Change     float64
+	ChangeRate float64
+}
+
+func (c *ChangeInfo) String() string {
+	return fmt.Sprintf("Symbol: %s, High: %f, Low: %f, Change: %f, ChangeRate: %f \n",
+		c.Symbol, c.High, c.Low, c.Change, c.ChangeRate)
 }
 
 func (t *Trade) String() string {
@@ -309,7 +316,7 @@ func NewDepth(src *DepthQuote) *DepthQuote {
 			Symbol:   src.Symbol,
 			Time:     src.Time,
 			Asks:     treemap.NewWith(utils.Float64Comparator),
-			Bids:     treemap.NewWith(utils.Float64Comparator),
+			Bids:     treemap.NewWith(util.Float64ComparatorDsc),
 		}
 
 		ask_iter := src.Asks.Iterator()
@@ -326,7 +333,7 @@ func NewDepth(src *DepthQuote) *DepthQuote {
 	} else {
 		rst := &DepthQuote{
 			Asks: treemap.NewWith(utils.Float64Comparator),
-			Bids: treemap.NewWith(utils.Float64Comparator),
+			Bids: treemap.NewWith(util.Float64ComparatorDsc),
 		}
 		return rst
 	}

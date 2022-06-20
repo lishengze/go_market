@@ -42,7 +42,7 @@ func GetTestDepth() *DepthQuote {
 	rst.Symbol = symbol_array[symbol_index]
 	rst.Time = util.UTCNanoTime()
 	rst.Asks = treemap.NewWith(utils.Float64Comparator)
-	rst.Bids = treemap.NewWith(utils.Float64Comparator)
+	rst.Bids = treemap.NewWith(util.Float64ComparatorDsc)
 
 	rst.Asks.Put(55000.0, &InnerDepth{5.5, map[string]float64{rst.Exchange: 5.5}})
 	rst.Asks.Put(50000.0, &InnerDepth{5.0, map[string]float64{rst.Exchange: 5.0}})
@@ -120,7 +120,7 @@ func GetTestDepthMultiSymbols(symbol_list []string, exchange string) *DepthQuote
 	rst.Symbol = symbol_list[symbol_index]
 	rst.Time = util.UTCNanoTime()
 	rst.Asks = treemap.NewWith(utils.Float64Comparator)
-	rst.Bids = treemap.NewWith(utils.Float64Comparator)
+	rst.Bids = treemap.NewWith(util.Float64ComparatorDsc)
 
 	rst.Asks.Put(55000.0, &InnerDepth{5.5, map[string]float64{rst.Exchange: 5.5}})
 	rst.Asks.Put(50000.0, &InnerDepth{5.0, map[string]float64{rst.Exchange: 5.0}})

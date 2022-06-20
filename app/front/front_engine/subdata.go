@@ -1,161 +1,14 @@
 package front_engine
 
 import (
-	"fmt"
 	"market_server/app/front/net"
 	"market_server/common/datastruct"
 	"market_server/common/util"
-	"sync"
 
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
 	"github.com/zeromicro/go-zero/core/logx"
 )
-
-type DepthPubInfo struct {
-	ws_info *net.WSInfo
-	data    *datastruct.DepthQuote
-}
-
-func (d *DepthPubInfo) String() string {
-	return fmt.Sprintf("ws_info: %s, depth: %s", d.ws_info.String(), d.data.String(3))
-}
-
-type SymbolPubInfo struct {
-	ws_info *net.WSInfo
-	data    []string
-}
-
-func (d *SymbolPubInfo) String() string {
-	return fmt.Sprintf("ws_info: %s, symbol_list: %+v", d.ws_info.String(), d.data)
-}
-
-type TradePubInfo struct {
-	ws_info *net.WSInfo
-	data    *datastruct.Trade
-}
-
-func (d *TradePubInfo) String() string {
-	return fmt.Sprintf("ws_info: %s, trade: %s", d.ws_info.String(), d.data.String())
-}
-
-type KlinePubInfo struct {
-	ws_info *net.WSInfo
-	data    *datastruct.Kline
-}
-
-func (d *KlinePubInfo) String() string {
-	return fmt.Sprintf("ws_info: %s, kline: %s", d.ws_info.String(), d.data.String())
-}
-
-type SymbolSubInfo struct {
-	mutex   sync.Mutex
-	ws_info *treemap.Map
-}
-
-func (d *SymbolSubInfo) String() string {
-	rst := "SymbolSubInfo: "
-
-	iter := d.ws_info.Iterator()
-	for iter.Begin(); iter.Next(); {
-		rst = rst + fmt.Sprintf("ws: %d", iter.Key().(int64)) + ","
-	}
-
-	return rst
-}
-
-func NewSymbolSubInfo() *SymbolSubInfo {
-	return &SymbolSubInfo{
-		ws_info: treemap.NewWith(utils.Int64Comparator),
-	}
-}
-
-type DepthSubInfo struct {
-	mutex sync.Mutex
-	Info  map[string]*treemap.Map
-}
-
-func (d *DepthSubInfo) String() string {
-	rst := "DepthSubInfo: "
-	for symbol, ws_map := range d.Info {
-		rst = rst + symbol + ":"
-
-		iter := ws_map.Iterator()
-		for iter.Begin(); iter.Next(); {
-			rst = rst + fmt.Sprintf("ws: %d", iter.Key().(int64)) + ","
-		}
-	}
-	return rst
-}
-
-func NewDepthSubInfo() *DepthSubInfo {
-	return &DepthSubInfo{
-		Info: make(map[string]*treemap.Map),
-	}
-}
-
-type KlineSubItem struct {
-	ws_info    *treemap.Map
-	cache_data *datastruct.Kline
-}
-
-func NewKlineWithKline() *KlineSubItem {
-	return &KlineSubItem{
-		ws_info: treemap.NewWith(utils.Int64Comparator),
-	}
-}
-
-type KlineSubInfo struct {
-	mutex sync.Mutex
-	Info  map[string](map[int]*KlineSubItem)
-}
-
-func (d *KlineSubInfo) String() string {
-	rst := "KlineSubInfo: "
-	for symbol, resolution_map := range d.Info {
-		rst = rst + symbol + ", "
-
-		for resolution, ws_map := range resolution_map {
-			rst = rst + fmt.Sprintf(" resolution: %d, ", resolution)
-			iter := ws_map.ws_info.Iterator()
-			for iter.Begin(); iter.Next(); {
-				rst = rst + fmt.Sprintf("ws: %d, ", iter.Key().(int64))
-			}
-		}
-
-	}
-	return rst
-}
-
-func NewKlineSubInfo() *KlineSubInfo {
-	return &KlineSubInfo{
-		Info: make(map[string](map[int]*KlineSubItem)),
-	}
-}
-
-type TradeSubInfo struct {
-	mutex sync.Mutex
-	Info  map[string]*treemap.Map
-}
-
-func (d *TradeSubInfo) String() string {
-	rst := "TradeSubInfo: "
-	for symbol, ws_map := range d.Info {
-		rst = rst + symbol + ":"
-
-		iter := ws_map.Iterator()
-		for iter.Begin(); iter.Next(); {
-			rst = rst + fmt.Sprintf("ws: %d, ", iter.Key().(int64))
-		}
-	}
-	return rst
-}
-
-func NewTradeSubInfo() *TradeSubInfo {
-	return &TradeSubInfo{
-		Info: make(map[string]*treemap.Map),
-	}
-}
 
 type SubData struct {
 	SymbolInfo *SymbolSubInfo
@@ -181,10 +34,11 @@ func (s *SubData) GetSymbolPubInfoList(symbollist []string) []*SymbolPubInfo {
 
 	iter := s.SymbolInfo.ws_info.Iterator()
 
+	byte_data := NewSymbolListMsg(symbollist)
 	for iter.Begin(); iter.Next(); {
 		rst = append(rst, &SymbolPubInfo{
 			ws_info: iter.Value().(*net.WSInfo),
-			data:    symbollist,
+			data:    byte_data,
 		})
 	}
 
@@ -198,14 +52,14 @@ func (s *SubData) GetDepthPubInfoList(depth *datastruct.DepthQuote) []*DepthPubI
 	defer s.DepthInfo.mutex.Unlock()
 
 	logx.Statf("CurDepthSubInfo: %s", s.DepthInfo.String())
-
+	byte_data := NewDepthJsonMsg(depth)
 	if sub_tree, ok := s.DepthInfo.Info[depth.Symbol]; ok {
 		sub_tree_iter := sub_tree.Iterator()
 		sub_tree_iter.Begin()
 		for sub_tree_iter.Next() {
 			rst = append(rst, &DepthPubInfo{
 				ws_info: sub_tree_iter.Value().(*net.WSInfo),
-				data:    depth,
+				data:    byte_data,
 			})
 
 		}
@@ -216,19 +70,19 @@ func (s *SubData) GetDepthPubInfoList(depth *datastruct.DepthQuote) []*DepthPubI
 	return rst
 }
 
-func (s *SubData) GetTradePubInfoList(trade *datastruct.Trade) []*TradePubInfo {
+func (s *SubData) GetTradePubInfoList(trade *datastruct.Trade, change_info *datastruct.ChangeInfo) []*TradePubInfo {
 	var rst []*TradePubInfo
 
 	s.TradeInfo.mutex.Lock()
 	defer s.TradeInfo.mutex.Unlock()
-
+	byte_data := NewTradeJsonMsg(trade, change_info)
 	if sub_tree, ok := s.TradeInfo.Info[trade.Symbol]; ok {
 		sub_tree_iter := sub_tree.Iterator()
 		sub_tree_iter.Begin()
 		for sub_tree_iter.Next() {
 			rst = append(rst, &TradePubInfo{
 				ws_info: sub_tree_iter.Value().(*net.WSInfo),
-				data:    trade,
+				data:    byte_data,
 			})
 		}
 	} else {
@@ -309,13 +163,13 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 			}
 
 			// logx.Statf("CurKlineInfo %s", s.KlineInfo.String())
-
+			byte_data := NewKlineUpdateJsonMsg(pub_kline)
 			sub_tree := sub_info.ws_info
 			sub_tree_iter := sub_tree.Iterator()
 			for sub_tree_iter.Begin(); sub_tree_iter.Next(); {
 				rst = append(rst, &KlinePubInfo{
 					ws_info: sub_tree_iter.Value().(*net.WSInfo),
-					data:    pub_kline,
+					data:    byte_data,
 				})
 			}
 

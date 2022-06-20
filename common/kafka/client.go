@@ -275,45 +275,50 @@ func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 		return
 	}
 
-	for partition := range partitionList {
-		pc, err := consumer.ConsumePartition(consume_item.Topic, int32(partition), sarama.OffsetNewest)
+	for {
+		for partition := range partitionList {
+			pc, err := consumer.ConsumePartition(consume_item.Topic, int32(partition), sarama.OffsetNewest)
 
-		// logx.Info("[After] ConsumePartition ")
-		if err != nil {
-			logx.Error(err.Error())
-			continue
+			// logx.Info("[After] ConsumePartition ")
+			if err != nil {
+				logx.Error(err.Error())
+				continue
+			}
+			defer pc.AsyncClose()
+
+			for msg := range pc.Messages() {
+				topic_type := GetTopicType(msg.Topic)
+
+				if value, ok := k.rcv_statistic_info.Load(msg.Topic); ok {
+					k.rcv_statistic_info.Store(msg.Topic, value.(int)+1)
+				} else {
+					k.rcv_statistic_info.Store(msg.Topic, 1)
+				}
+
+				switch topic_type {
+				case DEPTH_TYPE:
+					go k.ProcessDepthBytes(msg.Value)
+				case KLINE_TYPE:
+					go k.ProcessKlineBytes(msg.Value)
+				case TRADE_TYPE:
+					go k.ProcessTradeBytes(msg.Value)
+				default:
+					logx.Error("Unknown Topic " + topic_type)
+				}
+
+				select {
+				case <-consume_item.Ctx.Done():
+					logx.Info(consume_item.Topic + " listen Over!")
+					return
+				default:
+					// time.Sleep(time.Second)
+				}
+			}
 		}
-		defer pc.AsyncClose()
 
-		for msg := range pc.Messages() {
-			topic_type := GetTopicType(msg.Topic)
-
-			if value, ok := k.rcv_statistic_info.Load(msg.Topic); ok {
-				k.rcv_statistic_info.Store(msg.Topic, value.(int)+1)
-			} else {
-				k.rcv_statistic_info.Store(msg.Topic, 1)
-			}
-
-			switch topic_type {
-			case DEPTH_TYPE:
-				go k.ProcessDepthBytes(msg.Value)
-			case KLINE_TYPE:
-				go k.ProcessKlineBytes(msg.Value)
-			case TRADE_TYPE:
-				go k.ProcessTradeBytes(msg.Value)
-			default:
-				logx.Error("Unknown Topic " + topic_type)
-			}
-
-			select {
-			case <-consume_item.Ctx.Done():
-				logx.Info(consume_item.Topic + " listen Over!")
-				return
-			default:
-				// time.Sleep(time.Second)
-			}
-		}
+		time.Sleep(time.Second * 3)
 	}
+
 }
 
 func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {

@@ -47,6 +47,12 @@ func (f *FrontEngine) PublishSymbol(symbol_list []string, ws *net.WSInfo) {
 
 		for _, info := range symbol_pub_list {
 			logx.Statf("symbol_pub_info: %s \n", info.String())
+			if info.ws_info.IsAlive() {
+				err := info.ws_info.Conn.WriteMessage(1, info.data)
+				if err != nil {
+					logx.Errorf("PublishSymbol err: %+v \n", err)
+				}
+			}
 		}
 	}
 
@@ -63,19 +69,31 @@ func (f *FrontEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo)
 
 		for _, info := range depth_pub_list {
 			logx.Infof("depth_pub_info: %s \n", info.String())
+			if info.ws_info.IsAlive() {
+				err := info.ws_info.Conn.WriteMessage(1, info.data)
+				if err != nil {
+					logx.Errorf("PublishDepth err: %+v \n", err)
+				}
+			}
 		}
 	}
 
 }
 
-func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, ws *net.WSInfo) {
+func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, ws *net.WSInfo) {
 	if ws != nil {
 
 	} else {
-		trade_pub_list := f.sub_data.GetTradePubInfoList(trade)
+		trade_pub_list := f.sub_data.GetTradePubInfoList(trade, change_info)
 
 		for _, info := range trade_pub_list {
 			logx.Infof("trade_pub_info: %s \n", info.String())
+			if info.ws_info.IsAlive() {
+				err := info.ws_info.Conn.WriteMessage(1, info.data)
+				if err != nil {
+					logx.Errorf("PublishTrade err: %+v \n", err)
+				}
+			}
 		}
 	}
 
@@ -91,6 +109,12 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 
 		for _, info := range kline_pub_list {
 			logx.Statf("kline_pub_info: %s \n", info.String())
+			if info.ws_info.IsAlive() {
+				err := info.ws_info.Conn.WriteMessage(1, info.data)
+				if err != nil {
+					logx.Errorf("PublishKline err: %+v \n", err)
+				}
+			}
 		}
 	}
 
@@ -105,7 +129,14 @@ func (f *FrontEngine) PublishHistKline(klines *datastruct.RspHistKline, ws *net.
 	f.sub_data.ProcessKlineHistData(klines)
 
 	if ws != nil {
-		// logx.Statf("rsp klines: %+v \n", klines)
+		byte_data := NewHistKlineJsonMsg(klines)
+		if ws.IsAlive() {
+			err := ws.Conn.WriteMessage(1, byte_data)
+			if err != nil {
+				logx.Errorf("PublishHistKline err: %+v \n", err)
+			}
+		}
+
 	}
 	// publish his kline to client;
 }

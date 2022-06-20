@@ -8,7 +8,7 @@ import (
 type WorkerI interface {
 	PublishSymbol(symbol_list []string, ws *net.WSInfo)
 	PublishDepth(*datastruct.DepthQuote, *net.WSInfo)
-	PublishTrade(*datastruct.Trade, *net.WSInfo)
+	PublishTrade(*datastruct.Trade, *datastruct.ChangeInfo, *net.WSInfo)
 	PublishKline(*datastruct.Kline, *net.WSInfo)
 	PublishChangeinfo(*datastruct.ChangeInfo, *net.WSInfo)
 	PublishHistKline(kline *datastruct.RspHistKline, ws *net.WSInfo)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"market_server/app/dataManager/rpc/types/pb"
 	"market_server/common/datastruct"
+	"market_server/common/util"
 	"strconv"
 
 	"github.com/emirpasic/gods/maps/treemap"
@@ -115,7 +116,7 @@ func (p *ProtobufSerializer) DecodeDepth(raw_msg []byte) (*datastruct.DepthQuote
 	}
 
 	asks := treemap.NewWith(utils.Float64Comparator)
-	bids := treemap.NewWith(utils.Float64Comparator)
+	bids := treemap.NewWith(util.Float64ComparatorDsc)
 
 	SetDepthTreeMap(asks, proto_depth.Asks, proto_depth.Exchange)
 	SetDepthTreeMap(bids, proto_depth.Bids, proto_depth.Exchange)
