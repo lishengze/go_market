@@ -209,10 +209,6 @@ func (o *opu) GetAccount(req *opupb.GetAccountReq) (*opupb.GetAccountRsp, error)
 
 func (o *opu) UpdateAccount(in *opupb.UpdateAccountReq) (*opupb.EmptyRsp, error) {
 	// todo
-
-	o.svcCtx.AccountModel.Update(nil, func() {
-		acc
-	})
 	return nil, fmt.Errorf("not implement")
 }
 
