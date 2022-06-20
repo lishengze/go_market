@@ -6,6 +6,7 @@ import (
 	"exterior-interactor/app/opu/rpc/opupb"
 	"fmt"
 	"github.com/Shopify/sarama"
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/protobuf/proto"
 	"log"
@@ -21,18 +22,20 @@ const (
 var o = getOpu(opuAddress)
 
 func main() {
-	subUpdate()
+	//subUpdate()
 
 	//testRegisterAccount()
-	//testGetBalance()
+	testGetBalance()
 
 	//testPlaceOrder()
 
-	testCancelOrder()
+	//testCancelOrder()
 
 	//testQueryOrder()
 
-	select {}
+	//testGetAccount()
+
+	//select {}
 }
 
 func getOpu(address string) opu.Opu {
@@ -41,6 +44,19 @@ func getOpu(address string) opu.Opu {
 		log.Fatalln(err)
 	}
 	return opu.NewOpu(client)
+}
+
+func testGetAccount() {
+	rsp, err := o.GetAccount(context.Background(), &opu.GetAccountReq{
+		AccountId:    "",
+		AccountAlias: "",
+	})
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+	logx.Info(rsp)
+	//fmt.Println(rsp)
 }
 
 func testPlaceOrder() {

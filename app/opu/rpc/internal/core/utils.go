@@ -25,6 +25,7 @@ func toPbOrder(order *model.Order) *opupb.Order {
 		CreateTime:    timestamppb.New(order.CreateTime),
 		UpdateTime:    timestamppb.New(order.UpdateTime),
 		FilledVolume:  order.FilledVolume,
+		RejectReason:  order.RejectReason,
 	}
 }
 
@@ -68,6 +69,7 @@ func toPbOrderUpdate(order *model.Order) *opupb.OrderTradesUpdate {
 			Status:       order.Status,
 			FilledVolume: order.FilledVolume,
 			UpdateTime:   timestamppb.New(time.Now()),
+			RejectReason: order.RejectReason,
 		},
 		TradeUpdate: nil,
 	}

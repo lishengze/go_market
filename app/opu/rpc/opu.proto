@@ -142,6 +142,7 @@ message Order {
   string filled_volume = 13;
   google.protobuf.Timestamp create_time = 14;
   google.protobuf.Timestamp update_time = 15;
+  string reject_reason = 16;
 }
 
 message Trade {
@@ -190,6 +191,7 @@ message OrderUpdate {
   // CANCELED:已撤单(终态,需关注已成交数量) REJECTED:拒单/下单失败(终态) FILLED:完全成交(终态) PARTIAL:部分成交
   string filled_volume = 2;
   google.protobuf.Timestamp update_time = 3;
+  string reject_reason = 4; // d订单失败原因
 }
 
 // TradesUpdate 成交推送
