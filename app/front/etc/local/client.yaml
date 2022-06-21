@@ -34,3 +34,10 @@ Nacos:
 
 Cache:
   CacheDataCount: 1440
+
+
+WS:
+  Address: "localhost:8114"
+  Url:  "/trading/marketws"
+  HeartbeatLostSecs:  15
+  HeartbeatSendSecs:  10

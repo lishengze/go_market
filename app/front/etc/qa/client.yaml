@@ -31,3 +31,9 @@ LogConfig:
   ServiceName: "client"
   StackCooldownMillis: 100
   TimeFormat:  "2006-01-02 15:04:05"
+
+WS:
+  Address: "localhost:8114"
+  Url:  "/trading/marketws"
+  HeartbeatLostSecs:  15
+  HeartbeatSendSecs:  10

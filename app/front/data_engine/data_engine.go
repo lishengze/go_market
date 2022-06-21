@@ -182,7 +182,12 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
 	// d.PublishChangeinfo(d.cache_period_data[trade.Symbol].GetChangeInfo(), nil)
 
-	d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), nil)
+	if period_data, ok := d.cache_period_data[trade.Symbol]; ok {
+		d.PublishTrade(trade, period_data.GetChangeInfo(), nil)
+	} else {
+		d.PublishTrade(trade, nil, nil)
+	}
+
 	return nil
 }
 
@@ -230,7 +235,7 @@ func (d *DataEngine) PublishChangeinfo(change_info *datastruct.ChangeInfo, ws *n
 func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) {
 
 	if trade, ok := d.trade_cache_map.Load(symbol); ok {
-		d.PublishTrade(trade.(*datastruct.Trade), ws)
+		d.PublishTrade(trade.(*datastruct.Trade), nil, ws)
 	}
 }
 

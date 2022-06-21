@@ -5,6 +5,7 @@ import (
 	"market_server/app/front/data_engine"
 	"market_server/app/front/front_engine"
 	"market_server/app/front/svc"
+	"market_server/app/front/ws_server"
 	mkconfig "market_server/app/market_aggregate/config"
 	"market_server/common/comm"
 	config "market_server/common/config"
@@ -25,6 +26,7 @@ type ServerEngine struct {
 
 	FrontEngineWorker *front_engine.FrontEngine
 	DataEngineWorker  *data_engine.DataEngine
+	WSEngineWorker    *ws_server.WSEngine
 
 	IsTest bool
 }
@@ -39,9 +41,11 @@ func NewServerEngine(svcCtx *svc.ServiceContext) *ServerEngine {
 
 	s.FrontEngineWorker = front_engine.NewFrontEngine(&svcCtx.Config)
 	s.DataEngineWorker = data_engine.NewDataEngine(s.RecvDataChan, &svcCtx.Config)
+	s.WSEngineWorker = ws_server.NewWSEngine(&svcCtx.Config.WS)
 
 	s.FrontEngineWorker.SetNextWorker(s.DataEngineWorker)
 	s.DataEngineWorker.SetNextWorker(s.FrontEngineWorker)
+	s.WSEngineWorker.SetNextWorker(s.FrontEngineWorker)
 
 	s.HedgingConfigs = nil
 	s.IsTest = false
@@ -118,9 +122,10 @@ func (s *ServerEngine) SetTestConfig() {
 }
 
 func (s *ServerEngine) Start() {
-	s.Commer.Start()
-	s.DataEngineWorker.Start()
-	s.FrontEngineWorker.Start()
+	go s.Commer.Start()
+	go s.DataEngineWorker.Start()
+	go s.FrontEngineWorker.Start()
+	go s.WSEngineWorker.Start()
 
 	if !s.IsTest {
 		go s.StartNacosClient()

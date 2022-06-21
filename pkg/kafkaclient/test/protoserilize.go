@@ -1,11 +1,12 @@
 package main
 
 import (
-	"bcts/pkg/kafkaclient/mpupb"
 	"fmt"
+	"log"
+	"market_server/pkg/kafkaclient/mpupb"
+
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"log"
 )
 
 func main() {

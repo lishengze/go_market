@@ -10,6 +10,13 @@ type CacheConfig struct {
 	CacheDataCount int
 }
 
+type WSConfig struct {
+	Address           string
+	Url               string
+	HeartbeatLostSecs int
+	HeartbeatSendSecs int
+}
+
 type Config struct {
 	// RpcConfig zrpc.RpcClientConf
 	Comm      comm_config.CommConfig
@@ -17,4 +24,5 @@ type Config struct {
 	Nacos     comm_config.NacosConfig
 
 	Cache CacheConfig
+	WS    WSConfig
 }

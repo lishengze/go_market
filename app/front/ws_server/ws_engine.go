@@ -3,6 +3,7 @@ package ws_server
 import (
 	"encoding/json"
 	"fmt"
+	"market_server/app/front/config"
 	"market_server/app/front/net"
 	"market_server/app/front/worker"
 	"market_server/common/datastruct"
@@ -18,14 +19,21 @@ import (
 var upgrader = websocket.Upgrader{}
 
 type WSEngine struct {
-	WSConSet          map[int64]*net.WSInfo
-	WSConSetMutex     sync.Mutex
-	HeartbeatSendSecs int64
-	HeartbeatLostSecs int64
+	WSConSet      map[int64]*net.WSInfo
+	WSConSetMutex sync.Mutex
+
+	WsConfig *config.WSConfig
 
 	next_worker worker.WorkerI
 
 	IsTest bool
+}
+
+func NewWSEngine(ws_config *config.WSConfig) *WSEngine {
+	return &WSEngine{
+		WsConfig: ws_config,
+		WSConSet: make(map[int64]*net.WSInfo),
+	}
 }
 
 func (w *WSEngine) Start() {
@@ -49,12 +57,14 @@ func (w *WSEngine) StoreWS(ws *net.WSInfo) {
 }
 
 func (w *WSEngine) StartListen() {
-	http.HandleFunc("/trading/marketws", w.ListenRequest)
+	logx.Infof("Start Listen: %s:%s", w.WsConfig.Address, w.WsConfig.Url)
+	http.ListenAndServe(w.WsConfig.Address, nil)
+	http.HandleFunc(w.WsConfig.Url, w.ListenRequest)
 }
 
 func (w *WSEngine) StartHeartbeat() {
 	logx.Info("---- StatisticTimeTask Start!")
-	duration := time.Duration((time.Duration)(w.HeartbeatSendSecs) * time.Second)
+	duration := time.Duration((time.Duration)(w.WsConfig.HeartbeatSendSecs) * time.Second)
 	timer := time.Tick(duration)
 
 	for {
@@ -89,7 +99,7 @@ func (w *WSEngine) ChecktHeartbeat() {
 	var dead_ws = []*net.WSInfo{}
 
 	for _, ws := range w.WSConSet {
-		if !ws.CheckAlive(w.HeartbeatLostSecs) {
+		if !ws.CheckAlive(int64(w.WsConfig.HeartbeatLostSecs)) {
 			dead_ws = append(dead_ws, ws)
 		}
 	}

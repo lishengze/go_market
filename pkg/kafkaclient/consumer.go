@@ -1,21 +1,22 @@
 package kafkaclient
 
 import (
-	"bcts/pkg/kafkaclient/mpupb"
 	"encoding/json"
 	"fmt"
+	"market_server/pkg/kafkaclient/mpupb"
+	"sync"
+	"time"
+
 	"github.com/Shopify/sarama"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
 	"google.golang.org/protobuf/proto"
-	"sync"
-	"time"
 )
 
 var DepthDataList = make(map[string]mpupb.Depth, 2000)
 
 type KafkaDepthPeer struct {
-	TopicSymbolList       []string
+	TopicSymbolList        []string
 	Address                string
 	Port                   string
 	latestTimestampMap     map[string]int64
@@ -26,7 +27,7 @@ type KafkaDepthPeer struct {
 
 func NewKafkaClient(symbolList []string, Address, Port string) *KafkaDepthPeer {
 	return &KafkaDepthPeer{
-		TopicSymbolList:       symbolList,
+		TopicSymbolList:        symbolList,
 		Address:                Address,
 		Port:                   Port,
 		latestTimestampMap:     make(map[string]int64),
@@ -50,8 +51,8 @@ func (kc *KafkaDepthPeer) FetchDepthWorkWather() {
 		logx.Errorf("fail to start consumer, err:%v\n", err)
 		return
 	}
-	for _,symbol := range kc.TopicSymbolList {
-		symbolTopic := "DEPTH."+symbol+"._bcts_"
+	for _, symbol := range kc.TopicSymbolList {
+		symbolTopic := "DEPTH." + symbol + "._bcts_"
 
 		partitionList, err := consumer.Partitions(symbolTopic) // 根据topic取到所有的分区
 		if err != nil {
