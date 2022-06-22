@@ -197,8 +197,12 @@ func (w *WSEngine) ProcessMessage(msg []byte, ws *net.WSInfo) {
 */
 func (w *WSEngine) ProcessSubDepth(m map[string]interface{}, ws *net.WSInfo) {
 	if value, ok := m["symbol"]; ok {
-		symbol := value.(string)
-		w.next_worker.SubDepth(symbol, ws)
+		symbol_list := value.([]string)
+
+		for _, symbol := range symbol_list {
+			w.next_worker.SubDepth(symbol, ws)
+		}
+
 	} else {
 		logx.Error("ProcessSubTrade: No Symbol Data %+v", m)
 	}
@@ -212,8 +216,11 @@ func (w *WSEngine) ProcessSubDepth(m map[string]interface{}, ws *net.WSInfo) {
 */
 func (w *WSEngine) ProcessSubTrade(m map[string]interface{}, ws *net.WSInfo) {
 	if value, ok := m["symbol"]; ok {
-		symbol := value.(string)
-		w.next_worker.SubTrade(symbol, ws)
+		symbol_list := value.([]string)
+
+		for _, symbol := range symbol_list {
+			w.next_worker.SubTrade(symbol, ws)
+		}
 	} else {
 		logx.Error("ProcessSubTrade: No Symbol Data %+v", m)
 	}

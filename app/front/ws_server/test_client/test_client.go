@@ -19,9 +19,81 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var addr = flag.String("addr", "localhost:8080", "http service address")
+var addr = flag.String("addr", "localhost:8114", "http service address")
 
-func main() {
+func read_func(c *websocket.Conn) {
+	defer close(done)
+	for {
+		_, message, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			return
+		}
+		log.Printf("recv: %s", message)
+	}
+}
+
+func GetHeartbeat() []byte {
+	info := map[string]interface{}{
+		"type": "heartbeat",
+	}
+
+	rst, err := json.Marshal(info)
+
+	if err != nil {
+		logx.Errorf("GetTestDepthReqJson: %+v \n", err)
+		return nil
+	} else {
+		return rst
+	}
+}
+
+func write_func(c *websocket.Conn) {
+
+	send_msg := GetTestTradeReqJson()
+	send_msg := GetTestDepthReqJson()
+	send_msg := GetTestKlineReqJson()
+
+	// 		err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
+	// 		if err != nil {
+	// 			log.Println("write:", err)
+	// 			return
+	// 		}
+
+	// ticker := time.NewTicker(time.Second)
+	// defer ticker.Stop()
+
+	// for {
+	// 	select {
+	// 	case <-done:
+	// 		return
+	// 	case t := <-ticker.C:
+	// 		fmt.Printf("Write: %s \n", t.String())
+	// 		err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
+	// 		if err != nil {
+	// 			log.Println("write:", err)
+	// 			return
+	// 		}
+	// 	case <-interrupt:
+	// 		log.Println("interrupt")
+
+	// 		// Cleanly close the connection by sending a close message and then
+	// 		// waiting (with timeout) for the server to close the connection.
+	// 		err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+	// 		if err != nil {
+	// 			log.Println("write close:", err)
+	// 			return
+	// 		}
+	// 		select {
+	// 		case <-done:
+	// 		case <-time.After(time.Second):
+	// 		}
+	// 		return
+	// 	}
+	// }
+}
+
+func basic_func() {
 	flag.Parse()
 	log.SetFlags(0)
 
@@ -32,6 +104,7 @@ func main() {
 	log.Printf("connecting to %s", u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+
 	if err != nil {
 		log.Fatal("dial:", err)
 	}
@@ -39,47 +112,13 @@ func main() {
 
 	done := make(chan struct{})
 
-	go func() {
-		defer close(done)
-		for {
-			_, message, err := c.ReadMessage()
-			if err != nil {
-				log.Println("read:", err)
-				return
-			}
-			log.Printf("recv: %s", message)
-		}
-	}()
+	go read_func(c)
 
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
+	go write_func(c)
 
-	for {
-		select {
-		case <-done:
-			return
-		case t := <-ticker.C:
-			fmt.Printf("Write: %s \n", t.String())
-			err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
-			if err != nil {
-				log.Println("write:", err)
-				return
-			}
-		case <-interrupt:
-			log.Println("interrupt")
+	select {}
+}
 
-			// Cleanly close the connection by sending a close message and then
-			// waiting (with timeout) for the server to close the connection.
-			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-			if err != nil {
-				log.Println("write close:", err)
-				return
-			}
-			select {
-			case <-done:
-			case <-time.After(time.Second):
-			}
-			return
-		}
-	}
+func main() {
+	basic_func()
 }
