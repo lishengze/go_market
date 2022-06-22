@@ -1,37 +1,97 @@
-// Copyright 2015 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
-//go:build ignore
-// +build ignore
-
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
+	"market_server/app/front/net"
 	"net/url"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
-var addr = flag.String("addr", "localhost:8114", "http service address")
+func InitLogx() {
 
-func read_func(c *websocket.Conn) {
-	defer close(done)
-	for {
-		_, message, err := c.ReadMessage()
-		if err != nil {
-			log.Println("read:", err)
-			return
-		}
-		log.Printf("recv: %s", message)
+	LogConfig := logx.LogConf{
+		Compress:            true,
+		KeepDays:            0,
+		Level:               "info",
+		Mode:                "file",
+		Path:                "./log",
+		ServiceName:         "client",
+		StackCooldownMillis: 100,
+		TimeFormat:          "2006-01-02 15:04:05",
+	}
+
+	logx.MustSetup(LogConfig)
+}
+
+func GetTestTradeReqJson() []byte {
+	symbol_list := []string{"BTC_USDT"}
+	sub_info := map[string]interface{}{
+		"type":   net.TRADE,
+		"symbol": symbol_list,
+	}
+	rst, err := json.Marshal(sub_info)
+
+	if err != nil {
+		logx.Errorf("GetTestTradeReqJson: %+v \n", err)
+		return nil
+	} else {
+		logx.Infof("SubJson: %s", string(rst))
+		return rst
 	}
 }
+
+func GetTestDepthReqJson() []byte {
+	symbol_list := []string{"BTC_USDT"}
+	sub_info := map[string]interface{}{
+		"type":   net.SYMBOL_SUB,
+		"symbol": symbol_list,
+	}
+	rst, err := json.Marshal(sub_info)
+
+	if err != nil {
+		logx.Errorf("GetTestDepthReqJson: %+v \n", err)
+		return nil
+	} else {
+		logx.Infof("SubJson: %s", string(rst))
+		return rst
+	}
+}
+
+func GetTestKlineReqJson() []byte {
+	sub_info := map[string]interface{}{
+		"type":       net.KLINE_UPDATE,
+		"symbol":     "BTC_USDT",
+		"data_count": 2,
+		"frequency":  500,
+	}
+	rst, err := json.Marshal(sub_info)
+	if err != nil {
+		logx.Errorf("GetTestKlineReqJson: %+v \n", err)
+		return nil
+	} else {
+		logx.Infof("SubJson: %s", string(rst))
+		return rst
+	}
+}
+
+func TestGetJsonData() {
+	rst1 := GetTestTradeReqJson()
+	rst2 := GetTestDepthReqJson()
+	rst3 := GetTestKlineReqJson()
+
+	fmt.Println(string(rst1))
+	fmt.Println(string(rst2))
+	fmt.Println(string(rst3))
+}
+
+var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
 
 func GetHeartbeat() []byte {
 	info := map[string]interface{}{
@@ -48,25 +108,35 @@ func GetHeartbeat() []byte {
 	}
 }
 
+func read_func(c *websocket.Conn) {
+	log.Println("Read_Func Start!")
+	for {
+		_, message, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			return
+		}
+		log.Printf("recv: %s", message)
+	}
+}
+
 func write_func(c *websocket.Conn) {
 
 	send_msg := GetTestTradeReqJson()
-	send_msg := GetTestDepthReqJson()
-	send_msg := GetTestKlineReqJson()
+	// send_msg := GetTestDepthReqJson()
+	// send_msg := GetTestKlineReqJson()
 
-	// 		err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
-	// 		if err != nil {
-	// 			log.Println("write:", err)
-	// 			return
-	// 		}
+	err := c.WriteMessage(websocket.TextMessage, send_msg)
+	if err != nil {
+		log.Println("write:", err)
+		return
+	}
 
 	// ticker := time.NewTicker(time.Second)
 	// defer ticker.Stop()
 
 	// for {
 	// 	select {
-	// 	case <-done:
-	// 		return
 	// 	case t := <-ticker.C:
 	// 		fmt.Printf("Write: %s \n", t.String())
 	// 		err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
@@ -74,21 +144,6 @@ func write_func(c *websocket.Conn) {
 	// 			log.Println("write:", err)
 	// 			return
 	// 		}
-	// 	case <-interrupt:
-	// 		log.Println("interrupt")
-
-	// 		// Cleanly close the connection by sending a close message and then
-	// 		// waiting (with timeout) for the server to close the connection.
-	// 		err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-	// 		if err != nil {
-	// 			log.Println("write close:", err)
-	// 			return
-	// 		}
-	// 		select {
-	// 		case <-done:
-	// 		case <-time.After(time.Second):
-	// 		}
-	// 		return
 	// 	}
 	// }
 }
@@ -110,15 +165,26 @@ func basic_func() {
 	}
 	defer c.Close()
 
-	done := make(chan struct{})
+	// done := make(chan struct{})
 
 	go read_func(c)
 
 	go write_func(c)
 
-	select {}
+	for {
+		select {
+
+		case <-interrupt:
+			log.Println("interrupt")
+			return
+		}
+	}
 }
 
 func main() {
+	InitLogx()
+
 	basic_func()
+
+	// TestGetJsonData()
 }

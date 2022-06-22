@@ -37,7 +37,7 @@ Cache:
 
 
 WS:
-  Address: "localhost:8114"
+  Address: "127.0.0.1:8114"
   Url:  "/trading/marketws"
-  HeartbeatLostSecs:  15
-  HeartbeatSendSecs:  10
+  HeartbeatLostSecs:  150
+  HeartbeatSendSecs:  100

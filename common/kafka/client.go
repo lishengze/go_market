@@ -83,7 +83,7 @@ func (k *KafkaServer) OutputPubInfo(key, value interface{}) bool {
 
 func (k *KafkaServer) UpdateStatisticInfo() {
 
-	logx.Infof("Statistic Start: %+v \n", k.statistic_start)
+	logx.Statf("kafka Statistic Start: %+v \n", k.statistic_start)
 
 	// if k.rcv_statistic_info.
 
@@ -93,7 +93,7 @@ func (k *KafkaServer) UpdateStatisticInfo() {
 
 	k.statistic_start = time.Now()
 
-	logx.Infof("Statistic End: %+v \n", k.statistic_start)
+	logx.Statf("kafka Statistic End: %+v \n", k.statistic_start)
 }
 
 // Init(*config.Config, SerializerI, *DataChannel)

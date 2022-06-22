@@ -7,6 +7,7 @@ import (
 	"market_server/common/datastruct"
 	"market_server/common/util"
 
+	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -85,14 +86,17 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastr
 
 	} else {
 		trade_pub_list := f.sub_data.GetTradePubInfoList(trade, change_info)
+		logx.Info("After GetTradePubInfoList")
 
 		for _, info := range trade_pub_list {
 			logx.Infof("trade_pub_info: %s \n", info.String())
 			if info.ws_info.IsAlive() {
-				err := info.ws_info.Conn.WriteMessage(1, info.data)
+				err := info.ws_info.Conn.WriteMessage(websocket.TextMessage, info.data)
 				if err != nil {
 					logx.Errorf("PublishTrade err: %+v \n", err)
 				}
+			} else {
+				logx.Infof("ws:%+v is not alive", info.ws_info)
 			}
 		}
 	}

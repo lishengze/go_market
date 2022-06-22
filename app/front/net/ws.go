@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 
 	"github.com/gorilla/websocket"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type WSInfo struct {
@@ -18,13 +19,15 @@ type WSInfo struct {
 
 func NewWSInfo(conn *websocket.Conn) *WSInfo {
 	return &WSInfo{
-		ID:   util.UTCNanoTime(),
-		Conn: conn,
+		ID:    util.UTCNanoTime(),
+		Conn:  conn,
+		Alive: 1,
 	}
 }
 
 func (w *WSInfo) Close() {
-	fmt.Printf("%d closed! \n", w.ID)
+	logx.Infof("%d closed! \n", w.ID)
+	atomic.StoreInt32(&w.Alive, 0)
 }
 
 func (w *WSInfo) String() string {
@@ -51,4 +54,5 @@ func (w *WSInfo) IsAlive() bool {
 
 func (w *WSInfo) SetLastReqTime(req_time int64) {
 	atomic.StoreInt64(&w.LastReqTime, req_time)
+	atomic.StoreInt32(&w.Alive, 1)
 }

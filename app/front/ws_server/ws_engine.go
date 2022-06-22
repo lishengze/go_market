@@ -58,8 +58,9 @@ func (w *WSEngine) StoreWS(ws *net.WSInfo) {
 
 func (w *WSEngine) StartListen() {
 	logx.Infof("Start Listen: %s:%s", w.WsConfig.Address, w.WsConfig.Url)
-	http.ListenAndServe(w.WsConfig.Address, nil)
+
 	http.HandleFunc(w.WsConfig.Url, w.ListenRequest)
+	http.ListenAndServe(w.WsConfig.Address, nil)
 }
 
 func (w *WSEngine) StartHeartbeat() {
@@ -114,7 +115,7 @@ func (w *WSEngine) ChecktHeartbeat() {
 }
 
 func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%+v, Echo: %+v \n", time.Now(), *r)
+	logx.Infof("RequestInfo: %+v, Echo: %+v \n", time.Now(), *r)
 
 	c, err := upgrader.Upgrade(h, r, nil)
 
@@ -162,12 +163,32 @@ func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
    }
 */
 
+func catch_exp(msg []byte, ws *net.WSInfo) {
+	errMsg := recover()
+	if errMsg != nil {
+		fmt.Println("This is catch_exp func")
+		logx.Errorf("catch_exp OriginalMsg: %s, WSInfo: %+v\n", msg, *ws)
+		logx.Errorf("errMsg: %+v \n", errMsg)
+		fmt.Println(errMsg)
+	}
+
+}
+
 func (w *WSEngine) ProcessMessage(msg []byte, ws *net.WSInfo) {
+	defer catch_exp(msg, ws)
+
 	ws.SetLastReqTime(util.UTCNanoTime())
 
 	var m map[string]interface{}
 	if err := json.Unmarshal([]byte(msg), &m); err != nil {
 		logx.Errorf("Error = %+v", err)
+		return
+	}
+
+	logx.Infof("msg: %s, mapping: %+v\n", string(msg), m)
+
+	if _, ok := m["type"]; !ok {
+		logx.Error("Msg Error, ori msg: %+v", string(msg))
 		return
 	}
 
@@ -215,11 +236,13 @@ func (w *WSEngine) ProcessSubDepth(m map[string]interface{}, ws *net.WSInfo) {
    }
 */
 func (w *WSEngine) ProcessSubTrade(m map[string]interface{}, ws *net.WSInfo) {
+	logx.Infof("SubTradeInfo: %+v", m)
 	if value, ok := m["symbol"]; ok {
-		symbol_list := value.([]string)
+		logx.Infof("value: %+v", value)
+		symbol_list := value.([]interface{})
 
 		for _, symbol := range symbol_list {
-			w.next_worker.SubTrade(symbol, ws)
+			w.next_worker.SubTrade(symbol.(string), ws)
 		}
 	} else {
 		logx.Error("ProcessSubTrade: No Symbol Data %+v", m)
