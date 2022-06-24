@@ -24,7 +24,7 @@ var o = getOpu(opuAddress)
 func main() {
 	//subUpdate()
 
-	//testRegisterAccount()
+	testRegisterAccount()
 	testGetBalance()
 
 	//testPlaceOrder()

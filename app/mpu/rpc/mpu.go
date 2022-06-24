@@ -1,13 +1,13 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-
 	"exterior-interactor/app/mpu/rpc/internal/config"
 	"exterior-interactor/app/mpu/rpc/internal/server"
 	"exterior-interactor/app/mpu/rpc/internal/svc"
 	"exterior-interactor/app/mpu/rpc/mpupb"
+	"flag"
+	"fmt"
+	"github.com/zeromicro/go-zero/core/logx"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"
@@ -23,6 +23,7 @@ func main() {
 
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
+	logx.MustSetup(c.Log)
 	ctx := svc.NewServiceContext(c)
 	srv := server.NewMpuServer(ctx)
 
