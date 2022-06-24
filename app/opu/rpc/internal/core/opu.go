@@ -29,6 +29,7 @@ type (
 		PlaceOrder(req *opupb.PlaceOrderReq) (*opupb.EmptyRsp, error)
 		QueryOrder(req *opupb.QueryOrderReq) (*opupb.QueryOrderRsp, error)
 		CancelOrder(req *opupb.CancelOrderReq) (*opupb.EmptyRsp, error)
+		CancelAllOpenOrders(req *opupb.CancelAllOpenOrdersReq) (*opupb.EmptyRsp, error)
 		QueryBalance(req *opupb.QueryBalanceReq) (*opupb.QueryBalanceRsp, error)
 		QueryTrade(req *opupb.QueryTradeReq) (*opupb.QueryTradeRsp, error)
 		GetSymbol(req *opupb.GetSymbolReq) (*opupb.GetSymbolRsp, error)
@@ -37,7 +38,7 @@ type (
 	opu struct {
 		exchange          string
 		proxy             string
-		unClosedOrdersMap sync.Map // 存储未完成的订单 key: Order.Id & Order.ClientOrderId value: *orderManager
+		unClosedOrdersMap sync.Map // 存储未完成的订单 key: Order.Id  value: *orderManager
 		accountMap        sync.Map // 存储账户 key:Account.Id value: *accountManager
 		svcCtx            *svcCtx
 		kafkaSyncProducer sarama.SyncProducer
@@ -372,6 +373,24 @@ func (o *opu) CancelOrder(req *opupb.CancelOrderReq) (*opupb.EmptyRsp, error) {
 		go om.(*orderManager).cancelOrder() // 撤单
 		return &opupb.EmptyRsp{}, nil
 	}
+
+	return &opupb.EmptyRsp{}, fmt.Errorf("order is closed")
+}
+
+func (o *opu) CancelAllOpenOrders(req *opupb.CancelAllOpenOrdersReq) (*opupb.EmptyRsp, error) {
+
+	account, err := o.getAccountManager(req.AccountId, req.AccountAlias)
+	if err != nil {
+		return nil, err
+	}
+
+	o.unClosedOrdersMap.Range(func(key, value interface{}) bool {
+		om := value.(*orderManager)
+		if om.order.AccountId == account.Id {
+			go value.(*orderManager).cancelOrder() // 撤单
+		}
+		return true
+	})
 
 	return &opupb.EmptyRsp{}, fmt.Errorf("order is closed")
 }

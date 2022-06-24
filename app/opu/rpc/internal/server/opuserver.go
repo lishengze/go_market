@@ -62,6 +62,11 @@ func (s *OpuServer) CancelOrder(ctx context.Context, in *opupb.CancelOrderReq) (
 	return l.CancelOrder(in)
 }
 
+func (s *OpuServer) CancelAllOpenOrders(ctx context.Context, in *opupb.CancelAllOpenOrdersReq) (*opupb.EmptyRsp, error) {
+	l := logic.NewCancelAllOpenOrdersLogic(ctx, s.svcCtx)
+	return l.CancelAllOpenOrders(in)
+}
+
 func (s *OpuServer) QueryBalance(ctx context.Context, in *opupb.QueryBalanceReq) (*opupb.QueryBalanceRsp, error) {
 	l := logic.NewQueryBalanceLogic(ctx, s.svcCtx)
 	return l.QueryBalance(in)

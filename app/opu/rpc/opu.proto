@@ -78,6 +78,11 @@ message CancelOrderReq {
   string client_order_id = 3;
 }
 
+message CancelAllOpenOrdersReq {
+  string account_id = 1;
+  string account_alias = 2;
+}
+
 message QueryOrderReq {
   string account_id = 1; // account_id, account_alias 填一个参数即可, account_id 优先
   string account_alias = 2;
@@ -228,6 +233,8 @@ service Opu {
   rpc QueryTrade(QueryTradeReq) returns (QueryTradeRsp);
   rpc PlaceOrder(PlaceOrderReq) returns (EmptyRsp);
   rpc CancelOrder(CancelOrderReq) returns (EmptyRsp);
+
+  rpc CancelAllOpenOrders(CancelAllOpenOrdersReq) returns (EmptyRsp); // 撤销所有 未终结的订单。(谨慎使用，一般测试环境用)
 
   rpc QueryBalance(QueryBalanceReq) returns (QueryBalanceRsp);
 }

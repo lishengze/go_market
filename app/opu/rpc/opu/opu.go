@@ -13,32 +13,33 @@ import (
 )
 
 type (
-	Account            = opupb.Account
-	Balance            = opupb.Balance
-	BalanceDetail      = opupb.BalanceDetail
-	CancelOrderReq     = opupb.CancelOrderReq
-	EmptyReq           = opupb.EmptyReq
-	EmptyRsp           = opupb.EmptyRsp
-	GetAccountReq      = opupb.GetAccountReq
-	GetAccountRsp      = opupb.GetAccountRsp
-	GetSymbolReq       = opupb.GetSymbolReq
-	GetSymbolRsp       = opupb.GetSymbolRsp
-	Order              = opupb.Order
-	OrderTradesUpdate  = opupb.OrderTradesUpdate
-	OrderUpdate        = opupb.OrderUpdate
-	PlaceOrderReq      = opupb.PlaceOrderReq
-	QueryBalanceReq    = opupb.QueryBalanceReq
-	QueryBalanceRsp    = opupb.QueryBalanceRsp
-	QueryOrderReq      = opupb.QueryOrderReq
-	QueryOrderRsp      = opupb.QueryOrderRsp
-	QueryTradeReq      = opupb.QueryTradeReq
-	QueryTradeRsp      = opupb.QueryTradeRsp
-	RegisterAccountReq = opupb.RegisterAccountReq
-	RegisterAccountRsp = opupb.RegisterAccountRsp
-	Symbol             = opupb.Symbol
-	Trade              = opupb.Trade
-	TradesUpdate       = opupb.TradesUpdate
-	UpdateAccountReq   = opupb.UpdateAccountReq
+	Account                = opupb.Account
+	Balance                = opupb.Balance
+	BalanceDetail          = opupb.BalanceDetail
+	CancelAllOpenOrdersReq = opupb.CancelAllOpenOrdersReq
+	CancelOrderReq         = opupb.CancelOrderReq
+	EmptyReq               = opupb.EmptyReq
+	EmptyRsp               = opupb.EmptyRsp
+	GetAccountReq          = opupb.GetAccountReq
+	GetAccountRsp          = opupb.GetAccountRsp
+	GetSymbolReq           = opupb.GetSymbolReq
+	GetSymbolRsp           = opupb.GetSymbolRsp
+	Order                  = opupb.Order
+	OrderTradesUpdate      = opupb.OrderTradesUpdate
+	OrderUpdate            = opupb.OrderUpdate
+	PlaceOrderReq          = opupb.PlaceOrderReq
+	QueryBalanceReq        = opupb.QueryBalanceReq
+	QueryBalanceRsp        = opupb.QueryBalanceRsp
+	QueryOrderReq          = opupb.QueryOrderReq
+	QueryOrderRsp          = opupb.QueryOrderRsp
+	QueryTradeReq          = opupb.QueryTradeReq
+	QueryTradeRsp          = opupb.QueryTradeRsp
+	RegisterAccountReq     = opupb.RegisterAccountReq
+	RegisterAccountRsp     = opupb.RegisterAccountRsp
+	Symbol                 = opupb.Symbol
+	Trade                  = opupb.Trade
+	TradesUpdate           = opupb.TradesUpdate
+	UpdateAccountReq       = opupb.UpdateAccountReq
 
 	Opu interface {
 		GetSymbol(ctx context.Context, in *GetSymbolReq, opts ...grpc.CallOption) (*GetSymbolRsp, error)
@@ -49,6 +50,7 @@ type (
 		QueryTrade(ctx context.Context, in *QueryTradeReq, opts ...grpc.CallOption) (*QueryTradeRsp, error)
 		PlaceOrder(ctx context.Context, in *PlaceOrderReq, opts ...grpc.CallOption) (*EmptyRsp, error)
 		CancelOrder(ctx context.Context, in *CancelOrderReq, opts ...grpc.CallOption) (*EmptyRsp, error)
+		CancelAllOpenOrders(ctx context.Context, in *CancelAllOpenOrdersReq, opts ...grpc.CallOption) (*EmptyRsp, error)
 		QueryBalance(ctx context.Context, in *QueryBalanceReq, opts ...grpc.CallOption) (*QueryBalanceRsp, error)
 	}
 
@@ -101,6 +103,11 @@ func (m *defaultOpu) PlaceOrder(ctx context.Context, in *PlaceOrderReq, opts ...
 func (m *defaultOpu) CancelOrder(ctx context.Context, in *CancelOrderReq, opts ...grpc.CallOption) (*EmptyRsp, error) {
 	client := opupb.NewOpuClient(m.cli.Conn())
 	return client.CancelOrder(ctx, in, opts...)
+}
+
+func (m *defaultOpu) CancelAllOpenOrders(ctx context.Context, in *CancelAllOpenOrdersReq, opts ...grpc.CallOption) (*EmptyRsp, error) {
+	client := opupb.NewOpuClient(m.cli.Conn())
+	return client.CancelAllOpenOrders(ctx, in, opts...)
 }
 
 func (m *defaultOpu) QueryBalance(ctx context.Context, in *QueryBalanceReq, opts ...grpc.CallOption) (*QueryBalanceRsp, error) {
