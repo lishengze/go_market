@@ -24,8 +24,9 @@ var o = getOpu(opuAddress)
 func main() {
 	//subUpdate()
 
-	testRegisterAccount()
-	testGetBalance()
+	//testRegisterAccount()
+	//testGetBalance()
+	testCancelAllOpenOrders()
 
 	//testPlaceOrder()
 
@@ -97,6 +98,19 @@ func testCancelOrder() {
 		AccountId:     "",
 		AccountAlias:  "FTX_MCA_OTC_TRADING",
 		ClientOrderId: "202930519",
+	})
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println(rsp)
+}
+
+func testCancelAllOpenOrders() {
+	rsp, err := o.CancelAllOpenOrders(context.Background(), &opu.CancelAllOpenOrdersReq{
+		AccountId:    "",
+		AccountAlias: "FTX_MCA_OTC_TRADING",
 	})
 
 	if err != nil {

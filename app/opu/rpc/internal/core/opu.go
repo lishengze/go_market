@@ -392,7 +392,7 @@ func (o *opu) CancelAllOpenOrders(req *opupb.CancelAllOpenOrdersReq) (*opupb.Emp
 		return true
 	})
 
-	return &opupb.EmptyRsp{}, fmt.Errorf("order is closed")
+	return &opupb.EmptyRsp{}, nil
 }
 
 func (o *opu) verifyPlaceOrderParams(req *opupb.PlaceOrderReq, accountId string) error {
