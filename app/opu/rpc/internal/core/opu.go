@@ -253,14 +253,46 @@ func (o *opu) QueryBalance(req *opupb.QueryBalanceReq) (*opupb.QueryBalanceRsp, 
 }
 
 func (o *opu) QueryTrade(req *opupb.QueryTradeReq) (*opupb.QueryTradeRsp, error) {
-	//account, err := o.getAccountManager(req.AccountId, req.AccountAlias)
-	//if err != nil {
-	//	return nil, err
-	//}
+	account, err := o.getAccountManager(req.AccountId, req.AccountAlias)
+	if err != nil {
+		return nil, err
+	}
 
-	//account.QueryTrades()
+	order, err := o.svcCtx.OrderModel.FindOneByAccountIdClientOrderId(account.Account.Id, req.ClientOrderId)
+	if err != nil {
+		logx.Error(err)
+		return nil, err
+	}
 
-	return nil, fmt.Errorf("not implement")
+	res, err := account.TradeManager.QueryTrades(exmodel.QueryTradeReq{
+		OrderId:        order.ExOrderId,
+		SymbolExFormat: order.ExSymbol,
+		ApiType:        exmodel.ApiType(order.ApiType),
+		StartTime:      req.StartTime.AsTime(),
+		EndTime:        req.EndTime.AsTime(),
+	})
+
+	if err != nil {
+		logx.Error(err)
+		return nil, err
+	}
+
+	var trades []*opupb.Trade
+
+	for _, t := range res {
+		trades = append(trades, &opupb.Trade{
+			Id:          "",
+			ExTradeId:   t.TradeId,
+			Volume:      t.Volume,
+			Price:       t.Price,
+			Liquidity:   t.Liquidity.String(),
+			Fee:         t.Fee,
+			FeeCurrency: t.FeeCurrency.String(),
+			TradeTime:   timestamppb.New(t.TradeTime),
+		})
+	}
+
+	return &opupb.QueryTradeRsp{Trades: trades}, nil
 }
 
 func (o *opu) QueryOrder(req *opupb.QueryOrderReq) (*opupb.QueryOrderRsp, error) {
