@@ -337,12 +337,17 @@ func (a *Aggregator) cache_trade(trade *datastruct.Trade) {
 }
 
 func (a *Aggregator) publish_depth(depth *datastruct.DepthQuote) {
-	new_depth := datastruct.NewDepth(depth)
+
+	aggregate_depth := datastruct.NewDepth(depth)
+	aggregate_depth.Exchange = datastruct.BCTS_EXCHANGE_AGGREGATE
+	a.PubDataChan.DepthChannel <- aggregate_depth
+
 	if a.RiskWorker != nil {
+		new_depth := datastruct.NewDepth(depth)
 		a.RiskWorker.Execute(new_depth)
+		a.PubDataChan.DepthChannel <- new_depth
 	}
 
-	a.PubDataChan.DepthChannel <- new_depth
 }
 
 func (a *Aggregator) publish_kline(kline *datastruct.Kline) {

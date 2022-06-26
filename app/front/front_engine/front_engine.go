@@ -40,6 +40,17 @@ func (f *FrontEngine) Start() {
 	logx.Infof("FrontEngine Start!")
 }
 
+// func catch_exp(msg []byte, ws *net.WSInfo) {
+// 	errMsg := recover()
+// 	if errMsg != nil {
+// 		fmt.Println("This is catch_exp func")
+// 		logx.Errorf("catch_exp OriginalMsg: %s, WSInfo: %+v\n", msg, *ws)
+// 		logx.Errorf("errMsg: %+v \n", errMsg)
+// 		fmt.Println(errMsg)
+// 	}
+
+// }
+
 func (f *FrontEngine) PublishSymbol(symbol_list []string, ws *net.WSInfo) {
 	if ws != nil {
 
@@ -49,7 +60,7 @@ func (f *FrontEngine) PublishSymbol(symbol_list []string, ws *net.WSInfo) {
 		for _, info := range symbol_pub_list {
 			logx.Statf("symbol_pub_info: %s \n", info.String())
 			if info.ws_info.IsAlive() {
-				err := info.ws_info.Conn.WriteMessage(1, info.data)
+				err := info.ws_info.SendMsg(1, info.data)
 				if err != nil {
 					logx.Errorf("PublishSymbol err: %+v \n", err)
 				}
@@ -60,18 +71,30 @@ func (f *FrontEngine) PublishSymbol(symbol_list []string, ws *net.WSInfo) {
 }
 
 func (f *FrontEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo) {
+	defer func(depth *datastruct.DepthQuote, ws *net.WSInfo) {
+		errMsg := recover()
+		if errMsg != nil {
+			logx.Errorf("PublishDepth depth: %+v, ws_info: %+v\n", depth, ws)
+			logx.Errorf("errMsg: %+v \n", errMsg)
+		}
+	}(depth, ws)
+
 	if ws != nil {
+		if ws.IsAlive() {
+			byte_data := NewDepthJsonMsg(depth)
+			err := ws.SendMsg(websocket.TextMessage, byte_data)
 
+			if err != nil {
+				logx.Errorf("PublishDepth err: %+v \n", err)
+			}
+		}
 	} else {
-
-		// logx.Statf("front depth: %s", depth.String(2))
-
 		depth_pub_list := f.sub_data.GetDepthPubInfoList(depth)
 
 		for _, info := range depth_pub_list {
 			logx.Infof("depth_pub_info: %s \n", info.String())
 			if info.ws_info.IsAlive() {
-				err := info.ws_info.Conn.WriteMessage(1, info.data)
+				err := info.ws_info.SendMsg(1, info.data)
 				if err != nil {
 					logx.Errorf("PublishDepth err: %+v \n", err)
 				}
@@ -82,16 +105,35 @@ func (f *FrontEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo)
 }
 
 func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, ws *net.WSInfo) {
-	if ws != nil {
 
+	defer func(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, ws *net.WSInfo) {
+		errMsg := recover()
+		if errMsg != nil {
+			// fmt.Println("This is catch_exp func")
+			logx.Errorf("PublishTrade trade: %+v, change_info: %+v, ws_info: %+v\n",
+				trade, change_info, ws)
+			logx.Errorf("errMsg: %+v \n", errMsg)
+			// fmt.Println(errMsg)
+		}
+	}(trade, change_info, ws)
+
+	if ws != nil {
+		if ws.IsAlive() {
+			byte_data := NewTradeJsonMsg(trade, change_info)
+			err := ws.SendMsg(websocket.TextMessage, byte_data)
+
+			if err != nil {
+				logx.Errorf("PublishDepth err: %+v \n", err)
+			}
+		}
 	} else {
 		trade_pub_list := f.sub_data.GetTradePubInfoList(trade, change_info)
-		logx.Info("After GetTradePubInfoList")
+		// logx.Info("After GetTradePubInfoList")
 
 		for _, info := range trade_pub_list {
 			logx.Infof("trade_pub_info: %s \n", info.String())
 			if info.ws_info.IsAlive() {
-				err := info.ws_info.Conn.WriteMessage(websocket.TextMessage, info.data)
+				err := info.ws_info.SendMsg(websocket.TextMessage, info.data)
 				if err != nil {
 					logx.Errorf("PublishTrade err: %+v \n", err)
 				}
@@ -104,17 +146,35 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastr
 }
 
 func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
-	if ws != nil {
+	defer func(kline *datastruct.Kline, ws *net.WSInfo) {
+		errMsg := recover()
+		if errMsg != nil {
+			// fmt.Println("This is catch_exp func")
+			logx.Errorf("PublishUpdateKline kline: %+v, ws_info: %+v\n", kline, ws)
+			logx.Errorf("errMsg: %+v \n", errMsg)
+			// fmt.Println(errMsg)
+		}
+	}(kline, ws)
 
+	if ws != nil {
+		if ws.IsAlive() {
+			logx.Statf("[PubKline]: %s", kline.String())
+			byte_data := NewKlineUpdateJsonMsg(kline)
+			err := ws.SendMsg(websocket.TextMessage, byte_data)
+
+			if err != nil {
+				logx.Errorf("PublishDepth err: %+v \n", err)
+			}
+		}
 	} else {
-		logx.Statf("[PubKline]: %s", kline.String())
+		logx.Infof("[PubKline]: %s", kline.String())
 
 		kline_pub_list := f.sub_data.GetKlinePubInfoList(kline)
 
 		for _, info := range kline_pub_list {
-			logx.Statf("kline_pub_info: %s \n", info.String())
+			logx.Infof("kline_pub_info: %s \n", info.String())
 			if info.ws_info.IsAlive() {
-				err := info.ws_info.Conn.WriteMessage(1, info.data)
+				err := info.ws_info.SendMsg(1, info.data)
 				if err != nil {
 					logx.Errorf("PublishKline err: %+v \n", err)
 				}
@@ -129,13 +189,24 @@ func (f *FrontEngine) PublishChangeinfo(change_info *datastruct.ChangeInfo, ws *
 }
 
 func (f *FrontEngine) PublishHistKline(klines *datastruct.RspHistKline, ws *net.WSInfo) {
-	// d.publish_kline(kline)
+	defer func(klines *datastruct.RspHistKline, ws *net.WSInfo) {
+		errMsg := recover()
+		if errMsg != nil {
+			// fmt.Println("This is catch_exp func")
+			logx.Errorf("PublishHistKline klines: %+v, ws_info: %+v\n", klines, ws)
+			logx.Errorf("errMsg: %+v \n", errMsg)
+			// fmt.Println(errMsg)
+		}
+	}(klines, ws)
+
 	f.sub_data.ProcessKlineHistData(klines)
 
 	if ws != nil {
+		logx.Statf("PublishHistKline: %+v", klines)
+
 		byte_data := NewHistKlineJsonMsg(klines)
 		if ws.IsAlive() {
-			err := ws.Conn.WriteMessage(1, byte_data)
+			err := ws.SendMsg(1, byte_data)
 			if err != nil {
 				logx.Errorf("PublishHistKline err: %+v \n", err)
 			}

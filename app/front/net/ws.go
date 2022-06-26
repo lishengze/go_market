@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"market_server/common/datastruct"
 	"market_server/common/util"
+	"sync"
 	"sync/atomic"
 
 	"github.com/gorilla/websocket"
@@ -15,6 +16,8 @@ type WSInfo struct {
 	Conn        *websocket.Conn
 	Alive       int32
 	LastReqTime int64
+
+	mutex sync.Mutex
 }
 
 func NewWSInfo(conn *websocket.Conn) *WSInfo {
@@ -23,6 +26,13 @@ func NewWSInfo(conn *websocket.Conn) *WSInfo {
 		Conn:  conn,
 		Alive: 1,
 	}
+}
+
+func (w *WSInfo) SendMsg(messageType int, data []byte) error {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
+
+	return w.Conn.WriteMessage(messageType, data)
 }
 
 func (w *WSInfo) Close() {

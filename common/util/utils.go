@@ -3,6 +3,8 @@ package util
 import (
 	"fmt"
 	"time"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 func LOG_INFO(info string) {
@@ -129,4 +131,20 @@ func Float64ComparatorDsc(a, b interface{}) int {
 	default:
 		return 0
 	}
+}
+
+func InitTestLogx() {
+
+	LogConfig := logx.LogConf{
+		Compress:            true,
+		KeepDays:            0,
+		Level:               "info",
+		Mode:                "file",
+		Path:                "./log",
+		ServiceName:         "client",
+		StackCooldownMillis: 100,
+		TimeFormat:          "2006-01-02 15:04:05",
+	}
+
+	logx.MustSetup(LogConfig)
 }

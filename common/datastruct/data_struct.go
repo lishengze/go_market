@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	BCTS_EXCHANGE = "_bcts_"
+	BCTS_EXCHANGE           = "_bcts_"
+	BCTS_EXCHANGE_AGGREGATE = "_bcts_aggregate_"
 
 	BCTS_GROUP = "BCTS"
 

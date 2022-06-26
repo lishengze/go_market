@@ -1,7 +1,5 @@
 package datastruct
 
-import "market_server/common/config"
-
 type SerializerI interface {
 	EncodeDepth(*DepthQuote) ([]byte, error)
 	EncodeKline(*Kline) ([]byte, error)
@@ -13,8 +11,8 @@ type SerializerI interface {
 }
 
 type NetServerI interface {
-	InitKafka(SerializerI, *DataChannel, *DataChannel, config.KafkaConfig) error
-	Start()
+	// InitKafka(SerializerI, *DataChannel, *DataChannel, config.KafkaConfig) error
+	Start() error
 	UpdateMetaData(*Metadata)
 
 	PublishDepth(*DepthQuote) error

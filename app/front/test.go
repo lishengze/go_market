@@ -54,9 +54,9 @@ func TestEngine() {
 
 func StartTest(svr *server.ServerEngine) {
 	test_pub_map := make(map[string]struct{})
-	// test_pub_map[datastruct.KLINE_TYPE] = struct{}{}
+	test_pub_map[datastruct.KLINE_TYPE] = struct{}{}
 	test_pub_map[datastruct.TRADE_TYPE] = struct{}{}
-	// test_pub_map[datastruct.DEPTH_TYPE] = struct{}{}
+	test_pub_map[datastruct.DEPTH_TYPE] = struct{}{}
 
 	logx.Statf("test_pub_map: %+v \n", test_pub_map)
 

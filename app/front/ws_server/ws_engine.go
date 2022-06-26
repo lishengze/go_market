@@ -218,10 +218,10 @@ func (w *WSEngine) ProcessMessage(msg []byte, ws *net.WSInfo) {
 */
 func (w *WSEngine) ProcessSubDepth(m map[string]interface{}, ws *net.WSInfo) {
 	if value, ok := m["symbol"]; ok {
-		symbol_list := value.([]string)
+		symbol_list := value.([]interface{})
 
 		for _, symbol := range symbol_list {
-			w.next_worker.SubDepth(symbol, ws)
+			w.next_worker.SubDepth(symbol.(string), ws)
 		}
 
 	} else {
@@ -238,7 +238,7 @@ func (w *WSEngine) ProcessSubDepth(m map[string]interface{}, ws *net.WSInfo) {
 func (w *WSEngine) ProcessSubTrade(m map[string]interface{}, ws *net.WSInfo) {
 	logx.Infof("SubTradeInfo: %+v", m)
 	if value, ok := m["symbol"]; ok {
-		logx.Infof("value: %+v", value)
+		// logx.Infof("value: %+v", value)
 		symbol_list := value.([]interface{})
 
 		for _, symbol := range symbol_list {
@@ -272,23 +272,26 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 	}
 
 	if value, ok := m["frequency"]; ok {
-		resolution = value.(uint32)
+		// value_type := reflect.TypeOf(value)
+		// true_value := reflect.ValueOf(value)
+
+		resolution = uint32(value.(float64))
 	} else {
 		logx.Error("ProcessSubTrade: No frequency Data %+v", m)
 		return
 	}
 
 	if value, ok := m["data_count"]; ok {
-		count = value.(uint32)
+		count = uint32(value.(float64))
 	} else {
 		logx.Error("ProcessSubTrade: No data_count Data %+v", m)
 	}
 
 	if value, ok := m["start_time"]; ok {
-		start_time = value.(uint64)
+		start_time = uint64(value.(float64))
 	}
 	if value, ok := m["end_time"]; ok {
-		end_time = value.(uint64)
+		end_time = uint64(value.(float64))
 	}
 
 	if uint64(count)+start_time+end_time == 0 {

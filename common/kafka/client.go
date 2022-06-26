@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"context"
-	"fmt"
 	"market_server/common/config"
 	"market_server/common/datastruct"
 	"sync"
@@ -48,6 +47,23 @@ type KafkaServer struct {
 	pub_statistic_info sync.Map
 
 	statistic_start time.Time
+}
+
+func NewKafka(serializer datastruct.SerializerI,
+	recv_data_chan *datastruct.DataChannel,
+	pub_data_chan *datastruct.DataChannel,
+	config config.KafkaConfig) *KafkaServer {
+	server := &KafkaServer{
+		Serializer:     serializer,
+		RecvDataChan:   recv_data_chan,
+		PubDataChan:    pub_data_chan,
+		config:         config,
+		consume_topics: make(map[string]struct{}),
+		statistic_secs: 10,
+		ConsumeSet:     make(map[string](*ConsumeItem)),
+	}
+
+	return server
 }
 
 func (k *KafkaServer) StatisticTimeTaskMain() {
@@ -203,9 +219,23 @@ func (k *KafkaServer) DelConsumeTopic(topic string) {
 }
 
 // Start Consume Topic
-func (k *KafkaServer) Start() {
+func (k *KafkaServer) Start() error {
+
+	var err error
+
+	err = k.InitKafkaApi()
+	if err != nil {
+		return err
+	}
+
+	err = k.InitListenPubChan()
+	if err != nil {
+		return err
+	}
+
 	go k.StatisticTimeTaskMain()
 	k.start_consume()
+	return nil
 }
 
 func (k *KafkaServer) start_consume() {
@@ -213,7 +243,7 @@ func (k *KafkaServer) start_consume() {
 
 	defer k.consume_lock.Unlock()
 
-	logx.Info("CurrConsumeSet: " + fmt.Sprintf("%+v", k.ConsumeSet))
+	logx.Infof("CurrConsumeSet: %+v", k.ConsumeSet)
 
 	if len(k.ConsumeSet) == 0 {
 		logx.Info("ConsumeSet is Empty!")
@@ -227,10 +257,10 @@ func (k *KafkaServer) start_consume() {
 func (k *KafkaServer) UpdateMetaData(meta_data *datastruct.Metadata) {
 	k.consume_lock.Lock()
 
-	logx.Info("UpdateMetaData: " + fmt.Sprintf("%+v", meta_data))
+	logx.Infof("UpdateMetaData: %+v", meta_data)
 
 	NewConsumeSet := GetConsumeSet(*meta_data)
-	logx.Info(fmt.Sprintf("NewTopicSet: %+v", NewConsumeSet))
+	logx.Infof("NewTopicSet: %+v", NewConsumeSet)
 
 	if k.ConsumeSet == nil {
 		k.ConsumeSet = make(map[string](*ConsumeItem))
