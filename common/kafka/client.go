@@ -470,7 +470,8 @@ func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
 	err := k.Producer.SendMessages(msgs)
 
 	if err != nil {
-		logx.Error(err.Error())
+		logx.Errorf("[kafka] SendMessages: %s ", err.Error())
+		logx.Infof("[kafka] SendMessages: %s ", err.Error())
 		k.PublishMutex.Unlock()
 		return err
 	}
