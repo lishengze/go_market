@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"fmt"
 	"market_server/common/config"
 	"market_server/common/datastruct"
 	"sync"
@@ -22,6 +23,7 @@ type KafkaServer struct {
 
 	Producer sarama.SyncProducer
 	Broker   *sarama.Broker
+	Client   sarama.Client
 
 	MetaData datastruct.Metadata
 
@@ -42,6 +44,8 @@ type KafkaServer struct {
 	consume_topics       map[string]struct{}
 	consume_topics_mutex sync.Mutex
 
+	created_topics map[string]struct{}
+
 	statistic_secs     int
 	rcv_statistic_info sync.Map
 	pub_statistic_info sync.Map
@@ -52,7 +56,7 @@ type KafkaServer struct {
 func NewKafka(serializer datastruct.SerializerI,
 	recv_data_chan *datastruct.DataChannel,
 	pub_data_chan *datastruct.DataChannel,
-	config config.KafkaConfig) *KafkaServer {
+	config config.KafkaConfig) (*KafkaServer, error) {
 	server := &KafkaServer{
 		Serializer:     serializer,
 		RecvDataChan:   recv_data_chan,
@@ -61,9 +65,12 @@ func NewKafka(serializer datastruct.SerializerI,
 		consume_topics: make(map[string]struct{}),
 		statistic_secs: 10,
 		ConsumeSet:     make(map[string](*ConsumeItem)),
+		created_topics: make(map[string]struct{}),
 	}
 
-	return server
+	err := server.InitApi()
+
+	return server, err
 }
 
 func (k *KafkaServer) StatisticTimeTaskMain() {
@@ -82,7 +89,7 @@ func (k *KafkaServer) StatisticTimeTaskMain() {
 
 func (k *KafkaServer) OutputRcvInfo(key, value interface{}) bool {
 	if value.(int) != 0 {
-		logx.Infof("[rcv] %s : %d ", key, value)
+		logx.Statf("[rcv] %s : %d ", key, value)
 		k.rcv_statistic_info.Store(key, 0)
 	}
 
@@ -91,7 +98,7 @@ func (k *KafkaServer) OutputRcvInfo(key, value interface{}) bool {
 
 func (k *KafkaServer) OutputPubInfo(key, value interface{}) bool {
 	if value.(int) != 0 {
-		logx.Infof("[pub] %s : %d ", key, value)
+		logx.Statf("[pub] %s : %d ", key, value)
 		k.pub_statistic_info.Store(key, 0)
 	}
 	return true
@@ -101,8 +108,6 @@ func (k *KafkaServer) UpdateStatisticInfo() {
 
 	logx.Statf("kafka Statistic Start: %+v \n", k.statistic_start)
 
-	// if k.rcv_statistic_info.
-
 	k.rcv_statistic_info.Range(k.OutputRcvInfo)
 
 	k.pub_statistic_info.Range(k.OutputPubInfo)
@@ -110,6 +115,10 @@ func (k *KafkaServer) UpdateStatisticInfo() {
 	k.statistic_start = time.Now()
 
 	logx.Statf("kafka Statistic End: %+v \n", k.statistic_start)
+}
+
+func (k *KafkaServer) CreatedTopics() map[string]struct{} {
+	return k.created_topics
 }
 
 // Init(*config.Config, SerializerI, *DataChannel)
@@ -130,21 +139,18 @@ func (k *KafkaServer) InitKafka(serializer datastruct.SerializerI,
 
 	var err error
 
-	err = k.InitKafkaApi()
+	err = k.InitApi()
 	if err != nil {
 		return err
 	}
 
-	err = k.InitListenPubChan()
-	if err != nil {
-		return err
-	}
+	k.StartListenPubChan()
 
 	return nil
 }
 
-func (k *KafkaServer) InitKafkaApi() error {
-	logx.Info("KafkaServer.InitKafkaApi")
+func (k *KafkaServer) InitApi() error {
+	logx.Info("KafkaServer.InitApi")
 
 	var err error
 
@@ -154,25 +160,46 @@ func (k *KafkaServer) InitKafkaApi() error {
 		return err
 	}
 
+	k.Client, err = sarama.NewClient([]string{k.config.IP}, nil)
+	if err != nil {
+		logx.Errorf("NewClient Failed %s ", err.Error())
+		return err
+	}
+
 	k.Broker = sarama.NewBroker(k.config.IP)
 	broker_config := sarama.NewConfig()
 	err = k.Broker.Open(broker_config)
 	if err != nil {
-		logx.Error(err.Error())
+		logx.Errorf("Broker Open Error: %s", err.Error())
+		return err
+	}
+	ok, err := k.Broker.Connected()
+	if !ok {
+		logx.Errorf("Broker Connect Error: %s", err.Error())
 		return err
 	}
 
 	return nil
 }
 
-func (k *KafkaServer) InitListenPubChan() error {
-	// k.PubDataChan = &datastruct.DataChannel{
-	// 	TradeChannel: make(chan *datastruct.Trade),
-	// 	KlineChannel: make(chan *datastruct.Kline),
-	// 	DepthChannel: make(chan *datastruct.DepthQuote),
-	// }
+func (k *KafkaServer) UpdateCreateTopics() error {
+	online_topics, err := k.Client.Topics()
+	if err != nil {
+		logx.Errorf("Get Online Topics Failed %s ", err.Error())
+		return err
+	}
+	logx.Infof("Online Topics: %+v", online_topics)
 
-	logx.Info("KafkaServer.InitListenPubChan")
+	for _, topic := range online_topics {
+		if _, ok := k.created_topics[topic]; !ok {
+			k.created_topics[topic] = struct{}{}
+		}
+	}
+	return nil
+}
+
+func (k *KafkaServer) StartListenPubChan() {
+	logx.Info("KafkaServer.StartListenPubChan")
 
 	go func() {
 		for {
@@ -186,7 +213,6 @@ func (k *KafkaServer) InitListenPubChan() error {
 			}
 		}
 	}()
-	return nil
 }
 
 func (k *KafkaServer) IsTopicConsumed(topic string) bool {
@@ -221,17 +247,8 @@ func (k *KafkaServer) DelConsumeTopic(topic string) {
 // Start Consume Topic
 func (k *KafkaServer) Start() error {
 
-	var err error
-
-	err = k.InitKafkaApi()
-	if err != nil {
-		return err
-	}
-
-	err = k.InitListenPubChan()
-	if err != nil {
-		return err
-	}
+	k.UpdateCreateTopics()
+	k.StartListenPubChan()
 
 	go k.StatisticTimeTaskMain()
 	k.start_consume()
@@ -309,7 +326,7 @@ func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 		for partition := range partitionList {
 			pc, err := consumer.ConsumePartition(consume_item.Topic, int32(partition), sarama.OffsetNewest)
 
-			// logx.Info("[After] ConsumePartition ")
+			logx.Info("[After] ConsumePartition ")
 			if err != nil {
 				logx.Error(err.Error())
 				continue
@@ -346,6 +363,8 @@ func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 			}
 		}
 
+		logx.Infof("Wait For Connect!")
+
 		time.Sleep(time.Second * 3)
 	}
 
@@ -353,6 +372,41 @@ func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 
 func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
 
+}
+
+func (k *KafkaServer) CheckTopic(topic string) bool {
+	_, ok := k.created_topics[topic]
+	return ok
+}
+
+func (k *KafkaServer) CreateTopic(topic string) bool {
+
+	create_detail_map := make(map[string]*sarama.TopicDetail)
+
+	create_detail_map[topic] = &sarama.TopicDetail{
+		NumPartitions:     1,
+		ReplicationFactor: 1,
+	}
+
+	create_req := &sarama.CreateTopicsRequest{
+		TopicDetails: create_detail_map,
+		Timeout:      time.Second * 15,
+	}
+
+	create_respons, err := k.Broker.CreateTopics(create_req)
+
+	if err != nil {
+		logx.Errorf("CreateTopics Error: %+v", err)
+		return false
+	} else {
+		logx.Infof("create_respons: %+v", create_respons)
+	}
+
+	k.UpdateCreateTopics()
+
+	_, ok := k.created_topics[topic]
+
+	return ok
 }
 
 func (k *KafkaServer) ProcessDepthBytes(depth_bytes []byte) error {
@@ -396,7 +450,10 @@ func (k *KafkaServer) ProcessTradeBytes(trade_bytes []byte) error {
 }
 
 func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
-	defer k.PublishMutex.Unlock()
+
+	if !k.CheckTopic(topic) && !k.CreateTopic(topic) {
+		return fmt.Errorf("%s is not created and create it failed!", topic)
+	}
 
 	if value, ok := k.pub_statistic_info.Load(topic); ok {
 		k.pub_statistic_info.Store(topic, value.(int)+1)
@@ -414,8 +471,10 @@ func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
 
 	if err != nil {
 		logx.Error(err.Error())
+		k.PublishMutex.Unlock()
 		return err
 	}
+	k.PublishMutex.Unlock()
 	return nil
 }
 
@@ -449,7 +508,7 @@ func (k *KafkaServer) PublishKline(local_kline *datastruct.Kline) error {
 }
 
 func (k *KafkaServer) PublishTrade(local_trade *datastruct.Trade) error {
-	// logx.Slow(fmt.Sprintf("Pub Trade %+v", local_trade))
+	logx.Slowf("Pub Trade %+v", local_trade)
 
 	serialize_str, err := k.Serializer.EncodeTrade(local_trade)
 
@@ -474,6 +533,6 @@ func (k *KafkaServer) SendRecvedKline(kline *datastruct.Kline) {
 }
 
 func (k *KafkaServer) SendRecvedTrade(trade *datastruct.Trade) {
-	// logx.Slowf("[kafka] Rcv Trade: %s \n", trade.String())
+	logx.Slowf("[kafka] Rcv Trade: %s \n", trade.String())
 	k.RecvDataChan.TradeChannel <- trade
 }

@@ -302,7 +302,7 @@ func (s *ServerEngine) SetTestConfig() {
 
 	s.AggregateWorker.UpdateConfig(AggConfig)
 
-	symbols := []string{"BTC_USDT", "ETH_USDT"}
+	symbols := []string{"BTC_USDT"}
 
 	meta_data := datastruct.GetTestMetadata(symbols)
 	logx.Infof("\\nmeta_data: %+v", meta_data)

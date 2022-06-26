@@ -54,8 +54,12 @@ func NewComm(recv_chan *datastruct.DataChannel,
 	if cfg.NetServerType == COMM_KAFKA {
 		// c.NetServer = &kafka.KafkaServer{}
 		// c.NetServer.InitKafka(c.Serializer, recv_chan, pub_chan, cfg.KafkaConfig)
+		var err error
+		c.NetServer, err = kafka.NewKafka(c.Serializer, recv_chan, pub_chan, cfg.KafkaConfig)
 
-		c.NetServer = kafka.NewKafka(c.Serializer, recv_chan, pub_chan, cfg.KafkaConfig)
+		if err != nil {
+			logx.Errorf("NewKafka Error: %+v", err)
+		}
 	}
 
 	return c
@@ -71,7 +75,9 @@ func (c *Comm) Init(
 	}
 
 	if cfg.NetServerType == COMM_KAFKA {
-		c.NetServer = kafka.NewKafka(c.Serializer, recv_chan, pub_chan, cfg.KafkaConfig)
+		var err error
+		c.NetServer, err = kafka.NewKafka(c.Serializer, recv_chan, pub_chan, cfg.KafkaConfig)
+		logx.Errorf("NewKafka Error: %+v", err)
 
 		// c.NetServer.InitKafka(c.Serializer, recv_chan, pub_chan, cfg.KafkaConfig)
 	}

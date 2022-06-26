@@ -5,6 +5,10 @@ import (
 	"market_server/common/config"
 	"market_server/common/datastruct"
 	"market_server/common/util"
+
+	"market_server/common/kafka"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 func GetTestMetadata() *datastruct.Metadata {
@@ -37,15 +41,36 @@ func test_kafka() {
 
 	PubDataChan := datastruct.NewDataChannel()
 
-	Commer := comm.NewComm(RecvDataChan, PubDataChan, config)
+	// Commer := comm.NewComm(RecvDataChan, PubDataChan, config)
 
-	Commer.Start()
+	// Commer.Start()
 
-	test_meta := GetTestMetadata()
+	// test_meta := GetTestMetadata()
 
-	Commer.UpdateMetaData(test_meta)
+	// Commer.UpdateMetaData(test_meta)
+
+	Serializer := &comm.ProtobufSerializer{}
+	kafka_server, err := kafka.NewKafka(Serializer, RecvDataChan, PubDataChan, config.KafkaConfig)
+	if err != nil {
+		logx.Errorf("NewKafka Error: %+v", err)
+	}
+	kafka_server.Start()
+
+	logx.Infof("CreateTopic: %+v", kafka_server.CreatedTopics())
+
+	topic := "golang_test"
+	if kafka_server.CreateTopic(topic) {
+		logx.Infof("Create %s Successesfully!", topic)
+	} else {
+		logx.Infof("Create %s Failed!", topic)
+	}
+
+	kafka_server.UpdateCreateTopics()
+	logx.Infof("CreateTopic: %+v", kafka_server.CreatedTopics())
+
+	select {}
 }
 
 func main() {
-	// kafka.TestConsumer()
+	test_kafka()
 }
