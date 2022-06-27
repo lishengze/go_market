@@ -7,12 +7,12 @@ Etcd:
 
 
 Comm:
-  IP: "43.154.179.47:9117"
+  IP: "10.10.1.45:9092"
   NetServerType: "KAFKA"
   SerialType: "PROTOBUF"
 
 Nacos:
-  IpAddr: "36.255.220.139"
+  IpAddr: "10.10.1.45"
   Port: 8848
   NamespaceId: "bcts"
   TimeoutMs: 5000
@@ -34,7 +34,7 @@ LogConfig:
   TimeFormat:  "2006-01-02 15:04:05"
 
 Mysql:
-  Addr: "bcts:bcts@tcp(127.0.0.1:3306)/market"
+  Addr: "bcts:bcts@tcp(10.10.1.45:3306)/market"
   max_open_conns: 16
   max_idle_conns: 8
   conn_max_life_time: 300

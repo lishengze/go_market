@@ -45,6 +45,13 @@
         "type":"market_data_update"     // type 类型   
     }
 
+    3) 取消订阅  
+       这个取消订阅，会同时取消对 depth, trade 的订阅。
+    {  
+        "type":"unsub_symbol",  
+        "symbol":["symbolName"]   
+    }
+
 3. Trade 数据与 24小时涨跌幅数据
     Trade数据和24小时涨跌幅数据是在订阅 depth 数据时一起订阅的。因为24小时涨跌幅数据是依赖trade 数据更新的，所以这两类数据是放在同一个json 数据结构中回报。  
     1)  回报的数据格式:
@@ -59,6 +66,8 @@
         "low":"",
     }
 
+
+
 4. K线数据
     1) 发送订阅请求，k线的请求订阅包含了请求的历史数据的元信息，请求的json字符串为:     
     {   
@@ -66,9 +75,9 @@
         "symbol":"symbolName",  
         "start_time":start_time,    // 必须是秒级的UTC时间戳   
         "end_time":end_time,        // 必须是秒级的UTC时间戳  
-        "count": 1000,              // 数量和时间，任选一个为准; 同时填写以 Count 为准;
-        "frequency":"60"            // 数据频率，以秒为单位，现在必须是60的整数倍.
-    }
+        "count": 1000,              // 数量和时间，任选一个为准; 同时填写以 Count 为准;  
+        "frequency":"60"            // 数据频率，以秒为单位，现在必须是60的整数倍.  
+    }  
     历史数据的区间通过 [start_time, end_time] 或者 count 设置; 默认推荐的是按照数量来请求，初次订阅时默认展示的是 1000根1分频的k线数据。
 
     2) websocket 推送的数据:
@@ -80,7 +89,13 @@
         "frequency":0,      // 请求的时间频率  
         "type":"kline_update"     // type 类型   
         "data_count": ;     // 实际返回的k 线数目;
-
+    }    
+    3) 取消订阅  
+        取消对某个币对某个频率的K线订阅  
+    {   
+        "type":"unsub_kline_update",    
+        "symbol":"symbolName",  
+        "frequency":"60"            // 数据频率，以秒为单位，现在必须是60的整数倍.  
     }    
 
 5. 心跳数据
