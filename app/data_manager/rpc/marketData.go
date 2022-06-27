@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"market_server/app/dataManager/rpc/internal/server"
-	"market_server/app/dataManager/rpc/internal/svc"
-	"market_server/app/dataManager/rpc/types/pb"
+	"market_server/app/data_manager/rpc/internal/server"
+	"market_server/app/data_manager/rpc/internal/svc"
+	"market_server/app/data_manager/rpc/types/pb"
 	"market_server/common/config"
 	"os"
 

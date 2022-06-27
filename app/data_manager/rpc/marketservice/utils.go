@@ -1,7 +1,7 @@
 package marketservice
 
 import (
-	"market_server/app/dataManager/rpc/types/pb"
+	"market_server/app/data_manager/rpc/types/pb"
 	"market_server/common/datastruct"
 	"strconv"
 

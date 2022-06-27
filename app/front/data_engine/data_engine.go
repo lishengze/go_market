@@ -3,7 +3,7 @@ package data_engine
 import (
 	"context"
 	"fmt"
-	"market_server/app/dataManager/rpc/marketservice"
+	"market_server/app/data_manager/rpc/marketservice"
 	"market_server/app/front/config"
 	"market_server/app/front/net"
 	"market_server/app/front/worker"

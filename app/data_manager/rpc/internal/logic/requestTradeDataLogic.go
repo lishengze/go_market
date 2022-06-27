@@ -2,8 +2,8 @@ package logic
 
 import (
 	"context"
-	"market_server/app/dataManager/rpc/internal/svc"
-	"market_server/app/dataManager/rpc/types/pb"
+	"market_server/app/data_manager/rpc/internal/svc"
+	"market_server/app/data_manager/rpc/types/pb"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

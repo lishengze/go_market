@@ -9,10 +9,10 @@ import (
 	"os"
 	"flag"
 
-	"market_server/app/dataManager/rpc/internal/dbserver"
-	"market_server/app/dataManager/rpc/internal/svc"
+	"market_server/app/data_manager/rpc/internal/dbserver"
+	"market_server/app/data_manager/rpc/internal/svc"
 	"market_server/common/config"
-	"market_server/app/dataManager/rpc/types/pb"
+	"market_server/app/data_manager/rpc/types/pb"
 	"market_server/common/comm"
 
 	ag_config "market_server/app/market_aggregate/config"

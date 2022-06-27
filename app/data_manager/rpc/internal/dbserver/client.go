@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"market_server/app/dataManager/rpc/types/pb"
+	"market_server/app/data_manager/rpc/types/pb"
 	"market_server/common/config"
 	"market_server/common/datastruct"
 

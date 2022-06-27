@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"market_server/app/dataManager/rpc/marketservice"
+	"market_server/app/data_manager/rpc/marketservice"
 	"market_server/common/datastruct"
 
 	"github.com/zeromicro/go-zero/core/conf"

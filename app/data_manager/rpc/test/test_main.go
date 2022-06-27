@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"market_server/app/dataManager/rpc/internal/server"
+	"market_server/app/data_manager/rpc/internal/server"
 )
 
 func main() {
