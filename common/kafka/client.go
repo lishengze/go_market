@@ -376,6 +376,10 @@ func (k *KafkaServer) ConsumeAtom(topic string, consumer sarama.Consumer) {
 
 func (k *KafkaServer) CheckTopic(topic string) bool {
 	_, ok := k.created_topics[topic]
+
+	if !ok {
+		logx.Infof("Topic: %+v not exists, need to be created!")
+	}
 	return ok
 }
 
