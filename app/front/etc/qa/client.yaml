@@ -3,6 +3,16 @@ Comm:
   NetServerType: "KAFKA"
   SerialType: "PROTOBUF"
 
+LogConfig: 
+  Compress: true
+  KeepDays: 0
+  Level: "info"
+  Mode: "file"
+  Path: "./log"
+  ServiceName: "client"
+  StackCooldownMillis: 100
+  TimeFormat:  "2006-01-02 15:04:05"
+
 Nacos:
   IpAddr: "10.10.1.45"
   Port: 8848
@@ -15,18 +25,11 @@ Nacos:
   MaxAge: 3
   LogLevel: "debug"
 
-LogConfig: 
-  Compress: true
-  KeepDays: 0
-  Level: "info"
-  Mode: "file"
-  Path: "./log"
-  ServiceName: "client"
-  StackCooldownMillis: 100
-  TimeFormat:  "2006-01-02 15:04:05"
+Cache:
+  CacheDataCount: 1440
 
 WS:
   Address: "localhost:8114"
   Url:  "/trading/marketws"
-  HeartbeatLostSecs:  15
+  HeartbeatLostSecs:  150
   HeartbeatSendSecs:  10
