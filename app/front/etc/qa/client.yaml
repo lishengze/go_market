@@ -15,13 +15,6 @@ Nacos:
   MaxAge: 3
   LogLevel: "debug"
 
-RiskTestConfig:
-  FeeRiskctrlOpen: true
-  BiasRiskctrlOpen: true
-  WatermarkRiskctrlOpen: true
-  PricesionRiskctrlOpen: true
-  TestSymbol: "BTC_USDT"
-
 LogConfig: 
   Compress: true
   KeepDays: 0

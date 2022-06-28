@@ -152,7 +152,7 @@ func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
        process_heartbeat(socket_id, ws_safe);
    }
 
-   if (js["type"].get<string>() == KLINE_UPDATE)
+   if (js["type"].get<string>() == KLINE_UPDATE_SUB)
    {
        process_kline_req(ori_msg, socket_id, ws_safe);
    }
@@ -197,12 +197,28 @@ func (w *WSEngine) ProcessMessage(msg []byte, ws *net.WSInfo) {
 		w.ProcessSubTrade(m, ws)
 	}
 
-	if m["type"].(string) == net.KLINE_UPDATE {
+	if m["type"].(string) == net.DEPTH_SUB {
+		w.ProcessSubDepth(m, ws)
+	}
+
+	if m["type"].(string) == net.DEPTH_UNSUB {
+		w.ProcessUnSubDepth(m, ws)
+	}
+
+	if m["type"].(string) == net.TRADE_SUB {
+		w.ProcessSubTrade(m, ws)
+	}
+
+	if m["type"].(string) == net.TRADE_UNSUB {
+		w.ProcessUnSubTrade(m, ws)
+	}
+
+	if m["type"].(string) == net.KLINE_UPDATE_SUB {
 		w.ProcessSubKline(m, ws)
 	}
 
-	if m["type"].(string) == net.TRADE {
-		w.ProcessSubTrade(m, ws)
+	if m["type"].(string) == net.KLINE_UPDATE_UNSUMB {
+		w.ProcessUnSubKline(m, ws)
 	}
 
 	if m["type"].(string) == net.HEARTBEAT {
@@ -230,6 +246,25 @@ func (w *WSEngine) ProcessSubDepth(m map[string]interface{}, ws *net.WSInfo) {
 }
 
 /*
+   unsub_info = {
+       "type":"sub_symbol",
+       "symbol":[symbol]
+   }
+*/
+func (w *WSEngine) ProcessUnSubDepth(m map[string]interface{}, ws *net.WSInfo) {
+	if value, ok := m["symbol"]; ok {
+		symbol_list := value.([]interface{})
+
+		for _, symbol := range symbol_list {
+			w.next_worker.UnSubDepth(symbol.(string), ws)
+		}
+
+	} else {
+		logx.Error("ProcessSubTrade: No Symbol Data %+v", m)
+	}
+}
+
+/*
    sub_info = {
        "type":"trade",
        "symbol":[symbol]
@@ -243,6 +278,26 @@ func (w *WSEngine) ProcessSubTrade(m map[string]interface{}, ws *net.WSInfo) {
 
 		for _, symbol := range symbol_list {
 			w.next_worker.SubTrade(symbol.(string), ws)
+		}
+	} else {
+		logx.Error("ProcessSubTrade: No Symbol Data %+v", m)
+	}
+}
+
+/*
+   sub_info = {
+       "type":"trade",
+       "symbol":[symbol]
+   }
+*/
+func (w *WSEngine) ProcessUnSubTrade(m map[string]interface{}, ws *net.WSInfo) {
+	logx.Infof("UnSubTradeInfo: %+v", m)
+	if value, ok := m["symbol"]; ok {
+		// logx.Infof("value: %+v", value)
+		symbol_list := value.([]interface{})
+
+		for _, symbol := range symbol_list {
+			w.next_worker.UnSubTrade(symbol.(string), ws)
 		}
 	} else {
 		logx.Error("ProcessSubTrade: No Symbol Data %+v", m)
@@ -308,6 +363,32 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 		Frequency: resolution,
 	}
 	w.next_worker.SubKline(req_kline, ws)
+}
+
+func (w *WSEngine) ProcessUnSubKline(m map[string]interface{}, ws *net.WSInfo) {
+	var symbol string
+	var resolution uint32
+
+	if value, ok := m["symbol"]; ok {
+		symbol = value.(string)
+	} else {
+		logx.Error("ProcessSubTrade: No Symbol Data %+v", m)
+		return
+	}
+
+	if value, ok := m["frequency"]; ok {
+		resolution = uint32(value.(float64))
+	} else {
+		logx.Error("ProcessSubTrade: No frequency Data %+v", m)
+		return
+	}
+
+	req_kline := &datastruct.ReqHistKline{
+		Symbol:    symbol,
+		Exchange:  datastruct.BCTS_EXCHANGE,
+		Frequency: resolution,
+	}
+	w.next_worker.UnSubKline(req_kline, ws)
 }
 
 /*

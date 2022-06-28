@@ -195,7 +195,7 @@ func NewTradeJsonMsg(trade *datastruct.Trade, change_info *datastruct.ChangeInfo
    nlohmann::json json_data;
    if (is_update_)
    {
-       json_data["type"] = KLINE_UPDATE;
+       json_data["type"] = KLINE_UPDATE_SUB;
    }
    else
    {
@@ -300,7 +300,7 @@ func NewKlineUpdateJsonMsg(kline *datastruct.Kline) []byte {
 	kline_data = append(kline_data, tmp_detail)
 
 	json_data := PubKlineJson{
-		TypeInfo:   net.KLINE_UPDATE,
+		TypeInfo:   net.KLINE_UPDATE_SUB,
 		Symbol:     kline.Symbol,
 		StartTime:  kline.Time,
 		EndTime:    kline.Time,

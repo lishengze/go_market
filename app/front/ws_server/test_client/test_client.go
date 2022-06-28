@@ -66,7 +66,7 @@ func GetTestDepthReqJson() []byte {
 
 func GetTestKlineReqJson() []byte {
 	sub_info := map[string]interface{}{
-		"type":       net.KLINE_UPDATE,
+		"type":       net.KLINE_UPDATE_SUB,
 		"symbol":     "BTC_USDT",
 		"data_count": 2,
 		"frequency":  500,

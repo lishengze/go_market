@@ -27,6 +27,11 @@ func TestEngine() {
 	fmt.Printf("env: %+v \n", env)
 	var configFile = flag.String("f", "etc/"+env+"/client.yaml", "the config file")
 
+	is_test := false
+	if len(os.Args) > 2 {
+		is_test = true
+	}
+
 	fmt.Println(*configFile)
 
 	var c fconfig.Config
@@ -44,10 +49,13 @@ func TestEngine() {
 
 	svr := server.NewServerEngine(ctx)
 
-	svr.SetTestFlag(true)
+	svr.SetTestFlag(is_test)
+
 	svr.Start()
 
-	StartTest(svr)
+	if is_test {
+		StartTest(svr)
+	}
 
 	select {}
 }

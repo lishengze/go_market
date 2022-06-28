@@ -351,3 +351,15 @@ func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.W
 
 	d.next_worker.PublishHistKline(rst, ws)
 }
+
+func (f *DataEngine) UnSubTrade(symbol string, ws *net.WSInfo) {
+	// f.sub_data.UnSubTrade(symbol, ws)
+}
+
+func (f *DataEngine) UnSubDepth(symbol string, ws *net.WSInfo) {
+	// f.sub_data.UnSubDepth(symbol, ws)
+}
+
+func (f *DataEngine) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
+	// f.sub_data.UnSubKline(req_kline_info, ws)
+}

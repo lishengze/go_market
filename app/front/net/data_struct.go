@@ -13,7 +13,7 @@ package net
        process_heartbeat(socket_id, ws_safe);
    }
 
-   if (js["type"].get<string>() == KLINE_UPDATE)
+   if (js["type"].get<string>() == KLINE_UPDATE_SUB)
    {
        process_kline_req(ori_msg, socket_id, ws_safe);
    }
@@ -26,10 +26,19 @@ package net
 const (
 	MARKET_DATA_UPDATE = "market_data_update"
 	SYMBOL_SUB         = "sub_symbol"
+	SYMBOL_UNSUB       = "unsub_symbol"
 	SYMBOL_LIST        = "symbol_list"
 	SYMBOL_UPDATE      = "symbol_update"
-	KLINE_RSP          = "kline_rsp"
-	KLINE_UPDATE       = "kline_update"
-	HEARTBEAT          = "heartbeat"
-	TRADE              = "trade"
+
+	DEPTH_SUB           = "depth_sub"
+	DEPTH_UNSUB         = "depth_unsub"
+	TRADE_SUB           = "trade_sub"
+	TRADE_UNSUB         = "trade_unsub"
+	KLINE_UPDATE_SUB    = "kline_sub"
+	KLINE_UPDATE_UNSUMB = "kline_unsub"
+
+	KLINE_RSP = "kline_rsp"
+
+	HEARTBEAT = "heartbeat"
+	TRADE     = "trade"
 )
