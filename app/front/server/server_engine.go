@@ -98,8 +98,10 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 			symbol_exchange_set[hedge_config.Symbol] = make(map[string]struct{})
 		}
 
-		symbol_exchange_set[hedge_config.Symbol][hedge_config.Exchange] = struct{}{}
-		logx.Slow(fmt.Sprintf("New Meta: %s.%s", hedge_config.Symbol, hedge_config.Exchange))
+		if _, ok := symbol_exchange_set[hedge_config.Symbol][datastruct.BCTS_EXCHANGE]; !ok {
+			symbol_exchange_set[hedge_config.Symbol][datastruct.BCTS_EXCHANGE] = struct{}{}
+			logx.Slow(fmt.Sprintf("New Meta: %s.%s", hedge_config.Symbol, hedge_config.Exchange))
+		}
 	}
 
 	NewMeta.DepthMeta = symbol_exchange_set
