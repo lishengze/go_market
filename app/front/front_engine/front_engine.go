@@ -53,6 +53,17 @@ func (f *FrontEngine) Start() {
 
 func (f *FrontEngine) PublishSymbol(symbol_list []string, ws *net.WSInfo) {
 	if ws != nil {
+		byte_data := NewSymbolListMsg(symbol_list)
+
+		if ws.IsAlive() {
+			err := ws.SendMsg(1, byte_data)
+			if err != nil {
+				logx.Errorf("PublishSymbol err: %+v \n", err)
+			}
+		} else {
+			logx.Infof("ws:%+v is not alive", ws)
+			f.sub_data.UnSubSymbol(ws)
+		}
 
 	} else {
 		symbol_pub_list := f.sub_data.GetSymbolPubInfoList(symbol_list)
