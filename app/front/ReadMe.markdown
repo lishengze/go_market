@@ -131,13 +131,30 @@
 
 6. 特殊说明  
     所有的时间都是以 UTC时间为准;
+
+7. type 汇总说明  
+	SYMBOL_SUB   = "sub_symbol"  
+	SYMBOL_UNSUB = "unsub_symbol"  
+	DEPTH_SUB    = "depth_sub"  
+	DEPTH_UNSUB  = "depth_unsub"  
+	TRADE_SUB    = "trade_sub"  
+	TRADE_UNSUB  = "trade_unsub"  
+	KLINE_SUB    = "kline_sub"  
+	KLINE_UNSUMB = "kline_unsub"  
+  
+	SYMBOL_UPDATE = "symbol_update"  
+	DEPTH_UPDATE  = "depth_update"  
+	TRADE_UPATE   = "trade_update"  
+	KLINE_UPATE   = "kline_update"  
+  
+	HEARTBEAT = "heartbeat"  
    
 ## 更新日志 2022.6.28  
     针对app 访问的特点，对数据的订阅，取消订阅的 type 都做了更新。  
     增加了单独针对 depth 和 trade 的订阅与取消订阅的结构。
     kline 数据的订阅与取消订阅的 type 也做了对应的统一。
 
-## 更新日志 2022.6.29
+## 更新日志 2022.6.29  
     将所有回报的数据的格式做了统一，一致设置为 dataType_update.
 
     

@@ -38,8 +38,5 @@ const (
 	TRADE_UPATE   = "trade_update"
 	KLINE_UPATE   = "kline_update"
 
-	// MARKET_DATA_UPDATE = "market_data_update"
-	// TRADE              = "trade"
-
 	HEARTBEAT = "heartbeat"
 )
