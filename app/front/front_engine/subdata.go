@@ -68,7 +68,7 @@ func (s *SubData) GetDepthPubInfoList(depth *datastruct.DepthQuote) []*DepthPubI
 
 		}
 	} else {
-		logx.Errorf("Depth Symobl: %s Not Subed!", depth.Symbol)
+		// logx.Errorf("Depth Symobl: %s Not Subed!", depth.Symbol)
 	}
 
 	return rst
@@ -95,7 +95,7 @@ func (s *SubData) GetTradePubInfoList(trade *datastruct.Trade, change_info *data
 			})
 		}
 	} else {
-		logx.Errorf("Trade Symobl: %s Not Subed!", trade.Symbol)
+		// logx.Errorf("Trade Symobl: %s Not Subed!", trade.Symbol)
 	}
 
 	return rst
