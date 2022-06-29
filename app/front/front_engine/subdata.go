@@ -51,7 +51,11 @@ func (s *SubData) GetDepthPubInfoList(depth *datastruct.DepthQuote) []*DepthPubI
 	s.DepthInfo.mutex.Lock()
 	defer s.DepthInfo.mutex.Unlock()
 
-	logx.Statf("CurDepthSubInfo: %s", s.DepthInfo.String())
+	//
+	if len(s.DepthInfo.Info) > 0 {
+		logx.Statf("CurDepthSubInfo: %s", s.DepthInfo.String())
+	}
+
 	byte_data := NewDepthJsonMsg(depth)
 	if sub_tree, ok := s.DepthInfo.Info[depth.Symbol]; ok {
 		sub_tree_iter := sub_tree.Iterator()
@@ -75,6 +79,11 @@ func (s *SubData) GetTradePubInfoList(trade *datastruct.Trade, change_info *data
 
 	s.TradeInfo.mutex.Lock()
 	defer s.TradeInfo.mutex.Unlock()
+
+	if len(s.TradeInfo.Info) > 0 {
+		logx.Statf("CurTradeSubInfo: %s", s.TradeInfo.String())
+	}
+
 	byte_data := NewTradeJsonMsg(trade, change_info)
 	if sub_tree, ok := s.TradeInfo.Info[trade.Symbol]; ok {
 		sub_tree_iter := sub_tree.Iterator()
