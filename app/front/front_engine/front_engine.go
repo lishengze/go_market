@@ -92,7 +92,7 @@ func (f *FrontEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo)
 		depth_pub_list := f.sub_data.GetDepthPubInfoList(depth)
 
 		for _, info := range depth_pub_list {
-			logx.Infof("depth_pub_info: %s \n", info.String())
+			logx.Slowf("depth_pub_info: %s \n", info.String())
 			if info.ws_info.IsAlive() {
 				err := info.ws_info.SendMsg(1, info.data)
 				if err != nil {
@@ -131,7 +131,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastr
 		// logx.Info("After GetTradePubInfoList")
 
 		for _, info := range trade_pub_list {
-			logx.Infof("trade_pub_info: %s \n", info.String())
+			logx.Slowf("trade_pub_info: %s \n", info.String())
 			if info.ws_info.IsAlive() {
 				err := info.ws_info.SendMsg(websocket.TextMessage, info.data)
 				if err != nil {
@@ -158,7 +158,7 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 
 	if ws != nil {
 		if ws.IsAlive() {
-			logx.Statf("[PubKline]: %s", kline.String())
+			logx.Slowf("[PubKline]: %s", kline.String())
 			byte_data := NewKlineUpdateJsonMsg(kline)
 			err := ws.SendMsg(websocket.TextMessage, byte_data)
 
@@ -172,7 +172,7 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 		kline_pub_list := f.sub_data.GetKlinePubInfoList(kline)
 
 		for _, info := range kline_pub_list {
-			logx.Infof("kline_pub_info: %s \n", info.String())
+			logx.Slowf("kline_pub_info: %s \n", info.String())
 			if info.ws_info.IsAlive() {
 				err := info.ws_info.SendMsg(1, info.data)
 				if err != nil {
