@@ -42,8 +42,10 @@ func (d *TradePubInfo) String() string {
 }
 
 type KlinePubInfo struct {
-	ws_info *net.WSInfo
-	data    []byte
+	ws_info    *net.WSInfo
+	Symbol     string
+	Resolution int
+	data       []byte
 }
 
 func (d *KlinePubInfo) String() string {

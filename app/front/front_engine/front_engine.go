@@ -64,6 +64,9 @@ func (f *FrontEngine) PublishSymbol(symbol_list []string, ws *net.WSInfo) {
 				if err != nil {
 					logx.Errorf("PublishSymbol err: %+v \n", err)
 				}
+			} else {
+				logx.Infof("ws:%+v is not alive", ws)
+				f.sub_data.UnSubSymbol(ws)
 			}
 		}
 	}
@@ -87,6 +90,9 @@ func (f *FrontEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo)
 			if err != nil {
 				logx.Errorf("PublishDepth err: %+v \n", err)
 			}
+		} else {
+			logx.Infof("ws:%+v is not alive", ws)
+			f.sub_data.UnSubDepth(depth.Symbol, ws)
 		}
 	} else {
 		depth_pub_list := f.sub_data.GetDepthPubInfoList(depth)
@@ -98,6 +104,9 @@ func (f *FrontEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo)
 				if err != nil {
 					logx.Errorf("PublishDepth err: %+v \n", err)
 				}
+			} else {
+				logx.Infof("ws:%+v is not alive", info.ws_info)
+				f.sub_data.UnSubDepth(depth.Symbol, info.ws_info)
 			}
 		}
 	}
@@ -125,6 +134,9 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastr
 			if err != nil {
 				logx.Errorf("PublishDepth err: %+v \n", err)
 			}
+		} else {
+			f.sub_data.UnSubTrade(trade.Symbol, ws)
+			logx.Infof("ws:%+v is not alive", ws)
 		}
 	} else {
 		trade_pub_list := f.sub_data.GetTradePubInfoList(trade, change_info)
@@ -139,6 +151,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastr
 				}
 			} else {
 				logx.Infof("ws:%+v is not alive", info.ws_info)
+				f.sub_data.UnSubTrade(trade.Symbol, info.ws_info)
 			}
 		}
 	}
@@ -157,7 +170,13 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 	}(kline, ws)
 
 	if ws != nil {
+		cur_req := &datastruct.ReqHistKline{
+			Symbol:    kline.Symbol,
+			Frequency: uint32(kline.Resolution),
+		}
+
 		if ws.IsAlive() {
+
 			logx.Slowf("[PubKline]: %s", kline.String())
 			byte_data := NewKlineUpdateJsonMsg(kline)
 			err := ws.SendMsg(websocket.TextMessage, byte_data)
@@ -165,26 +184,31 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 			if err != nil {
 				logx.Errorf("PublishDepth err: %+v \n", err)
 			}
+		} else {
+			logx.Infof("ws:%+v is not alive", ws)
+			f.sub_data.UnSubKline(cur_req, ws)
 		}
 	} else {
-		// logx.Infof("[PubKline]: %s", kline.String())
-
 		kline_pub_list := f.sub_data.GetKlinePubInfoList(kline)
 
 		for _, info := range kline_pub_list {
+			cur_req := &datastruct.ReqHistKline{
+				Symbol:    info.Symbol,
+				Frequency: uint32(info.Resolution),
+			}
+
 			logx.Slowf("kline_pub_info: %s \n", info.String())
 			if info.ws_info.IsAlive() {
 				err := info.ws_info.SendMsg(1, info.data)
 				if err != nil {
 					logx.Errorf("PublishKline err: %+v \n", err)
 				}
+			} else {
+				logx.Infof("ws:%+v is not alive", info.ws_info)
+				f.sub_data.UnSubKline(cur_req, ws)
 			}
 		}
 	}
-
-}
-
-func (f *FrontEngine) PublishChangeinfo(change_info *datastruct.ChangeInfo, ws *net.WSInfo) {
 
 }
 
@@ -210,10 +234,16 @@ func (f *FrontEngine) PublishHistKline(klines *datastruct.RspHistKline, ws *net.
 			if err != nil {
 				logx.Errorf("PublishHistKline err: %+v \n", err)
 			}
+		} else {
+			logx.Infof("ws:%+v is not alive", ws)
+			f.sub_data.UnSubKline(klines.ReqInfo, ws)
 		}
-
 	}
 	// publish his kline to client;
+}
+
+func (f *FrontEngine) PublishChangeinfo(change_info *datastruct.ChangeInfo, ws *net.WSInfo) {
+
 }
 
 func (f *FrontEngine) SubSymbol(ws *net.WSInfo) {

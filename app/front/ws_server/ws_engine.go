@@ -114,6 +114,11 @@ func (w *WSEngine) ChecktHeartbeat() {
 	}
 }
 
+func (w *WSEngine) Close(ws *net.WSInfo) {
+	ws.SetAlive(false)
+	ws.Close()
+}
+
 func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
 	logx.Infof("RequestInfo: %+v, Echo: %+v \n", time.Now(), *r)
 
@@ -127,7 +132,7 @@ func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
 		logx.Errorf("upgrade err: %+v ", err)
 		return
 	}
-	defer ws.Close()
+	defer w.Close(ws)
 
 	w.ProcessSubSymbol(ws)
 
@@ -229,7 +234,7 @@ func (w *WSEngine) ProcessMessage(msg []byte, ws *net.WSInfo) {
 }
 
 func (w *WSEngine) ProcessSubSymbol(ws *net.WSInfo) {
-	logx.Statf("WS %+v, SubSymbol", ws)
+	logx.Infof("WS %+v, SubStart!", ws)
 	w.next_worker.SubSymbol(ws)
 }
 

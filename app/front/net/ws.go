@@ -44,6 +44,15 @@ func (w *WSInfo) String() string {
 	return fmt.Sprintf("ID: %d ", w.ID)
 }
 
+func (w *WSInfo) SetAlive(value bool) {
+	if value {
+		atomic.StoreInt32(&w.Alive, 1)
+	} else {
+		atomic.StoreInt32(&w.Alive, 0)
+	}
+
+}
+
 func (w *WSInfo) CheckAlive(HeartbeatLostSecs int64) bool {
 
 	if util.UTCNanoTime()-atomic.LoadInt64(&w.LastReqTime) > HeartbeatLostSecs*datastruct.NANO_PER_SECS {

@@ -177,8 +177,10 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 			sub_tree_iter := sub_tree.Iterator()
 			for sub_tree_iter.Begin(); sub_tree_iter.Next(); {
 				rst = append(rst, &KlinePubInfo{
-					ws_info: sub_tree_iter.Value().(*net.WSInfo),
-					data:    byte_data,
+					ws_info:    sub_tree_iter.Value().(*net.WSInfo),
+					data:       byte_data,
+					Symbol:     pub_kline.Symbol,
+					Resolution: pub_kline.Resolution,
 				})
 			}
 
@@ -245,6 +247,8 @@ func (s *SubData) UnSubSymbol(ws *net.WSInfo) {
 	}
 
 	s.SymbolInfo.ws_info.Remove(ws.ID)
+
+	logx.Infof("SymbolInfo Remove %s : %+v", ws)
 }
 
 func (s *SubData) SubDepth(symbol string, ws *net.WSInfo) *datastruct.DepthQuote {
@@ -270,6 +274,8 @@ func (s *SubData) UnSubDepth(symbol string, ws *net.WSInfo) {
 	}
 
 	s.DepthInfo.Info[symbol].Remove(ws.ID)
+
+	logx.Infof("Depth Remove %s : %+v", symbol, ws)
 }
 
 func (s *SubData) SubTrade(symbol string, ws *net.WSInfo) {
@@ -294,6 +300,7 @@ func (s *SubData) UnSubTrade(symbol string, ws *net.WSInfo) {
 	}
 
 	s.TradeInfo.Info[symbol].Remove(ws.ID)
+	logx.Infof("Trade Remove %s : %+v", symbol, ws)
 }
 
 func (s *SubData) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
@@ -326,4 +333,6 @@ func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WS
 	}
 
 	s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].ws_info.Remove(ws.ID)
+
+	logx.Infof("KLine Remove %s, %d : %+v", req_kline_info.Symbol, int(req_kline_info.Frequency), ws)
 }
