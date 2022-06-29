@@ -1,9 +1,10 @@
-# Name: marketdata.rpc
-# ListenOn: 127.0.0.1:8080
-# Etcd:
-#   Hosts:
-#   - 127.0.0.1:2379
-#   Key: marketdata.rpc
+RpcConfig:
+  Name: marketdata.rpc
+  ListenOn: 127.0.0.1:8080
+  Etcd:
+    Hosts:
+    - 127.0.0.1:2379
+    Key: marketdata.rpc
 
 Comm:
   IP: "43.154.179.47:9117"

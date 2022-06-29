@@ -17,12 +17,7 @@ import (
 
 func TestEngine() {
 	flag.Parse()
-
-	env := "local"
-
-	for _, v := range os.Args {
-		env = v
-	}
+	env := os.Args[1]
 
 	fmt.Printf("env: %+v \n", env)
 	var configFile = flag.String("f", "etc/"+env+"/client.yaml", "the config file")

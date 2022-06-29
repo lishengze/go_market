@@ -19,7 +19,7 @@
 1. symbol 列表  
    symbol信息是所有行情请求的基础，也是由websocket server 提供。
    1) 初始化： 当websocket 建立时， 服务端会自动地将当前存储的 symbol 发送给客户端， 无需请求。 
-        json: {"type": "symbol_list", "symbol": ["symbol1", "symbol2" ]}
+        json: {"type": "symbol_update", "symbol": ["symbol1", "symbol2" ]}
    2) 更新:  
        当有symbol加入时，websocket 会推送更新json 过来
        json: {"type": "symbol_update", "symbol": ["symbol1", "symbol2" ]}
@@ -59,7 +59,7 @@
         "exchange":"",  
         "seqno":0,  // 当前行情序列号  
         "tick":0,   // 时间戳  
-        "type":"market_data_update"     // type 类型   
+        "type":"symbol_update"     // type 类型   
     }
 
 
@@ -68,7 +68,7 @@
     Trade数据和24小时涨跌幅数据是在订阅 depth 数据时一起订阅的。因为24小时涨跌幅数据是依赖trade 数据更新的，所以这两类数据是放在同一个json 数据结构中回报。  
     1)  回报的数据格式:
     {
-        "type":"trade",
+        "type":"trade_update",
         "symbol":"",
         "price":"",
         "volume":"",
@@ -118,7 +118,7 @@
         "start_time":"",    // 回复数据的开始时间，秒级的UTC时间戳   
         "end_time":0,       // 回复数据的结束时间，秒级的UTC时间戳   
         "frequency":0,      // 请求的时间频率  
-        "type":"kline_sub"     // type 类型   
+        "type":"kline_update"     // type 类型   
         "data_count": ;     // 实际返回的k 线数目;  
     }    
 

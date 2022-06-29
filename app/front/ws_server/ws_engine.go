@@ -129,6 +129,8 @@ func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
 	}
 	defer ws.Close()
 
+	w.ProcessSubSymbol(ws)
+
 	for {
 		mt, message, err := ws.Conn.ReadMessage()
 		if err != nil {
@@ -224,6 +226,11 @@ func (w *WSEngine) ProcessMessage(msg []byte, ws *net.WSInfo) {
 	if m["type"].(string) == net.HEARTBEAT {
 		w.ProcessHeartbeat(m, ws)
 	}
+}
+
+func (w *WSEngine) ProcessSubSymbol(ws *net.WSInfo) {
+	logx.Statf("WS %+v, SubSymbol", ws)
+	w.next_worker.SubSymbol(ws)
 }
 
 /*
