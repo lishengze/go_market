@@ -167,7 +167,7 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 			}
 		}
 	} else {
-		logx.Infof("[PubKline]: %s", kline.String())
+		// logx.Infof("[PubKline]: %s", kline.String())
 
 		kline_pub_list := f.sub_data.GetKlinePubInfoList(kline)
 

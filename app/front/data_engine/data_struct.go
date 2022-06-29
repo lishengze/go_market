@@ -307,7 +307,7 @@ func (p *PeriodData) UpdateMeta() {
 	p.Change = (p.Max - p.Start) / p.Start
 	p.Count = p.time_cache_data.Size()
 
-	logx.Statf("[Meta] %s", p.String())
+	// logx.Statf("[Meta] %s", p.String())
 }
 
 func (p *PeriodData) UpdateWithPbKlines(klines *marketservice.HistKlineData) {

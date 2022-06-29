@@ -145,7 +145,7 @@ func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
 
 	d.depth_cache_map.Store(depth.Symbol, depth)
 
-	logx.Statf("Rcv Depth: %s", depth.String(3))
+	// logx.Statf("Rcv Depth: %s", depth.String(3))
 
 	d.PublishDepth(depth, nil)
 	return nil
@@ -154,7 +154,7 @@ func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
 func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 	// kline.Time = kline.Time / datastruct.NANO_PER_SECS
 
-	logx.Statf("Rcv kline: %s", kline.String())
+	// logx.Statf("Rcv kline: %s", kline.String())
 
 	if _, ok := d.cache_period_data[kline.Symbol]; !ok {
 		d.InitPeriodDara(kline.Symbol)
@@ -175,7 +175,7 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	// trade.Time = trade.Time / datastruct.NANO_PER_SECS
 
-	logx.Statf("Rcv trade: %s", trade.String())
+	// logx.Statf("Rcv trade: %s", trade.String())
 
 	d.trade_cache_map.Store(trade.Symbol, trade)
 
