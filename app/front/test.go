@@ -38,6 +38,7 @@ func TestEngine() {
 	conf.MustLoad(*configFile, &c)
 
 	fmt.Printf("config: %+v \n", c)
+	fmt.Printf("is_test: %+v \n", is_test)
 
 	logx.MustSetup(c.LogConfig)
 
