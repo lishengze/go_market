@@ -59,7 +59,7 @@
         "exchange":"",  
         "seqno":0,  // 当前行情序列号  
         "tick":0,   // 时间戳  
-        "type":"symbol_update"     // type 类型   
+        "type":"depth_update"     // type 类型   
     }
 
 
