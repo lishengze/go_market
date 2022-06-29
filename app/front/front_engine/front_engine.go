@@ -52,6 +52,8 @@ func (f *FrontEngine) Start() {
 // }
 
 func (f *FrontEngine) PublishSymbol(symbol_list []string, ws *net.WSInfo) {
+	logx.Infof("PubSymbolist: %+v", symbol_list)
+
 	if ws != nil {
 		byte_data := NewSymbolListMsg(symbol_list)
 
