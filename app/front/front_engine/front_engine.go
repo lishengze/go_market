@@ -218,6 +218,7 @@ func (f *FrontEngine) PublishHistKline(klines *datastruct.RspHistKline, ws *net.
 
 func (f *FrontEngine) SubSymbol(ws *net.WSInfo) {
 	f.sub_data.SubSymbol(ws)
+	f.next_worker.SubSymbol(ws)
 }
 
 func (f *FrontEngine) SubTrade(symbol string, ws *net.WSInfo) {

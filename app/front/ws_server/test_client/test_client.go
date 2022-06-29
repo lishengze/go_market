@@ -33,7 +33,7 @@ func InitLogx() {
 func GetTestTradeReqJson() []byte {
 	symbol_list := []string{"BTC_USDT"}
 	sub_info := map[string]interface{}{
-		"type":   net.TRADE,
+		"type":   net.TRADE_SUB,
 		"symbol": symbol_list,
 	}
 	rst, err := json.Marshal(sub_info)
@@ -66,7 +66,7 @@ func GetTestDepthReqJson() []byte {
 
 func GetTestKlineReqJson() []byte {
 	sub_info := map[string]interface{}{
-		"type":       net.KLINE_UPDATE_SUB,
+		"type":       net.KLINE_SUB,
 		"symbol":     "BTC_USDT",
 		"data_count": 2,
 		"frequency":  500,

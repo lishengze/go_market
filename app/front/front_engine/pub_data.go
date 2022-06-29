@@ -15,7 +15,7 @@ type PubSymbolistJson struct {
 
 func NewSymbolListMsg(symbol_list []string) []byte {
 	json_data := PubSymbolistJson{
-		TypeInfo:   net.SYMBOL_LIST,
+		TypeInfo:   net.SYMBOL_UPDATE,
 		SymbolList: symbol_list,
 	}
 
@@ -117,7 +117,7 @@ func NewDepthJsonMsg(depth *datastruct.DepthQuote) []byte {
 	}
 
 	json_data := PubDepthJson{
-		TypeInfo:  net.MARKET_DATA_UPDATE,
+		TypeInfo:  net.DEPTH_UPDATE,
 		Symbol:    depth.Symbol,
 		Exchange:  depth.Exchange,
 		AskLength: depth.Asks.Size(),
@@ -163,7 +163,7 @@ type PubTradeJson struct {
 func NewTradeJsonMsg(trade *datastruct.Trade, change_info *datastruct.ChangeInfo) []byte {
 
 	json_data := PubTradeJson{
-		TypeInfo: net.TRADE,
+		TypeInfo: net.TRADE_UPATE,
 		Symbol:   trade.Symbol,
 		Price:    trade.Price,
 		Volume:   trade.Volume,
@@ -195,7 +195,7 @@ func NewTradeJsonMsg(trade *datastruct.Trade, change_info *datastruct.ChangeInfo
    nlohmann::json json_data;
    if (is_update_)
    {
-       json_data["type"] = KLINE_UPDATE_SUB;
+       json_data["type"] = KLINE_SUB;
    }
    else
    {
@@ -264,7 +264,7 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 	}
 
 	json_data := PubKlineJson{
-		TypeInfo:   net.KLINE_RSP,
+		TypeInfo:   net.KLINE_UPATE,
 		Symbol:     hist_kline.ReqInfo.Symbol,
 		StartTime:  int64(hist_kline.ReqInfo.StartTime),
 		EndTime:    int64(hist_kline.ReqInfo.EndTime),
@@ -300,7 +300,7 @@ func NewKlineUpdateJsonMsg(kline *datastruct.Kline) []byte {
 	kline_data = append(kline_data, tmp_detail)
 
 	json_data := PubKlineJson{
-		TypeInfo:   net.KLINE_UPDATE_SUB,
+		TypeInfo:   net.KLINE_UPATE,
 		Symbol:     kline.Symbol,
 		StartTime:  kline.Time,
 		EndTime:    kline.Time,

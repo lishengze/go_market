@@ -152,7 +152,7 @@ func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
        process_heartbeat(socket_id, ws_safe);
    }
 
-   if (js["type"].get<string>() == KLINE_UPDATE_SUB)
+   if (js["type"].get<string>() == KLINE_SUB)
    {
        process_kline_req(ori_msg, socket_id, ws_safe);
    }
@@ -213,11 +213,11 @@ func (w *WSEngine) ProcessMessage(msg []byte, ws *net.WSInfo) {
 		w.ProcessUnSubTrade(m, ws)
 	}
 
-	if m["type"].(string) == net.KLINE_UPDATE_SUB {
+	if m["type"].(string) == net.KLINE_SUB {
 		w.ProcessSubKline(m, ws)
 	}
 
-	if m["type"].(string) == net.KLINE_UPDATE_UNSUMB {
+	if m["type"].(string) == net.KLINE_UNSUMB {
 		w.ProcessUnSubKline(m, ws)
 	}
 
