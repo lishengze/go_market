@@ -64,7 +64,7 @@ func (w *WSEngine) StartListen() {
 }
 
 func (w *WSEngine) StartHeartbeat() {
-	logx.Info("---- StartHeartbeat Start, HeartbeatSendSecs: %d", w.WsConfig.HeartbeatSendSecs)
+	logx.Infof("---- StartHeartbeat Start, HeartbeatSendSecs: %d", w.WsConfig.HeartbeatSendSecs)
 	duration := time.Duration((time.Duration)(w.WsConfig.HeartbeatSendSecs) * time.Second)
 	timer := time.Tick(duration)
 
@@ -96,6 +96,8 @@ func GetHeartbeatMsg() []byte {
 func (w *WSEngine) ChecktHeartbeat() {
 	w.WSConSetMutex.Lock()
 	defer w.WSConSetMutex.Unlock()
+
+	logx.Info("ChecktHeartbeat, WSConSet.Size: %d", len(w.WSConSet))
 
 	var dead_ws = []*net.WSInfo{}
 
