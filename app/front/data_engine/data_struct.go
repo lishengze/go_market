@@ -307,7 +307,10 @@ func (p *PeriodData) UpdateMeta() {
 	p.Change = (p.Max - p.Start) / p.Start
 	p.Count = p.time_cache_data.Size()
 
-	// logx.Statf("[Meta] %s", p.String())
+	if p.Symbol == "BTC_USDT" {
+		logx.Slowf("[Meta] Period %s", p.String())
+	}
+
 }
 
 func (p *PeriodData) UpdateWithPbKlines(klines *marketservice.HistKlineData) {

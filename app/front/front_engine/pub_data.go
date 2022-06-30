@@ -133,7 +133,7 @@ func NewDepthJsonMsg(depth *datastruct.DepthQuote) []byte {
 		logx.Errorf("NewDepthJsonMsg: depth: %s, json_data: %+v, error: %s",
 			depth.String(3), json_data, err.Error())
 	} else {
-		logx.Slowf("Depth json_data: %+v ", json_data)
+		// logx.Slowf("Depth json_data: %+v ", json_data)
 	}
 
 	return rst
@@ -184,7 +184,7 @@ func NewTradeJsonMsg(trade *datastruct.Trade, change_info *datastruct.ChangeInfo
 		logx.Errorf("NewTradeJsonMsg: trade: %s, change_info: %s, error: %s",
 			trade.String(), change_info.String(), err.Error())
 	} else {
-		logx.Slowf("Trade json_data: %+v ", json_data)
+		// logx.Slowf("Trade json_data: %+v ", json_data)
 	}
 
 	return rst
@@ -281,7 +281,7 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 		logx.Errorf("NewHistKlineJsonMsg: hist_kline: %+v, json_data: %+v, error: %s",
 			hist_kline, json_data, err.Error())
 	} else {
-		logx.Slowf("klinersp json_data: %+v ", json_data)
+		// logx.Slowf("klinersp json_data: %+v ", json_data)
 	}
 
 	return rst
@@ -317,7 +317,7 @@ func NewKlineUpdateJsonMsg(kline *datastruct.Kline) []byte {
 		logx.Errorf("NewKlineUpdateJsonMsg: kline: %+v, json_data: %+v, error: %s",
 			kline, json_data, err.Error())
 	} else {
-		logx.Slowf("klineupdate json_data: %+v ", json_data)
+		// logx.Slowf("klineupdate json_data: %+v ", json_data)
 	}
 
 	return rst
