@@ -40,5 +40,5 @@ Cache:
 WS:
   Address: "0.0.0.0:8114"
   Url:  "/trading/marketws"
-  HeartbeatLostSecs:  150
+  HeartbeatLostSecs:  30
   HeartbeatSendSecs:  10
