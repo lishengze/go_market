@@ -4,6 +4,7 @@
 
 echo "args : $@"
 
+go build
 
 nohup ./front $1 >log/main.log &
 

@@ -107,10 +107,10 @@ type PeriodData struct {
 }
 
 func (p *PeriodData) String() string {
-	return fmt.Sprintf("%s, Max: %f, MaxTime: %+v, Min: %f, MinTime: %+v, Change: %f", p.Symbol,
+	return fmt.Sprintf("%s, Max: %f, MaxTime: %+v, Min: %f, MinTime: %+v, Change: %f, ChangeRate: %f", p.Symbol,
 		p.Max, time.Unix(int64(p.MaxTime/datastruct.NANO_PER_SECS), p.MaxTime%datastruct.NANO_PER_SECS),
 		p.Min, time.Unix(int64(p.MinTime/datastruct.NANO_PER_SECS), p.MinTime%datastruct.NANO_PER_SECS),
-		p.Change)
+		p.Change, p.ChangeRate)
 }
 
 func NewPeriodData() *PeriodData {
