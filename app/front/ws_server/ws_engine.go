@@ -101,6 +101,8 @@ func (w *WSEngine) ChecktHeartbeat() {
 
 	for _, ws := range w.WSConSet {
 		if !ws.CheckAlive(int64(w.WsConfig.HeartbeatLostSecs)) {
+			logx.Errorf("ws: %s is dead! last_time: %+v, cur_time: %+v,  HeartbeatLostSecs: %d\n",
+				ws.String(), util.GetTimeFromtInt(ws.LastReqTime), time.Now(), w.WsConfig.HeartbeatLostSecs)
 			dead_ws = append(dead_ws, ws)
 		}
 	}
@@ -110,6 +112,7 @@ func (w *WSEngine) ChecktHeartbeat() {
 	}
 
 	for _, ws := range w.WSConSet {
+		logx.Infof("Pub Heartbeat To %s", ws.String())
 		ws.Conn.WriteMessage(1, GetHeartbeatMsg())
 	}
 }

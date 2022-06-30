@@ -46,6 +46,10 @@ func UTCNanoTime() int64 {
 	return time.Now().UTC().UnixNano()
 }
 
+func GetTimeFromtInt(int_time int64) time.Time {
+	return time.Unix(int64(int_time/int64(time.Second)), int_time%int64(time.Second))
+}
+
 func TimeMinute() int64 {
 	utc_time_secs := time.Now().Unix()
 
