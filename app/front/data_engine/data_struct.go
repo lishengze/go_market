@@ -226,11 +226,11 @@ func (p *PeriodData) InitCacheData(klines *marketservice.HistKlineData) {
 
 	iter := p.time_cache_data.Iterator()
 	if iter.First() {
-		logx.Statf("[Init]First : %s ", iter.Value().(*datastruct.Kline).String())
+		logx.Slowf("[Init]First : %s ", iter.Value().(*datastruct.Kline).String())
 	}
 
 	if iter.Last() {
-		logx.Statf("[Init]Last : %s ", iter.Value().(*datastruct.Kline).String())
+		logx.Slowf("[Init]Last : %s ", iter.Value().(*datastruct.Kline).String())
 	}
 
 }

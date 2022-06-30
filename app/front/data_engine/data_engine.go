@@ -73,6 +73,7 @@ func (d *DataEngine) UpdateMeta(symbols []string) {
 }
 
 func (a *DataEngine) InitPeriodDara(symbol string) {
+	logx.Infof("Init PeriodData: %s", symbol)
 	a.cache_period_data[symbol] = &PeriodData{
 		Symbol:                symbol,
 		TimeNanos:             datastruct.NANO_PER_DAY,
@@ -113,6 +114,8 @@ func (a *DataEngine) InitPeriodDara(symbol string) {
 
 	hist_klines, err := a.msclient.RequestHistKlineData(context.Background(), req_hist_info)
 
+	logx.Infof("Init Period HistKline: %s", marketservice.HistKlineString(hist_klines))
+
 	if err != nil {
 		fmt.Printf("err %+v \n", err)
 		logx.Errorf("ReqHistKline Err: %+v\n", err)
@@ -121,6 +124,9 @@ func (a *DataEngine) InitPeriodDara(symbol string) {
 	// fmt.Printf("Rst: %+v \n", hist_klines)
 
 	a.cache_period_data[symbol].UpdateWithPbKlines(hist_klines)
+
+	logx.Infof("Symbol Meta Info: %+v", a.cache_period_data[symbol].String())
+
 }
 
 func (a *DataEngine) StartListenRecvdata() {

@@ -5,8 +5,10 @@ package marketservice
 
 import (
 	"context"
-
+	"fmt"
+	"time"
 	"market_server/app/data_manager/rpc/types/pb"
+	"market_server/common/datastruct"
 
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"
@@ -29,10 +31,27 @@ type (
 		RequestTradeData(ctx context.Context, in *ReqTradeInfo, opts ...grpc.CallOption) (*Trade, error)
 	}
 
+
+
 	defaultMarketService struct {
 		cli zrpc.Client
 	}
 )
+/*
+	Symbol    string   `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Exchange  string   `protobuf:"bytes,2,opt,name=exchange,proto3" json:"exchange,omitempty"`
+	StartTime uint64   `protobuf:"varint,3,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
+	EndTime   uint64   `protobuf:"varint,4,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	Count     uint32   `protobuf:"varint,5,opt,name=count,proto3" json:"count,omitempty"`
+	Frequency uint32   `protobuf:"varint,6,opt,name=frequency,proto3" json:"frequency,omitempty"`
+	KlineData []*Kline `protobuf:"bytes,7,rep,name=kline_data,json=klineData,proto3" json:"kline_data,omitempty"`
+*/
+func HistKlineString(hist_kline *HistKlineData) string {
+	return fmt.Sprintf("HistKline: %s.%s, count: %d, fre: %d, datalen: %d, start: %+v,end: %+v, ", 
+			hist_kline.Exchange, hist_kline.Symbol, hist_kline.Count, hist_kline.Frequency, len(hist_kline.KlineData),
+			time.Unix(int64(hist_kline.StartTime/datastruct.NANO_PER_SECS), int64(hist_kline.StartTime%datastruct.NANO_PER_SECS)), 
+			time.Unix(int64(hist_kline.EndTime/datastruct.NANO_PER_SECS), int64(hist_kline.EndTime%datastruct.NANO_PER_SECS)))
+}
 
 func NewMarketService(cli zrpc.Client) MarketService {
 	return &defaultMarketService{
