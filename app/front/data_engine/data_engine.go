@@ -260,7 +260,22 @@ func (d *DataEngine) get_symbol_list() []string {
 	return rst
 }
 
+func catch_sub_symbol_exp(ws *net.WSInfo) {
+	errMsg := recover()
+	if errMsg != nil {
+		fmt.Printf("catch_exp sub symbol:  %+v\n", ws)
+		fmt.Printf("errMsg: %+v \n", errMsg)
+
+		logx.Errorf("catch_exp sub symbol:  %+v\n", ws)
+		logx.Errorf("errMsg: %+v \n", errMsg)
+
+		logx.Infof("catch_exp sub symbol:  %+v\n", ws)
+		logx.Infof("errMsg: %+v \n", errMsg)
+	}
+}
+
 func (d *DataEngine) SubSymbol(ws *net.WSInfo) {
+	defer catch_sub_symbol_exp(ws)
 	symbol_list := d.get_symbol_list()
 
 	d.next_worker.PublishSymbol(symbol_list, ws)
@@ -290,14 +305,53 @@ func (d *DataEngine) PublishChangeinfo(change_info *datastruct.ChangeInfo, ws *n
 	d.next_worker.PublishChangeinfo(change_info, ws)
 }
 
+func catch_sub_trade_exp(symbol string, ws *net.WSInfo) {
+	errMsg := recover()
+	if errMsg != nil {
+		fmt.Printf("catch_exp sub trade, %s, %+v\n", symbol, ws)
+		fmt.Printf("errMsg: %+v \n", errMsg)
+
+		logx.Errorf("catch_exp sub trade, %s, %+v\n", symbol, ws)
+		logx.Errorf("errMsg: %+v \n", errMsg)
+
+		logx.Infof("catch_exp sub trade, %s, %+v\n", symbol, ws)
+		logx.Infof("errMsg: %+v \n", errMsg)
+	}
+}
+
 func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) {
+	defer catch_sub_trade_exp(symbol, ws)
+
+	d.cache_period_data_mutex.Lock()
+	if _, ok := d.cache_period_data[symbol]; !ok {
+		d.InitPeriodDara(symbol)
+
+		symbol_list := d.get_symbol_list()
+		d.PublishSymbol(symbol_list, nil)
+	}
+	d.cache_period_data_mutex.Unlock()
 
 	if trade, ok := d.trade_cache_map.Load(symbol); ok {
-		d.PublishTrade(trade.(*datastruct.Trade), nil, ws)
+		d.PublishTrade(trade.(*datastruct.Trade), d.cache_period_data[symbol].GetChangeInfo(), ws)
+	}
+}
+
+func catch_sub_depth_exp(symbol string, ws *net.WSInfo) {
+	errMsg := recover()
+	if errMsg != nil {
+		fmt.Printf("catch_exp sub depth, %s, %+v\n", symbol, ws)
+		fmt.Printf("errMsg: %+v \n", errMsg)
+
+		logx.Errorf("catch_exp sub depth, %s, %+v\n", symbol, ws)
+		logx.Errorf("errMsg: %+v \n", errMsg)
+
+		logx.Infof("catch_exp sub depth, %s, %+v\n", symbol, ws)
+		logx.Infof("errMsg: %+v \n", errMsg)
 	}
 }
 
 func (d *DataEngine) SubDepth(symbol string, ws *net.WSInfo) {
+	defer catch_sub_depth_exp(symbol, ws)
 
 	if depth, ok := d.depth_cache_map.Load(symbol); ok {
 		d.PublishDepth(depth.(*datastruct.DepthQuote), ws)
@@ -404,7 +458,22 @@ func (d *DataEngine) UpdateCacheKlinesWithHist(klines *treemap.Map) {
 
 }
 
+func catch_sub_kline_exp(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
+	errMsg := recover()
+	if errMsg != nil {
+		fmt.Printf("catch_exp sub kline, %+v, %+v\n", req_kline_info, ws)
+		fmt.Printf("errMsg: %+v \n", errMsg)
+
+		logx.Errorf("catch_exp sub kline, %+v, %+v\n", req_kline_info, ws)
+		logx.Errorf("errMsg: %+v \n", errMsg)
+
+		logx.Infof("catch_exp sub kline, %+v, %+v\n", req_kline_info, ws)
+		logx.Infof("errMsg: %+v \n", errMsg)
+	}
+}
+
 func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
+	defer catch_sub_kline_exp(req_kline_info, ws)
 
 	rst := d.GetHistKlineData(req_kline_info)
 
