@@ -38,7 +38,7 @@ Cache:
   CacheDataCount: 1440
 
 WS:
-  Address: "localhost:8114"
+  Address: "0.0.0.0:8114"
   Url:  "/trading/marketws"
   HeartbeatLostSecs:  150
   HeartbeatSendSecs:  10
