@@ -37,8 +37,8 @@ func NewWSEngine(ws_config *config.WSConfig) *WSEngine {
 }
 
 func (w *WSEngine) Start() {
-	w.StartListen()
-	w.StartHeartbeat()
+	go w.StartListen()
+	go w.StartHeartbeat()
 }
 
 func (w *WSEngine) SetTestFlag(value bool) {
