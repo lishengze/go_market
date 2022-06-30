@@ -52,9 +52,9 @@ func (s *SubData) GetDepthPubInfoList(depth *datastruct.DepthQuote) []*DepthPubI
 	defer s.DepthInfo.mutex.Unlock()
 
 	//
-	if len(s.DepthInfo.Info) > 0 {
-		logx.Statf("CurDepthSubInfo: %s", s.DepthInfo.String())
-	}
+	// if len(s.DepthInfo.Info) > 0 {
+	// 	logx.Slowf("CurDepthSubInfo: %s", s.DepthInfo.String())
+	// }
 
 	byte_data := NewDepthJsonMsg(depth)
 	if sub_tree, ok := s.DepthInfo.Info[depth.Symbol]; ok {
@@ -80,9 +80,9 @@ func (s *SubData) GetTradePubInfoList(trade *datastruct.Trade, change_info *data
 	s.TradeInfo.mutex.Lock()
 	defer s.TradeInfo.mutex.Unlock()
 
-	if len(s.TradeInfo.Info) > 0 {
-		logx.Statf("CurTradeSubInfo: %s", s.TradeInfo.String())
-	}
+	// if len(s.TradeInfo.Info) > 0 {
+	// 	logx.Statf("CurTradeSubInfo: %s", s.TradeInfo.String())
+	// }
 
 	byte_data := NewTradeJsonMsg(trade, change_info)
 	if sub_tree, ok := s.TradeInfo.Info[trade.Symbol]; ok {
@@ -205,7 +205,7 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 
 func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 
-	logx.Statf("SubData: Hist: %s", datastruct.HistKlineString(hist_kline.Klines))
+	logx.Slowf("SubData: Hist: %s", datastruct.HistKlineString(hist_kline.Klines))
 
 	iter := hist_kline.Klines.Iterator()
 	iter.Last()
@@ -218,11 +218,11 @@ func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 	if _, ok := s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)]; !ok {
 
 		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data = datastruct.NewKlineWithKline(last_kline)
-		logx.Statf("[Store] %s ", last_kline.String())
+		logx.Slowf("[Store] %s ", last_kline.String())
 	} else if s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data == nil {
 
 		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data = datastruct.NewKlineWithKline(last_kline)
-		logx.Statf("[Store] %s ", last_kline.String())
+		logx.Slowf("[Store] %s ", last_kline.String())
 	}
 
 }

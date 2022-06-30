@@ -97,7 +97,7 @@ func (w *WSEngine) ChecktHeartbeat() {
 	w.WSConSetMutex.Lock()
 	defer w.WSConSetMutex.Unlock()
 
-	logx.Info("ChecktHeartbeat, WSConSet.Size: %d", len(w.WSConSet))
+	logx.Statf("ChecktHeartbeat, WSConSet.Size: %d", len(w.WSConSet))
 
 	var dead_ws = []*net.WSInfo{}
 
@@ -114,7 +114,7 @@ func (w *WSEngine) ChecktHeartbeat() {
 	}
 
 	for _, ws := range w.WSConSet {
-		logx.Infof("Pub Heartbeat To %s", ws.String())
+		logx.Statf("Pub Heartbeat To %s", ws.String())
 		ws.Conn.WriteMessage(1, GetHeartbeatMsg())
 	}
 }
