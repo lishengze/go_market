@@ -64,7 +64,7 @@ func (w *WSEngine) StartListen() {
 }
 
 func (w *WSEngine) StartHeartbeat() {
-	logx.Info("---- StatisticTimeTask Start!")
+	logx.Info("---- StartHeartbeat Start, HeartbeatSendSecs: %d", w.WsConfig.HeartbeatSendSecs)
 	duration := time.Duration((time.Duration)(w.WsConfig.HeartbeatSendSecs) * time.Second)
 	timer := time.Tick(duration)
 
