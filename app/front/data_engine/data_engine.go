@@ -195,11 +195,11 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 	d.cache_period_data_mutex.Lock()
 	if _, ok := d.cache_period_data[kline.Symbol]; !ok {
 		d.InitPeriodDara(kline.Symbol)
+
+		symbol_list := d.get_symbol_list()
+		d.PublishSymbol(symbol_list, nil)
 	}
 	d.cache_period_data_mutex.Unlock()
-
-	symbol_list := d.get_symbol_list()
-	d.PublishSymbol(symbol_list, nil)
 
 	d.cache_period_data[kline.Symbol].UpdateWithKline(kline)
 
@@ -231,11 +231,11 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	d.cache_period_data_mutex.Lock()
 	if _, ok := d.cache_period_data[trade.Symbol]; !ok {
 		d.InitPeriodDara(trade.Symbol)
+
+		symbol_list := d.get_symbol_list()
+		d.PublishSymbol(symbol_list, nil)
 	}
 	d.cache_period_data_mutex.Unlock()
-
-	symbol_list := d.get_symbol_list()
-	d.PublishSymbol(symbol_list, nil)
 
 	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
 	d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), nil)
@@ -250,8 +250,8 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 }
 
 func (d *DataEngine) get_symbol_list() []string {
-	d.cache_period_data_mutex.Lock()
-	defer d.cache_period_data_mutex.Unlock()
+	// d.cache_period_data_mutex.Lock()
+	// defer d.cache_period_data_mutex.Unlock()
 
 	var rst []string
 	for key := range d.cache_period_data {
