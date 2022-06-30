@@ -146,7 +146,23 @@ func (a *DataEngine) StartListenRecvdata() {
 	logx.Info("[S] DBServer start_receiver Over!")
 }
 
+func catch_depth_exp(depth *datastruct.DepthQuote) {
+	errMsg := recover()
+	if errMsg != nil {
+		// fmt.Println("This is catch_exp func")
+		logx.Errorf("catch_exp depth:  %+v\n", depth.String(3))
+		logx.Errorf("errMsg: %+v \n", errMsg)
+
+		logx.Infof("catch_exp depth:  %+v\n", depth.String(3))
+		logx.Infof("errMsg: %+v \n", errMsg)
+		// fmt.Println(errMsg)
+	}
+}
+
 func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
+
+	defer catch_depth_exp(depth)
+
 	// depth.Time = depth.Time / datastruct.NANO_PER_SECS
 
 	d.depth_cache_map.Store(depth.Symbol, depth)
@@ -157,7 +173,21 @@ func (d *DataEngine) process_depth(depth *datastruct.DepthQuote) error {
 	return nil
 }
 
+func catch_kline_exp(kline *datastruct.Kline) {
+	errMsg := recover()
+	if errMsg != nil {
+		// fmt.Println("This is catch_exp func")
+		logx.Errorf("catch_exp kline:  %+v\n", kline.String())
+		logx.Errorf("errMsg: %+v \n", errMsg)
+
+		logx.Infof("catch_exp kline:  %+v\n", kline.String())
+		logx.Infof("errMsg: %+v \n", errMsg)
+		// fmt.Println(errMsg)
+	}
+}
+
 func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
+	defer catch_kline_exp(kline)
 	// kline.Time = kline.Time / datastruct.NANO_PER_SECS
 
 	// logx.Statf("Rcv kline: %s", kline.String())
@@ -180,7 +210,21 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 	return nil
 }
 
+func catch_trade_exp(trade *datastruct.Trade) {
+	errMsg := recover()
+	if errMsg != nil {
+		// fmt.Println("This is catch_exp func")
+		logx.Errorf("catch_exp trade:  %+v\n", trade.String())
+		logx.Errorf("errMsg: %+v \n", errMsg)
+
+		logx.Infof("catch_exp trade:  %+v\n", trade.String())
+		logx.Infof("errMsg: %+v \n", errMsg)
+		// fmt.Println(errMsg)
+	}
+}
+
 func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
+	defer catch_trade_exp(trade)
 
 	d.trade_cache_map.Store(trade.Symbol, trade)
 
@@ -188,13 +232,13 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	if _, ok := d.cache_period_data[trade.Symbol]; !ok {
 		d.InitPeriodDara(trade.Symbol)
 
-		d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
-		d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), nil)
-
 		symbol_list := d.get_symbol_list()
 		d.PublishSymbol(symbol_list, nil)
 	}
 	d.cache_period_data_mutex.Unlock()
+
+	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
+	d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), nil)
 
 	// if period_data, ok := d.cache_period_data[trade.Symbol]; ok {
 
