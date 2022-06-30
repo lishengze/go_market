@@ -162,35 +162,45 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 
 	// logx.Statf("Rcv kline: %s", kline.String())
 
+	d.cache_period_data_mutex.Lock()
 	if _, ok := d.cache_period_data[kline.Symbol]; !ok {
 		d.InitPeriodDara(kline.Symbol)
 
 		symbol_list := d.get_symbol_list()
 		d.PublishSymbol(symbol_list, nil)
 	}
+	d.cache_period_data_mutex.Unlock()
 
 	d.cache_period_data[kline.Symbol].UpdateWithKline(kline)
 
 	d.PublishKline(kline, nil)
 
-	d.PublishChangeinfo(d.cache_period_data[kline.Symbol].GetChangeInfo(), nil)
+	// d.PublishChangeinfo(d.cache_period_data[kline.Symbol].GetChangeInfo(), nil)
 
 	return nil
 }
 
 func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
-	// trade.Time = trade.Time / datastruct.NANO_PER_SECS
-
-	// logx.Statf("Rcv trade: %s", trade.String())
 
 	d.trade_cache_map.Store(trade.Symbol, trade)
 
-	if period_data, ok := d.cache_period_data[trade.Symbol]; ok {
-		period_data.UpdateWithTrade(trade)
-		d.PublishTrade(trade, period_data.GetChangeInfo(), nil)
-	} else {
-		d.PublishTrade(trade, nil, nil)
+	d.cache_period_data_mutex.Lock()
+	if _, ok := d.cache_period_data[trade.Symbol]; !ok {
+		d.InitPeriodDara(trade.Symbol)
+
+		d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
+		d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), nil)
+
+		symbol_list := d.get_symbol_list()
+		d.PublishSymbol(symbol_list, nil)
 	}
+	d.cache_period_data_mutex.Unlock()
+
+	// if period_data, ok := d.cache_period_data[trade.Symbol]; ok {
+
+	// } else {
+	// 	d.PublishTrade(trade, nil, nil)
+	// }
 
 	return nil
 }

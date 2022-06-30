@@ -92,7 +92,11 @@ type PeriodData struct {
 	Start     float64
 	StartTime int64
 
-	Change float64
+	Last     float64
+	LastTime int64
+
+	Change     float64
+	ChangeRate float64
 
 	TimeNanos int64
 	Count     int
@@ -276,6 +280,11 @@ func (p *PeriodData) UpdateMeta() {
 		first.First()
 		p.Start = first.Value().(*datastruct.Kline).Open
 		p.StartTime = first.Key().(int64)
+
+		first.Last()
+		p.Last = first.Value().(*datastruct.Kline).Open
+		p.LastTime = first.Key().(int64)
+
 	} else {
 		return
 	}
@@ -304,7 +313,14 @@ func (p *PeriodData) UpdateMeta() {
 		return
 	}
 
-	p.Change = (p.Max - p.Start) / p.Start
+	if p.CurTrade != nil && p.CurTrade.Time > p.LastTime {
+		p.Change = p.CurTrade.Price - p.Start
+		p.ChangeRate = p.Change / p.Start
+	} else {
+		p.Change = p.Last - p.Start
+		p.ChangeRate = p.Change / p.Start
+	}
+
 	p.Count = p.time_cache_data.Size()
 
 	if p.Symbol == "BTC_USDT" {
@@ -335,9 +351,10 @@ func (p *PeriodData) GetChangeInfo() *datastruct.ChangeInfo {
 	defer p.mutex.Unlock()
 
 	return &datastruct.ChangeInfo{
-		Symbol: p.Symbol,
-		High:   p.Max,
-		Low:    p.Min,
-		Change: p.Change,
+		Symbol:     p.Symbol,
+		High:       p.Max,
+		Low:        p.Min,
+		Change:     p.Change,
+		ChangeRate: p.ChangeRate,
 	}
 }
