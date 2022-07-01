@@ -96,10 +96,10 @@
     {   
         "type":"kline_sub",    
         "symbol":"symbolName",  
-        "start_time":start_time,    // 必须是秒级的UTC时间戳   
-        "end_time":end_time,        // 必须是秒级的UTC时间戳  
-        "count": 1000,              // 数量和时间，任选一个为准; 同时填写以 Count 为准;  
-        "frequency":"60"            // 数据频率，以秒为单位，现在必须是60的整数倍.  
+        "start_time":start_time,    // 必须是秒级的UTC时间戳   字符串形式;
+        "end_time":end_time,        // 必须是秒级的UTC时间戳  字符串形式;
+        "count": "1000",            // 数量和时间，任选一个为准; 同时填写以 Count 为准;  字符串形式;
+        "frequency":"60"            // 数据频率，以秒为单位，现在必须是60的整数倍.  字符串形式;
     }  
     历史数据的区间通过 [start_time, end_time] 或者 count 设置; 默认推荐的是按照数量来请求，初次订阅时默认展示的是 1000根1分频的k线数据。
 

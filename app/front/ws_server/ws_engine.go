@@ -9,6 +9,7 @@ import (
 	"market_server/common/datastruct"
 	"market_server/common/util"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -364,24 +365,45 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 	if value, ok := m["frequency"]; ok {
 		// value_type := reflect.TypeOf(value)
 		// true_value := reflect.ValueOf(value)
+		tmp, err := strconv.Atoi(value.(string))
+		if err != nil {
+			logx.Errorf("subkline frequency is not string: %+v ", m)
+			return
+		}
 
-		resolution = uint32(value.(float64))
+		resolution = uint32(tmp)
 	} else {
 		logx.Error("ProcessSubTrade: No frequency Data %+v", m)
 		return
 	}
 
-	if value, ok := m["data_count"]; ok {
-		count = uint32(value.(float64))
+	if value, ok := m["count"]; ok {
+		tmp, err := strconv.Atoi(value.(string))
+		if err != nil {
+			logx.Errorf("subkline count is not string: %+v ", m)
+			return
+		}
+		count = uint32(tmp)
 	} else {
-		logx.Error("ProcessSubTrade: No data_count Data %+v", m)
+		logx.Error("ProcessSubTrade: No count Data %+v", m)
 	}
 
 	if value, ok := m["start_time"]; ok {
-		start_time = uint64(value.(float64))
+		tmp, err := strconv.Atoi(value.(string))
+		if err != nil {
+			logx.Errorf("subkline start_time is not string: %+v ", m)
+			return
+		}
+		start_time = uint64(tmp)
 	}
 	if value, ok := m["end_time"]; ok {
-		end_time = uint64(value.(float64))
+		tmp, err := strconv.Atoi(value.(string))
+		if err != nil {
+			logx.Errorf("subkline end_time is not string: %+v ", m)
+			return
+		}
+
+		end_time = uint64(tmp)
 	}
 
 	if uint64(count)+start_time+end_time == 0 {
@@ -412,7 +434,12 @@ func (w *WSEngine) ProcessUnSubKline(m map[string]interface{}, ws *net.WSInfo) {
 	}
 
 	if value, ok := m["frequency"]; ok {
-		resolution = uint32(value.(float64))
+		tmp, err := strconv.Atoi(value.(string))
+		if err != nil {
+			logx.Errorf("subkline frequency is not string: %+v ", m)
+			return
+		}
+		resolution = uint32(tmp)
 	} else {
 		logx.Error("ProcessSubTrade: No frequency Data %+v", m)
 		return
