@@ -389,9 +389,9 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 		logx.Infof("Original hist_klines len: %d", len(hist_klines.KlineData))
 	}
 
-	logx.Infof("1")
+	// logx.Infof("1")
 	tmp := treemap.NewWith(utils.Int64Comparator)
-	logx.Infof("2")
+	// logx.Infof("2")
 
 	for _, pb_kline := range hist_klines.KlineData {
 		kline := marketservice.NewKlineWithPbKline(pb_kline)
@@ -402,7 +402,7 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 		tmp.Put(kline.Time, kline)
 	}
 
-	logx.Infof("3")
+	// logx.Infof("3")
 
 	d.UpdateCacheKlinesWithHist(tmp)
 
@@ -441,7 +441,7 @@ func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, o
 	}
 
 	iter := ori_klines.Iterator()
-	iter.Begin()
+	iter.First()
 
 	cache_kline := iter.Value().(*datastruct.Kline)
 
