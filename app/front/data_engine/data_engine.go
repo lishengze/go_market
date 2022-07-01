@@ -386,7 +386,7 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 		logx.Errorf("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
 		return nil
 	} else {
-		logx.Infof("Original hist_klines len: %d", len(hist_klines.KlineData))
+		logx.Infof("Original hist_klines : %+v", hist_klines.KlineData)
 	}
 
 	// logx.Infof("1")
@@ -408,7 +408,7 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 
 	trans_kline := d.TrasOriKlineData(req_kline_info, tmp)
 
-	logx.Infof("Trans Kline Size: %d ", trans_kline.Size())
+	logx.Infof("Trans Kline : %+v ", trans_kline)
 
 	return &datastruct.RspHistKline{
 		ReqInfo: req_kline_info,
@@ -449,12 +449,11 @@ func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, o
 		cache_kline.Time = cache_kline.Time - cache_kline.Time%int64(resolution)
 	}
 
+	var pub_kline *datastruct.Kline
 	for iter.Next() {
 		cur_kline := iter.Value().(*datastruct.Kline)
 
 		if datastruct.IsOldKlineEnd(cur_kline, int64(resolution)) {
-			var pub_kline *datastruct.Kline
-
 			if cur_kline.Resolution != resolution {
 				cache_kline.Close = cur_kline.Close
 				cache_kline.Low = util.MinFloat64(cache_kline.Low, cur_kline.Low)
@@ -476,6 +475,11 @@ func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, o
 			cache_kline.Low = util.MinFloat64(cache_kline.Low, cur_kline.Low)
 			cache_kline.High = util.MaxFloat64(cache_kline.High, cur_kline.High)
 		}
+	}
+
+	if cache_kline.Time != pub_kline.Time {
+		pub_kline = datastruct.NewKlineWithKline(cache_kline)
+		rst.Put(pub_kline.Time, pub_kline)
 	}
 
 	return rst

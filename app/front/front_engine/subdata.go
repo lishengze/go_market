@@ -225,6 +225,11 @@ func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 		logx.Slowf("[Store] %s ", last_kline.String())
 	}
 
+	if hist_kline.Klines.Size() > int(hist_kline.ReqInfo.Count) {
+		logx.Infof("last kline %+v, is not complete kline data, leave it in cache, wait for next round!", last_kline)
+		hist_kline.Klines.Remove(last_kline.Time)
+	}
+
 }
 
 func (s *SubData) SubSymbol(ws *net.WSInfo) {
