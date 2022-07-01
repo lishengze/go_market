@@ -56,6 +56,20 @@ func (w *WSEngine) StoreWS(ws *net.WSInfo) {
 	w.WSConSet[ws.ID] = ws
 }
 
+func (w *WSEngine) CloseWS(ws *net.WSInfo) {
+	ws.Close()
+	w.RemoveWS(ws)
+}
+
+func (w *WSEngine) RemoveWS(ws *net.WSInfo) {
+	w.WSConSetMutex.Lock()
+	defer w.WSConSetMutex.Unlock()
+
+	if _, ok := w.WSConSet[ws.ID]; ok {
+		delete(w.WSConSet, ws.ID)
+	}
+}
+
 func (w *WSEngine) StartListen() {
 	logx.Infof("Start Listen: %s:%s", w.WsConfig.Address, w.WsConfig.Url)
 
@@ -135,16 +149,17 @@ func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		logx.Errorf("upgrade err: %+v ", err)
+		w.CloseWS(ws)
 		return
 	}
-	defer w.Close(ws)
+	defer w.CloseWS(ws)
 
 	w.ProcessSubSymbol(ws)
 
 	for {
 		mt, message, err := ws.Conn.ReadMessage()
 		if err != nil {
-			ws.Close()
+			w.CloseWS(ws)
 			logx.Errorf("read, type: %d, err: %+v\n", mt, err)
 		} else {
 			w.ProcessMessage(message, ws)
