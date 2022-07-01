@@ -149,6 +149,7 @@ func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		logx.Errorf("upgrade err: %+v ", err)
+		logx.Infof("upgrade err: %+v ", err)
 		w.CloseWS(ws)
 		return
 	}
@@ -161,6 +162,7 @@ func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.CloseWS(ws)
 			logx.Errorf("read, type: %d, err: %+v\n", mt, err)
+			logx.Infof("read, type: %d, err: %+v\n", mt, err)
 		} else {
 			w.ProcessMessage(message, ws)
 		}
