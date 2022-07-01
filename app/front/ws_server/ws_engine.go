@@ -102,7 +102,7 @@ func (w *WSEngine) ChecktHeartbeat() {
 	var dead_ws = []*net.WSInfo{}
 
 	for _, ws := range w.WSConSet {
-		if !ws.CheckAlive(int64(w.WsConfig.HeartbeatLostSecs)) {
+		if !ws.IsAlive() || !ws.CheckAlive(int64(w.WsConfig.HeartbeatLostSecs)) {
 			logx.Errorf("ws: %s is dead! last_time: %+v, cur_time: %+v,  HeartbeatLostSecs: %d\n",
 				ws.String(), util.GetTimeFromtInt(ws.LastReqTime), time.Now(), w.WsConfig.HeartbeatLostSecs)
 			dead_ws = append(dead_ws, ws)
@@ -144,10 +144,11 @@ func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
 	for {
 		mt, message, err := ws.Conn.ReadMessage()
 		if err != nil {
+			ws.Close()
 			logx.Errorf("read, type: %d, err: %+v\n", mt, err)
-			break
+		} else {
+			w.ProcessMessage(message, ws)
 		}
-		w.ProcessMessage(message, ws)
 	}
 }
 
