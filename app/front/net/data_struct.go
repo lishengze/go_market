@@ -39,4 +39,5 @@ const (
 	KLINE_UPATE   = "kline_update"
 
 	HEARTBEAT = "heartbeat"
+	ERROR     = "error"
 )

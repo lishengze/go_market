@@ -1,6 +1,7 @@
 package net
 
 import (
+	"encoding/json"
 	"fmt"
 	"market_server/common/datastruct"
 	"market_server/common/util"
@@ -25,6 +26,24 @@ func NewWSInfo(conn *websocket.Conn) *WSInfo {
 		ID:    util.UTCNanoTime(),
 		Conn:  conn,
 		Alive: 1,
+	}
+}
+
+type ErrorMsg struct {
+	TypeInfo string `json:"type"`
+	Info     string `json:"info"`
+}
+
+func (w *WSInfo) SendErrorMsg(msg string) {
+	json_data := ErrorMsg{
+		TypeInfo: DEPTH_UPDATE,
+		Info:     msg,
+	}
+
+	rst, err := json.Marshal(json_data)
+
+	if err != nil {
+		w.SendMsg(1, rst)
 	}
 }
 
