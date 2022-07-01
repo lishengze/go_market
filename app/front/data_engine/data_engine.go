@@ -381,6 +381,7 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 	hist_klines, err := d.msclient.RequestHistKlineData(context.Background(), req_hist_info)
 
 	if err != nil {
+		logx.Errorf("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
 		return nil
 	}
 
@@ -477,9 +478,14 @@ func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.W
 
 	rst := d.GetHistKlineData(req_kline_info)
 
-	logx.Statf("DataEngine: Hist: %s", datastruct.HistKlineString(rst.Klines))
+	if rst != nil {
+		logx.Errorf("GetHistKlineData Failed")
+	} else {
+		logx.Statf("DataEngine: Hist: %s", datastruct.HistKlineString(rst.Klines))
 
-	d.next_worker.PublishHistKline(rst, ws)
+		d.next_worker.PublishHistKline(rst, ws)
+	}
+
 }
 
 func (f *DataEngine) UnSubTrade(symbol string, ws *net.WSInfo) {
