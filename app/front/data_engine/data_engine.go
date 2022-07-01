@@ -383,6 +383,8 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 	if err != nil {
 		logx.Errorf("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
 		return nil
+	} else {
+		logx.Infof("hist_klines len: %d", len(hist_klines.KlineData))
 	}
 
 	tmp := treemap.NewWith(utils.Int64Comparator)
@@ -479,11 +481,11 @@ func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.W
 	rst := d.GetHistKlineData(req_kline_info)
 
 	if rst != nil {
-		logx.Errorf("GetHistKlineData Failed")
-	} else {
 		logx.Statf("DataEngine: Hist: %s", datastruct.HistKlineString(rst.Klines))
 
 		d.next_worker.PublishHistKline(rst, ws)
+	} else {
+		logx.Errorf("GetHistKlineData Failed")
 	}
 
 }
