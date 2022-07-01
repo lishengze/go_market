@@ -378,6 +378,8 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 		Frequency: datastruct.SECS_PER_MIN,
 	}
 
+	logx.Infof("req_hist_info: %+v", req_kline_info)
+
 	hist_klines, err := d.msclient.RequestHistKlineData(context.Background(), req_hist_info)
 
 	if err != nil {
