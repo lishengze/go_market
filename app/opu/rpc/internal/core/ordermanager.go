@@ -108,7 +108,6 @@ func (o *orderManager) sendOrder() {
 func (o *orderManager) cancelOrder() {
 	o.mutex.Lock()
 	cancelFlag := o.order.CancelFlag
-	o.mutex.Unlock()
 
 	if cancelFlag == "SET" { // 已经下下达撤单指令
 		return
@@ -121,6 +120,7 @@ func (o *orderManager) cancelOrder() {
 	if err != nil {
 		logx.Errorf("order set CancelFlag err:%v, order:%+v", err, *o.order)
 	}
+	o.mutex.Unlock()
 
 	// 循环撤单
 	for {

@@ -26,7 +26,8 @@ func main() {
 
 	//testRegisterAccount()
 	//testGetBalance()
-	testCancelAllOpenOrders()
+	//testCancelAllOpenOrders()
+	testQueryTrades()
 
 	//testPlaceOrder()
 
@@ -104,6 +105,20 @@ func testCancelOrder() {
 		log.Fatalln(err)
 	}
 
+	fmt.Println(rsp)
+}
+
+func testQueryTrades() {
+	rsp, err := o.QueryTrade(context.Background(), &opu.QueryTradeReq{
+		AccountId:     "",
+		AccountAlias:  "FTX_MCA_OTC_TRADING",
+		ClientOrderId: "1655881321711065",
+	})
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println("-----------", len(rsp.Trades))
 	fmt.Println(rsp)
 }
 
