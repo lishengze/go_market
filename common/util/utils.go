@@ -50,6 +50,11 @@ func GetTimeFromtInt(int_time int64) time.Time {
 	return time.Unix(int64(int_time/int64(time.Second)), int_time%int64(time.Second))
 }
 
+func TimeStrFromInt(int_time int64) string {
+	dst_time := GetTimeFromtInt(int_time)
+	return TimeToSecString(dst_time)
+}
+
 func TimeMinute() int64 {
 	utc_time_secs := time.Now().Unix()
 
@@ -136,6 +141,10 @@ func Float64ComparatorDsc(a, b interface{}) int {
 		return 0
 	}
 }
+
+// func GetFloorTime(ori_time int64, resolution_secs int64) int64 {
+
+// }
 
 func InitTestLogx() {
 

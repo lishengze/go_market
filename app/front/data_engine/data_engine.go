@@ -14,7 +14,6 @@ import (
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/zrpc"
 )
 
 type DataEngine struct {
@@ -44,7 +43,7 @@ func NewDataEngine(recvDataChan *datastruct.DataChannel, config *config.Config) 
 		cache_period_data: make(map[string]*PeriodData),
 		cache_kline_data:  make(map[string]map[int]*treemap.Map),
 		IsTest:            false,
-		msclient:          marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
+		// msclient:          marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
 	}
 
 	return rst
@@ -360,55 +359,57 @@ func (d *DataEngine) SubDepth(symbol string, ws *net.WSInfo) {
 
 func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
 
-	if d.IsTest {
-		return &datastruct.RspHistKline{
-			Klines:  datastruct.GetTestHistKline(req_kline_info),
-			ReqInfo: req_kline_info,
-		}
-	}
-
-	rate := req_kline_info.Frequency / datastruct.SECS_PER_MIN
-
-	req_hist_info := &marketservice.ReqHishKlineInfo{
-		Symbol:    req_kline_info.Symbol,
-		Exchange:  req_kline_info.Exchange,
-		StartTime: req_kline_info.StartTime,
-		EndTime:   req_kline_info.EndTime,
-		Count:     req_kline_info.Count * rate,
-		Frequency: datastruct.SECS_PER_MIN,
-	}
-
-	logx.Infof("req_hist_info: %+v", req_kline_info)
-
-	hist_klines, err := d.msclient.RequestHistKlineData(context.Background(), req_hist_info)
-
-	if err != nil {
-		logx.Errorf("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
-		return nil
-	} else {
-		logx.Infof("Original hist_klines : %+v", hist_klines.KlineData)
-	}
-
-	// logx.Infof("1")
 	tmp := treemap.NewWith(utils.Int64Comparator)
-	// logx.Infof("2")
 
-	for _, pb_kline := range hist_klines.KlineData {
-		kline := marketservice.NewKlineWithPbKline(pb_kline)
-		if kline == nil {
-			continue
+	if d.IsTest {
+		tmp = datastruct.GetTestHistKline(req_kline_info)
+
+		// return &datastruct.RspHistKline{
+		// 	Klines:  datastruct.GetTestHistKline(req_kline_info),
+		// 	ReqInfo: req_kline_info,
+		// }
+	} else {
+		rate := req_kline_info.Frequency / datastruct.SECS_PER_MIN
+
+		req_hist_info := &marketservice.ReqHishKlineInfo{
+			Symbol:    req_kline_info.Symbol,
+			Exchange:  req_kline_info.Exchange,
+			StartTime: req_kline_info.StartTime,
+			EndTime:   req_kline_info.EndTime,
+			Count:     req_kline_info.Count * rate,
+			Frequency: datastruct.SECS_PER_MIN,
 		}
 
-		tmp.Put(kline.Time, kline)
-	}
+		logx.Infof("req_hist_info: %+v", req_kline_info)
 
-	// logx.Infof("3")
+		hist_klines, err := d.msclient.RequestHistKlineData(context.Background(), req_hist_info)
+
+		if err != nil {
+			logx.Errorf("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
+			return nil
+		} else {
+			// logx.Infof("Original hist_klines : %+v", hist_klines.KlineData)
+		}
+
+		for _, pb_kline := range hist_klines.KlineData {
+			kline := marketservice.NewKlineWithPbKline(pb_kline)
+			if kline == nil {
+				continue
+			}
+
+			tmp.Put(kline.Time, kline)
+		}
+	}
 
 	d.UpdateCacheKlinesWithHist(tmp)
 
+	logx.Infof("OriKlineTime: %s", datastruct.HistKlineTimeList(tmp))
+	fmt.Printf("OriKlineTime: %s \n", datastruct.HistKlineTimeList(tmp))
+
 	trans_kline := d.TrasOriKlineData(req_kline_info, tmp)
 
-	logx.Infof("Trans Kline : %+v ", trans_kline)
+	logx.Infof("TransKlineTime: %s", datastruct.HistKlineTimeList(trans_kline))
+	fmt.Printf("TransKlineTime: %s\n", datastruct.HistKlineTimeList(trans_kline))
 
 	return &datastruct.RspHistKline{
 		ReqInfo: req_kline_info,
@@ -446,7 +447,7 @@ func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, o
 	cache_kline := iter.Value().(*datastruct.Kline)
 
 	if !datastruct.IsNewKlineStart(cache_kline, int64(resolution)) {
-		cache_kline.Time = cache_kline.Time - cache_kline.Time%int64(resolution)
+		cache_kline.Time = cache_kline.Time - cache_kline.Time%(int64(resolution)*datastruct.NANO_PER_SECS)
 	}
 
 	var pub_kline *datastruct.Kline
