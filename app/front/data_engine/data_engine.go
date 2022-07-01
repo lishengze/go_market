@@ -386,10 +386,12 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 		logx.Errorf("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
 		return nil
 	} else {
-		logx.Infof("hist_klines len: %d", len(hist_klines.KlineData))
+		logx.Infof("Original hist_klines len: %d", len(hist_klines.KlineData))
 	}
 
+	logx.Infof("1")
 	tmp := treemap.NewWith(utils.Int64Comparator)
+	logx.Infof("2")
 
 	for _, pb_kline := range hist_klines.KlineData {
 		kline := marketservice.NewKlineWithPbKline(pb_kline)
@@ -400,9 +402,13 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 		tmp.Put(kline.Time, kline)
 	}
 
+	logx.Infof("3")
+
 	d.UpdateCacheKlinesWithHist(tmp)
 
 	trans_kline := d.TrasOriKlineData(req_kline_info, tmp)
+
+	logx.Infof("Trans Kline Size: %d ", trans_kline.Size())
 
 	return &datastruct.RspHistKline{
 		ReqInfo: req_kline_info,
@@ -410,7 +416,23 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 	}
 }
 
+func catch_trasoriklinedaata_exp(req_kline_info *datastruct.ReqHistKline) {
+	errMsg := recover()
+	if errMsg != nil {
+		fmt.Printf("catch_trasoriklinedaata_exp sub depth,  %+v\n", req_kline_info)
+		fmt.Printf("errMsg: %+v \n", errMsg)
+
+		logx.Errorf("catch_trasoriklinedaata_exp sub depth, %+v\n", req_kline_info)
+		logx.Errorf("errMsg: %+v \n", errMsg)
+
+		logx.Infof("catch_trasoriklinedaata_exp sub depth, %+v\n", req_kline_info)
+		logx.Infof("errMsg: %+v \n", errMsg)
+	}
+}
+
 func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, ori_klines *treemap.Map) *treemap.Map {
+	defer catch_trasoriklinedaata_exp(req_kline_info)
+
 	rst := treemap.NewWith(utils.Int64Comparator)
 	resolution := int(req_kline_info.Frequency)
 
