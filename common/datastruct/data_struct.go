@@ -150,6 +150,11 @@ func (r *RspHistKline) TimeList() string {
 	return rst
 }
 
+func (r *RspHistKline) SimpleTimeList() string {
+	rst := HistKlineString(r.Klines)
+	return rst
+}
+
 func (c *ChangeInfo) String() string {
 	return fmt.Sprintf("Symbol: %s, High: %f, Low: %f, Change: %f, ChangeRate: %f \n",
 		c.Symbol, c.High, c.Low, c.Change, c.ChangeRate)
