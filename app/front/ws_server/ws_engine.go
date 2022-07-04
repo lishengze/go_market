@@ -146,6 +146,27 @@ func (w *WSEngine) Close(ws *net.WSInfo) {
 func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
 	logx.Infof("RequestInfo: %+v, Echo: %+v \n", time.Now(), *r)
 
+	ws := w.InitWS(h, r)
+
+	if ws != nil {
+		for {
+			w.ListenMessage(ws)
+			time.Sleep(time.Millisecond * 100)
+		}
+	}
+
+}
+
+func (w *WSEngine) InitWS(h http.ResponseWriter, r *http.Request) *net.WSInfo {
+	defer func() {
+		errMsg := recover()
+		if errMsg != nil {
+			fmt.Println("This is catch_exp func")
+			logx.Errorf("InitWS errMsg: %+v \n", errMsg)
+			logx.Infof("InitWS errMsg: %+v, \n", errMsg)
+		}
+	}()
+
 	c, err := upgrader.Upgrade(h, r, nil)
 
 	ws := net.NewWSInfo(c)
@@ -156,11 +177,23 @@ func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
 		logx.Errorf("upgrade err: %+v ", err)
 		logx.Infof("upgrade err: %+v ", err)
 		w.CloseWS(ws)
-		return
+		return nil
 	}
 	defer w.CloseWS(ws)
 
 	w.ProcessSubSymbol(ws)
+	return ws
+}
+
+func (w *WSEngine) ListenMessage(ws *net.WSInfo) {
+	defer func(ws *net.WSInfo) {
+		errMsg := recover()
+		if errMsg != nil {
+			fmt.Println("This is catch_exp func")
+			logx.Errorf("ListenMessage errMsg: %+v, WSInfo: %+v\n", errMsg, ws)
+			logx.Infof("ListenMessage errMsg: %+v, WSInfo: %+v\n", errMsg, ws)
+		}
+	}(ws)
 
 	for {
 		mt, message, err := ws.Conn.ReadMessage()
@@ -168,6 +201,7 @@ func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
 			w.CloseWS(ws)
 			logx.Errorf("read, type: %d, err: %+v\n", mt, err)
 			logx.Infof("read, type: %d, err: %+v\n", mt, err)
+			time.Sleep(time.Millisecond * 100)
 		} else {
 			w.ProcessMessage(message, ws)
 		}
@@ -202,7 +236,7 @@ func catch_exp(msg []byte, ws *net.WSInfo) {
 	errMsg := recover()
 	if errMsg != nil {
 		fmt.Println("This is catch_exp func")
-		logx.Errorf("catch_exp OriginalMsg: %s, WSInfo: %+v\n", msg, *ws)
+		logx.Errorf("catch_exp OriginalMsg: %s, WSInfo: %+v\n", msg, ws)
 		logx.Errorf("errMsg: %+v \n", errMsg)
 		fmt.Println(errMsg)
 	}
