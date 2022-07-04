@@ -211,14 +211,14 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 					Frequency: uint32(info.Resolution),
 				}
 
-				logx.Infof("kline_pub_info: %s \n", info.String())
+				// logx.Infof("kline_pub_info: %s \n", info.String())
 				if info.ws_info.IsAlive() {
 					err := info.ws_info.SendMsg(1, info.data)
 					if err != nil {
 						logx.Errorf("PublishKline err: %+v \n", err)
 					}
 				} else {
-					logx.Infof("ws:%+v is not alive", info.ws_info)
+					logx.Infof("ws:%d is not alive", info.ws_info.ID)
 					f.sub_data.UnSubKline(cur_req, ws)
 				}
 			}

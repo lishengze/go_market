@@ -112,14 +112,17 @@ func (w *WSEngine) ChecktHeartbeat() {
 	w.WSConSetMutex.Lock()
 	defer w.WSConSetMutex.Unlock()
 
-	logx.Statf("ChecktHeartbeat, WSConSet.Size: %d", len(w.WSConSet))
+	logx.Infof("ChecktHeartbeat, WSConSet.Size: %d", len(w.WSConSet))
 
 	var dead_ws = []*net.WSInfo{}
 
 	for _, ws := range w.WSConSet {
+		logx.Infof("ws: %s is dead! last_time: %s, cur_time: %s,  HeartbeatLostSecs: %d\n",
+			ws.String(), util.TimeStrFromInt(ws.LastReqTime), util.TimeToSecString(time.Now()), w.WsConfig.HeartbeatLostSecs)
+
 		if !ws.IsAlive() || !ws.CheckAlive(int64(w.WsConfig.HeartbeatLostSecs)) {
-			logx.Errorf("ws: %s is dead! last_time: %+v, cur_time: %+v,  HeartbeatLostSecs: %d\n",
-				ws.String(), util.GetTimeFromtInt(ws.LastReqTime), time.Now(), w.WsConfig.HeartbeatLostSecs)
+			logx.Errorf("ws: %s is dead! last_time: %s, cur_time: %s,  HeartbeatLostSecs: %d\n",
+				ws.String(), util.TimeStrFromInt(ws.LastReqTime), util.TimeToSecString(time.Now()), w.WsConfig.HeartbeatLostSecs)
 			dead_ws = append(dead_ws, ws)
 		}
 	}

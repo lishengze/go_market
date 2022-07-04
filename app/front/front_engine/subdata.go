@@ -341,6 +341,8 @@ func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WS
 	if s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].ws_info != nil {
 		s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].ws_info.Remove(ws.ID)
 		logx.Infof("KLine Remove %s, %d : %+v", req_kline_info.Symbol, int(req_kline_info.Frequency), ws)
+	} else {
+		logx.Infof("KlineInfo, %s.%d is already nil!", req_kline_info.Symbol, req_kline_info.Frequency)
 	}
 
 }
