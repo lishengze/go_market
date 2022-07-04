@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/Shopify/sarama"
 	"google.golang.org/protobuf/proto"
-	"time"
 )
 
 //const topic = "my-topic"
@@ -13,7 +12,7 @@ import (
 //const topic = "KLINE.BTC_USDT.BINANCE"
 //const topic = "TRADE.BTC_USDT.BINANCE"
 
-const topic = "DEPTH.BTC_USDT.FTX"
+const topic = "TRADE.BTC_USDT.FTX"
 
 //const topic = "DEPTH.ETH_USDT.FTX"
 
@@ -44,19 +43,19 @@ func main() {
 		// 异步从每个分区消费信息
 		go func(sarama.PartitionConsumer) {
 			for msg := range pc.Messages() {
-				data := mpupb.Depth{}
+				//data := mpupb.Depth{}
 				//data:=mpupb.Kline{}
-				//data:=mpupb.Trade{}
+				data := mpupb.Trade{}
 				err := proto.Unmarshal(msg.Value, &data)
 				if err != nil {
 					fmt.Println(err)
 					continue
 				}
 				fmt.Println(
-					data.Timestamp.AsTime().Format(time.RFC3339Nano),
-					data.MpuTimestamp.AsTime().Format(time.RFC3339Nano),
-					data.Symbol,
-					//data.String(),
+					//data.Timestamp.AsTime().Format(time.RFC3339Nano),
+					//data.MpuTimestamp.AsTime().Format(time.RFC3339Nano),
+					//data.Symbol,
+					data.String(),
 				)
 				//fmt.Printf("Partition:%d Offset:%d Key:%v Value:%v", msg.Partition, msg.Offset, msg.Key, msg.Value)
 			}

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	marketTradeUpdateCheckDuration = time.Second * 5 //  超过此时间未更新，将触发重连
+	marketTradeUpdateCheckDuration = time.Second * 30 //  超过此时间未更新，将触发重连
 )
 
 type marketTradeManager struct {
@@ -100,9 +100,9 @@ func (o *marketTradeManager) run() {
 
 			fn := func() {
 				{
-					o.store[symbol.ExFormat] = time.Now()
 					defer o.mutex.Unlock()
 					o.mutex.Lock()
+					o.store[symbol.ExFormat] = time.Now()
 				}
 			}
 

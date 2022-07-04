@@ -30,7 +30,7 @@ const (
 const (
 	depthOutputDuration = time.Millisecond * 50
 
-	depthUpdateCheckDuration = time.Second * 5 // depth 超过此时间未更新，将触发重连
+	depthUpdateCheckDuration = time.Second * 30 // depth 超过此时间未更新，将触发重连
 )
 
 type (
