@@ -190,7 +190,7 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 
 		if ws.IsAlive() {
 
-			logx.Slowf("[PubKline]: %s", kline.String())
+			logx.Infof("[PubKline]: %s", kline.String())
 			byte_data := NewKlineUpdateJsonMsg(kline)
 			err := ws.SendMsg(websocket.TextMessage, byte_data)
 
@@ -210,7 +210,7 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 				Frequency: uint32(info.Resolution),
 			}
 
-			logx.Slowf("kline_pub_info: %s \n", info.String())
+			logx.Infof("kline_pub_info: %s \n", info.String())
 			if info.ws_info.IsAlive() {
 				err := info.ws_info.SendMsg(1, info.data)
 				if err != nil {
@@ -239,7 +239,7 @@ func (f *FrontEngine) PublishHistKline(klines *datastruct.RspHistKline, ws *net.
 	f.sub_data.ProcessKlineHistData(klines)
 
 	if ws != nil {
-		logx.Statf("PublishHistKline: %+v", klines)
+		logx.Infof("PublishHistKline: %+v", klines)
 
 		byte_data := NewHistKlineJsonMsg(klines)
 		if ws.IsAlive() {

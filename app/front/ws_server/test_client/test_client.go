@@ -69,7 +69,7 @@ func GetTestKlineReqJson() []byte {
 		"type":      net.KLINE_SUB,
 		"symbol":    "BTC_USDT",
 		"count":     "2",
-		"frequency": "300",
+		"frequency": "60",
 	}
 	rst, err := json.Marshal(sub_info)
 	if err != nil {
