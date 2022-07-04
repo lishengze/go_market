@@ -125,11 +125,11 @@ func (w *WSEngine) ChecktHeartbeat() {
 	}
 
 	for _, ws := range dead_ws {
-		delete(w.WSConSet, ws.ID)
+		w.CloseWS(ws)
 	}
 
 	for _, ws := range w.WSConSet {
-		logx.Statf("Pub Heartbeat To %s", ws.String())
+		logx.Infof("Pub Heartbeat To %s", ws.String())
 		ws.Conn.WriteMessage(1, GetHeartbeatMsg())
 	}
 }

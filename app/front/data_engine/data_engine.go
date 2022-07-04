@@ -38,16 +38,24 @@ type DataEngine struct {
 
 func NewDataEngine(recvDataChan *datastruct.DataChannel, config *config.Config) *DataEngine {
 
-	rst := &DataEngine{
-		RecvDataChan:      recvDataChan,
-		config:            config,
-		cache_period_data: make(map[string]*PeriodData),
-		cache_kline_data:  make(map[string]map[int]*treemap.Map),
-		IsTest:            false,
-		msclient:          marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
+	if config != nil {
+		return &DataEngine{
+			RecvDataChan:      recvDataChan,
+			config:            config,
+			cache_period_data: make(map[string]*PeriodData),
+			cache_kline_data:  make(map[string]map[int]*treemap.Map),
+			IsTest:            false,
+			msclient:          marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
+		}
+	} else {
+		return &DataEngine{
+			RecvDataChan:      recvDataChan,
+			config:            config,
+			cache_period_data: make(map[string]*PeriodData),
+			cache_kline_data:  make(map[string]map[int]*treemap.Map),
+			IsTest:            false,
+		}
 	}
-
-	return rst
 }
 
 func (d *DataEngine) Start() {
@@ -451,6 +459,7 @@ func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, o
 		cache_kline.Time = cache_kline.Time - cache_kline.Time%(int64(resolution)*datastruct.NANO_PER_SECS)
 	}
 
+	iter.Begin()
 	var pub_kline *datastruct.Kline
 	for iter.Next() {
 		cur_kline := iter.Value().(*datastruct.Kline)

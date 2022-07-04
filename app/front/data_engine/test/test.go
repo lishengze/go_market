@@ -36,7 +36,7 @@ func test_main() {
 		StartTime: 0,
 		EndTime:   0,
 		Count:     2,
-		Frequency: 300,
+		Frequency: 60,
 	}
 
 	data_worker.GetHistKlineData(req_kline_info)

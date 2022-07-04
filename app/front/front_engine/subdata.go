@@ -226,7 +226,8 @@ func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 	}
 
 	if hist_kline.Klines.Size() > int(hist_kline.ReqInfo.Count) {
-		logx.Infof("last kline %+v, is not complete kline data, leave it in cache, wait for next round!", last_kline)
+		logx.Infof("hist_kline.Klines.Size: %d, hist_kline.ReqInfo.Count: %d, last kline %+v, is not complete kline data, leave it in cache, wait for next round!",
+			hist_kline.Klines.Size(), int(hist_kline.ReqInfo.Count), last_kline)
 		hist_kline.Klines.Remove(last_kline.Time)
 	}
 
