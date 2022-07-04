@@ -14,6 +14,7 @@ import (
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/zrpc"
 )
 
 type DataEngine struct {
@@ -43,7 +44,7 @@ func NewDataEngine(recvDataChan *datastruct.DataChannel, config *config.Config) 
 		cache_period_data: make(map[string]*PeriodData),
 		cache_kline_data:  make(map[string]map[int]*treemap.Map),
 		IsTest:            false,
-		// msclient:          marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
+		msclient:          marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
 	}
 
 	return rst
