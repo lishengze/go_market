@@ -126,9 +126,9 @@ func read_func(c *websocket.Conn) {
 
 func write_func(c *websocket.Conn) {
 
-	// send_msg := GetTestTradeReqJson()
+	send_msg := GetTestTradeReqJson()
 	// send_msg := GetTestDepthReqJson()
-	send_msg := GetTestKlineReqJson()
+	// send_msg := GetTestKlineReqJson()
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {

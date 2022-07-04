@@ -111,7 +111,7 @@ func (f *FrontEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo)
 		depth_pub_list := f.sub_data.GetDepthPubInfoList(depth)
 
 		for _, info := range depth_pub_list {
-			logx.Slowf("depth_pub_info: %s \n", info.String())
+			// logx.Slowf("depth_pub_info: %s \n", info.String())
 			if info.ws_info.IsAlive() {
 				err := info.ws_info.SendMsg(1, info.data)
 				if err != nil {
