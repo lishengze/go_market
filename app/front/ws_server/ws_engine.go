@@ -245,7 +245,7 @@ func catch_exp(msg []byte, ws *net.WSInfo) {
 func (w *WSEngine) ProcessMessage(msg []byte, ws *net.WSInfo) {
 	defer catch_exp(msg, ws)
 
-	logx.Infof("Original Msg: %s \n", string(msg))
+	// logx.Infof("Original Msg: %s \n", string(msg))
 	ws.SetLastReqTime(util.UTCNanoTime())
 
 	if len(string(msg)) < 8 {
@@ -259,7 +259,7 @@ func (w *WSEngine) ProcessMessage(msg []byte, ws *net.WSInfo) {
 		return
 	}
 
-	logx.Infof("msg: %s, mapping: %+v\n", string(msg), m)
+	// logx.Infof("msg: %s, mapping: %+v\n", string(msg), m)
 
 	if _, ok := m["type"]; !ok {
 		logx.Error("Msg Error, ori msg: %+v", string(msg))
