@@ -118,7 +118,7 @@ func (w *WSEngine) ChecktHeartbeat() {
 	var dead_ws = []*net.WSInfo{}
 
 	for _, ws := range w.WSConSet {
-		logx.Infof("ws: %s is dead! last_time: %s, cur_time: %s,  HeartbeatLostSecs: %d\n",
+		logx.Infof("ws: %s, last_time: %s, cur_time: %s,  HeartbeatLostSecs: %d\n",
 			ws.String(), util.TimeStrFromInt(ws.LastReqTime), util.TimeToSecString(time.Now()), w.WsConfig.HeartbeatLostSecs)
 
 		if !ws.IsAlive() || !ws.CheckAlive(int64(w.WsConfig.HeartbeatLostSecs)) {
@@ -129,7 +129,8 @@ func (w *WSEngine) ChecktHeartbeat() {
 	}
 
 	for _, ws := range dead_ws {
-		w.CloseWS(ws)
+		ws.Close()
+		delete(w.WSConSet, ws.ID)
 	}
 
 	for _, ws := range w.WSConSet {
