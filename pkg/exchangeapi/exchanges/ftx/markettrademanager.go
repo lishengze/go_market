@@ -75,14 +75,13 @@ func (o *marketTradeManager) run() {
 			fn()
 		case msg := <-ch:
 			trade := msg.(*ftxapi.StreamMarketTrade)
-			for _, t := range trade.Data {
-				symbol, err := o.SymbolManager.Convert(trade.Market, o.api.Api.ApiType)
-				if err != nil {
-					logx.Errorf("ftx  trade can't parse symbol, data:%+v", t)
-					continue
-				}
-				o.store[symbol.ExFormat] = time.Now()
+			symbol, err := o.SymbolManager.Convert(trade.Market, o.api.Api.ApiType)
+			if err != nil {
+				logx.Errorf("ftx  trade can't parse symbol, data:%+v", *trade)
+				continue
+			}
 
+			for _, t := range trade.Data {
 				//time_, err := time.Parse(time.RFC3339Nano, t.Time)
 				//if err != nil {
 				//	logx.Errorf("ftx  trade can't parse time, data:%+v", t)
@@ -98,6 +97,16 @@ func (o *marketTradeManager) run() {
 					Volume:    fmt.Sprint(t.Size),
 				}
 			}
+
+			fn := func() {
+				{
+					o.store[symbol.ExFormat] = time.Now()
+					defer o.mutex.Unlock()
+					o.mutex.Lock()
+				}
+			}
+
+			fn()
 
 		}
 	}

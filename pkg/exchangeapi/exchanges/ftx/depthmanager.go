@@ -305,14 +305,16 @@ func (o *depthManager) run() {
 			fn := func() {
 				defer o.mutex.Unlock()
 				o.mutex.Lock()
-				for _, unit := range o.store {
-					var resetConnTopics []string
 
+				var resetConnTopics []string
+
+				for _, unit := range o.store {
 					if time.Now().Sub(unit.lastUpdateTime) > depthUpdateCheckDuration {
 						resetConnTopics = append(resetConnTopics, unit.symbol.ExFormat)
 					}
-					o.subscriber.ResetConn(resetConnTopics...)
 				}
+
+				o.subscriber.ResetConn(resetConnTopics...)
 			}
 
 			fn()
@@ -321,15 +323,23 @@ func (o *depthManager) run() {
 			symbol, err := o.SymbolManager.Convert(depth.Market, o.api.Api.ApiType)
 			if err != nil {
 				logx.Errorf("ftx stream depth can't parse symbol, depth: %+v", *depth)
-				continue
-			}
-			info, ok := o.store[symbol.StdSymbol]
-			if !ok { // 还未初始化完成，先丢弃
-				info = newDepthUnit(symbol, o.api, o.outputCh, o.subscriber)
-				o.store[symbol.StdSymbol] = info
+				return
 			}
 
-			info.inputCh <- depth
+			fn := func() {
+				defer o.mutex.Unlock()
+				o.mutex.Lock()
+
+				info, ok := o.store[symbol.StdSymbol]
+				if !ok { // 还未初始化完成，先丢弃
+					info = newDepthUnit(symbol, o.api, o.outputCh, o.subscriber)
+					o.store[symbol.StdSymbol] = info
+				}
+
+				info.inputCh <- depth
+			}
+
+			fn()
 		}
 	}
 
