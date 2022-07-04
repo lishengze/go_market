@@ -54,6 +54,7 @@ func (w *WSEngine) StoreWS(ws *net.WSInfo) {
 	w.WSConSetMutex.Lock()
 	defer w.WSConSetMutex.Unlock()
 
+	logx.Infof("Store New ws: %d, %s", ws.ID, util.TimeStrFromInt(ws.LastReqTime))
 	w.WSConSet[ws.ID] = ws
 }
 
