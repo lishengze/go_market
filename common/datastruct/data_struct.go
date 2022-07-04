@@ -145,6 +145,11 @@ type ChangeInfo struct {
 	ChangeRate float64
 }
 
+func (r *RspHistKline) TimeList() string {
+	rst := HistKlineTimeList(r.Klines)
+	return rst
+}
+
 func (c *ChangeInfo) String() string {
 	return fmt.Sprintf("Symbol: %s, High: %f, Low: %f, Change: %f, ChangeRate: %f \n",
 		c.Symbol, c.High, c.Low, c.Change, c.ChangeRate)

@@ -208,7 +208,13 @@ func catch_exp(msg []byte, ws *net.WSInfo) {
 func (w *WSEngine) ProcessMessage(msg []byte, ws *net.WSInfo) {
 	defer catch_exp(msg, ws)
 
+	logx.Infof("Original Msg: %s \n", string(msg))
 	ws.SetLastReqTime(util.UTCNanoTime())
+
+	if len(string(msg)) < 8 {
+		logx.Errorf("Unknown Msg %s ", string(msg))
+		return
+	}
 
 	var m map[string]interface{}
 	if err := json.Unmarshal([]byte(msg), &m); err != nil {

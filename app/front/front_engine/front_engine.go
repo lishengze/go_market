@@ -239,7 +239,7 @@ func (f *FrontEngine) PublishHistKline(klines *datastruct.RspHistKline, ws *net.
 	f.sub_data.ProcessKlineHistData(klines)
 
 	if ws != nil {
-		logx.Infof("PublishHistKline: %+v", klines)
+		logx.Infof("PublishHistKline: %s", klines.TimeList())
 
 		byte_data := NewHistKlineJsonMsg(klines)
 		if ws.IsAlive() {
@@ -251,6 +251,8 @@ func (f *FrontEngine) PublishHistKline(klines *datastruct.RspHistKline, ws *net.
 			logx.Infof("ws:%+v is not alive", ws)
 			f.sub_data.UnSubKline(klines.ReqInfo, ws)
 		}
+	} else {
+		logx.Errorf("PublishHistKline ws is null\n")
 	}
 	// publish his kline to client;
 }
