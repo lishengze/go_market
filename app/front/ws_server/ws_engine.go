@@ -150,10 +150,8 @@ func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
 	ws := w.InitWS(h, r)
 
 	if ws != nil {
-		for {
-			w.ListenMessage(ws)
-			time.Sleep(time.Millisecond * 100)
-		}
+		w.ListenMessage(ws)
+		time.Sleep(time.Millisecond * 100)
 	}
 
 }
@@ -198,14 +196,17 @@ func (w *WSEngine) ListenMessage(ws *net.WSInfo) {
 	for {
 		mt, message, err := ws.Conn.ReadMessage()
 		if err != nil {
-			w.CloseWS(ws)
+			ws.SendErrorMsg("WebServer Error!")
 			logx.Errorf("read, type: %d, err: %+v\n", mt, err)
 			logx.Infof("read, type: %d, err: %+v\n", mt, err)
 			time.Sleep(time.Millisecond * 100)
+			break
 		} else {
 			w.ProcessMessage(message, ws)
 		}
 	}
+
+	defer w.CloseWS(ws)
 }
 
 /*
