@@ -182,8 +182,6 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 		}
 	}(kline, ws)
 
-	logx.Info("0")
-
 	if ws != nil {
 		cur_req := &datastruct.ReqHistKline{
 			Symbol:    kline.Symbol,
@@ -205,13 +203,9 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 		}
 	} else {
 
-		logx.Info("1")
 		kline_pub_list := f.sub_data.GetKlinePubInfoList(kline)
-
-		logx.Info("2")
 		if nil != kline_pub_list {
 			for _, info := range kline_pub_list {
-				logx.Info("3")
 				cur_req := &datastruct.ReqHistKline{
 					Symbol:    info.Symbol,
 					Frequency: uint32(info.Resolution),
@@ -225,7 +219,7 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 					}
 				} else {
 					logx.Infof("ws:%d is not alive", info.ws_info.ID)
-					f.sub_data.UnSubKline(cur_req, ws)
+					f.sub_data.UnSubKline(cur_req, info.ws_info)
 				}
 			}
 		}
