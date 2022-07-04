@@ -23,9 +23,10 @@ type WSInfo struct {
 
 func NewWSInfo(conn *websocket.Conn) *WSInfo {
 	return &WSInfo{
-		ID:    util.UTCNanoTime(),
-		Conn:  conn,
-		Alive: 1,
+		ID:          util.UTCNanoTime(),
+		Conn:        conn,
+		Alive:       1,
+		LastReqTime: util.UTCNanoTime(),
 	}
 }
 
