@@ -58,6 +58,7 @@ func (w *WSInfo) SendMsg(messageType int, data []byte) error {
 func (w *WSInfo) Close() {
 	logx.Infof("%d closed! \n", w.ID)
 	atomic.StoreInt32(&w.Alive, 0)
+	w.Conn.Close()
 }
 
 func (w *WSInfo) String() string {
