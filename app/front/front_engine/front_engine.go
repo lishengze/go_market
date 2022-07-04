@@ -204,23 +204,26 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 	} else {
 		kline_pub_list := f.sub_data.GetKlinePubInfoList(kline)
 
-		for _, info := range kline_pub_list {
-			cur_req := &datastruct.ReqHistKline{
-				Symbol:    info.Symbol,
-				Frequency: uint32(info.Resolution),
-			}
-
-			logx.Infof("kline_pub_info: %s \n", info.String())
-			if info.ws_info.IsAlive() {
-				err := info.ws_info.SendMsg(1, info.data)
-				if err != nil {
-					logx.Errorf("PublishKline err: %+v \n", err)
+		if nil != kline_pub_list {
+			for _, info := range kline_pub_list {
+				cur_req := &datastruct.ReqHistKline{
+					Symbol:    info.Symbol,
+					Frequency: uint32(info.Resolution),
 				}
-			} else {
-				logx.Infof("ws:%+v is not alive", info.ws_info)
-				f.sub_data.UnSubKline(cur_req, ws)
+
+				logx.Infof("kline_pub_info: %s \n", info.String())
+				if info.ws_info.IsAlive() {
+					err := info.ws_info.SendMsg(1, info.data)
+					if err != nil {
+						logx.Errorf("PublishKline err: %+v \n", err)
+					}
+				} else {
+					logx.Infof("ws:%+v is not alive", info.ws_info)
+					f.sub_data.UnSubKline(cur_req, ws)
+				}
 			}
 		}
+
 	}
 
 }
