@@ -43,7 +43,7 @@ func TimeToSecString(t time.Time) string {
 
 func UTCNanoTime() int64 {
 
-	return time.Now().UTC().Unix()
+	return time.Now().UTC().UnixNano()
 }
 
 func GetTimeFromtInt(int_time int64) time.Time {
