@@ -179,7 +179,6 @@ func (w *WSEngine) InitWS(h http.ResponseWriter, r *http.Request) *net.WSInfo {
 		w.CloseWS(ws)
 		return nil
 	}
-	defer w.CloseWS(ws)
 
 	w.ProcessSubSymbol(ws)
 	return ws
