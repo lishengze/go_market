@@ -22,17 +22,13 @@ type (
 		mutex        sync.Mutex
 		subscribers  []WsSubscriber
 		new          func() (WsSubscriber, error)
-		msgConvertFn func(msg []byte) (interface{}, error)
+		msgConvertFn func(msg []byte) (interface{}, error) // msgConvertFn: 将接收到的 bytes 转换成特定格式的函数
 		readCh       chan interface{}
 		cancel       context.CancelFunc
 		ctx          context.Context
 	}
 )
 
-/*
-NewAutoWsSubscriber
-msgConvertFn: 将接收到的 bytes 转换成特定格式的函数
-*/
 func NewAutoWsSubscriber(newFn func() (WsSubscriber, error), msgConvertFn MsgConvertFn) (AutoWsSubscriber, error) {
 
 	ctx, cancel := context.WithCancel(context.Background())

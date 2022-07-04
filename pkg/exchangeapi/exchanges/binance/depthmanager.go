@@ -2,7 +2,6 @@ package binance
 
 import (
 	"exterior-interactor/pkg/exchangeapi/extools"
-	"exterior-interactor/pkg/timeutils"
 	"exterior-interactor/pkg/xmath"
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
@@ -91,15 +90,16 @@ func newDepthUnit(symbol *exmodel.Symbol, api *NativeApi, outputCh chan *exmodel
 }
 
 func (o *depthUnit) run() {
-	timeutils.Every(depthOutputDuration, func() {
-		d, ok := o.generateDepth()
-		if ok {
-			o.outputCh <- d
-		}
-	})
+	ticker := time.NewTicker(depthOutputDuration)
+	defer ticker.Stop()
 
 	for {
 		select {
+		case <-ticker.C:
+			d, ok := o.generateDepth()
+			if ok {
+				o.outputCh <- d
+			}
 		case depth := <-o.spotInputCh:
 			dataLost := o.spotUpdate(depth)
 			if dataLost {

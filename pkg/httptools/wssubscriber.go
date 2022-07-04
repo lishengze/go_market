@@ -210,6 +210,7 @@ func (o *wsSubscriber) Done() <-chan struct{} {
 func (o *wsSubscriber) ResetConn() {
 	defer o.rwMutex.Unlock()
 	o.rwMutex.Lock()
+	logx.Infof("[wsSubscriber] tag:%s, start reset conn, this conn will be closed", o.Tag)
 	o.safeWsConn.Close()
 }
 

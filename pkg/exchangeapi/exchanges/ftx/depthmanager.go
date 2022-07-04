@@ -5,7 +5,6 @@ import (
 	"exterior-interactor/pkg/exchangeapi/exmodel"
 	"exterior-interactor/pkg/exchangeapi/extools"
 	"exterior-interactor/pkg/httptools"
-	"exterior-interactor/pkg/timeutils"
 	"exterior-interactor/pkg/xmath"
 	"fmt"
 	"github.com/emirpasic/gods/maps/treemap"
@@ -30,10 +29,13 @@ const (
 
 const (
 	depthOutputDuration = time.Millisecond * 50
+
+	depthUpdateCheckDuration = time.Second * 5 // depth 超过此时间未更新，将触发重连
 )
 
 type (
 	depthManager struct {
+		mutex sync.Mutex
 		extools.SymbolManager
 		api        *NativeApi
 		subscriber httptools.AutoWsSubscriber
@@ -65,6 +67,7 @@ func NewDepthManager(mgr extools.SymbolManager, api *NativeApi) extools.DepthMan
 	}
 
 	depthMgr := &depthManager{
+		mutex:         sync.Mutex{},
 		SymbolManager: mgr,
 		api:           api,
 		subscriber:    res,
@@ -106,15 +109,16 @@ func newDepthUnit(symbol *exmodel.Symbol, api *NativeApi, outputCh chan *exmodel
 }
 
 func (o *depthUnit) run() {
-	timeutils.Every(depthOutputDuration, func() {
-		d, ok := o.generateDepth()
-		if ok {
-			o.outputCh <- d
-		}
-	})
+	ticker := time.NewTicker(depthOutputDuration)
+	defer ticker.Stop()
 
 	for {
 		select {
+		case <-ticker.C:
+			d, ok := o.generateDepth()
+			if ok {
+				o.outputCh <- d
+			}
 		case depth := <-o.inputCh:
 			if depth.Type == "subscribed" {
 				continue
@@ -292,8 +296,26 @@ func (o *depthUnit) resub() {
 
 func (o *depthManager) run() {
 	ch := o.subscriber.ReadCh()
+	ticker := time.NewTicker(depthUpdateCheckDuration)
+	defer ticker.Stop()
+
 	for {
 		select {
+		case <-ticker.C:
+			fn := func() {
+				defer o.mutex.Unlock()
+				o.mutex.Lock()
+				for _, unit := range o.store {
+					var resetConnTopics []string
+
+					if time.Now().Sub(unit.lastUpdateTime) > depthUpdateCheckDuration {
+						resetConnTopics = append(resetConnTopics, unit.symbol.ExFormat)
+					}
+					o.subscriber.ResetConn(resetConnTopics...)
+				}
+			}
+
+			fn()
 		case msg := <-ch:
 			depth := msg.(*ftxapi.StreamDepth)
 			symbol, err := o.SymbolManager.Convert(depth.Market, o.api.Api.ApiType)
@@ -314,6 +336,9 @@ func (o *depthManager) run() {
 }
 
 func (o *depthManager) Sub(symbols ...exmodel.StdSymbol) {
+	defer o.mutex.Unlock()
+	o.mutex.Lock()
+
 	var topics []string
 	for _, s := range symbols {
 		if _, ok := o.store[s]; ok {
