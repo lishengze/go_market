@@ -111,7 +111,16 @@ func GetHeartbeatMsg() []byte {
 
 func (w *WSEngine) ChecktHeartbeat() {
 	w.WSConSetMutex.Lock()
-	defer w.WSConSetMutex.Unlock()
+	// defer w.WSConSetMutex.Unlock()
+
+	defer func(w *WSEngine) {
+		w.WSConSetMutex.Unlock()
+		errMsg := recover()
+		if errMsg != nil {
+			logx.Errorf("ChecktHeartbeat errMsg: %+v \n", errMsg)
+			fmt.Println(errMsg)
+		}
+	}(w)
 
 	logx.Infof("ChecktHeartbeat, WSConSet.Size: %d", len(w.WSConSet))
 
@@ -135,7 +144,7 @@ func (w *WSEngine) ChecktHeartbeat() {
 
 	for _, ws := range w.WSConSet {
 		logx.Infof("Pub Heartbeat To %s", ws.String())
-		ws.Conn.WriteMessage(1, GetHeartbeatMsg())
+		ws.SendMsg(1, GetHeartbeatMsg())
 	}
 }
 
@@ -151,7 +160,6 @@ func (w *WSEngine) ListenRequest(h http.ResponseWriter, r *http.Request) {
 
 	if ws != nil {
 		w.ListenMessage(ws)
-		time.Sleep(time.Millisecond * 100)
 	}
 
 }
@@ -241,7 +249,6 @@ func catch_exp(msg []byte, ws *net.WSInfo) {
 		logx.Errorf("errMsg: %+v \n", errMsg)
 		fmt.Println(errMsg)
 	}
-
 }
 
 func (w *WSEngine) ProcessMessage(msg []byte, ws *net.WSInfo) {
