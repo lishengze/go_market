@@ -538,6 +538,6 @@ func (k *KafkaServer) SendRecvedKline(kline *datastruct.Kline) {
 }
 
 func (k *KafkaServer) SendRecvedTrade(trade *datastruct.Trade) {
-	logx.Slowf("[kafka] Rcv Trade: %s \n", trade.String())
+	// logx.Slowf("[kafka] Rcv Trade: %s \n", trade.String())
 	k.RecvDataChan.TradeChannel <- trade
 }
