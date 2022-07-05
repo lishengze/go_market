@@ -2,6 +2,7 @@ package monitor_market
 
 import (
 	"market_server/common/datastruct"
+	"market_server/common/dingtalk"
 	"market_server/common/monitorStruct"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -11,27 +12,26 @@ type KafkaMonitor struct {
 	RecvDataChan            *datastruct.DataChannel
 	MonitorMarketDataWorker *monitorStruct.MonitorMarketData
 	MonitorChan             *monitorStruct.MonitorChannel
+	DingClient              *dingtalk.Client
 
 	RateParam    float64
 	InitDeadLine int64
 	CheckSecs    int64
 }
 
-func NewKafkaMonitor(recvDataChan *datastruct.DataChannel) *KafkaMonitor {
+func NewKafkaMonitor(recvDataChan *datastruct.DataChannel, config *Config) *KafkaMonitor {
 	monitor_chan := monitorStruct.NewMonitorChannel()
-	rate_param := 1.8
-	init_dead_line := datastruct.NANO_PER_MIN * 10
-	check_secs := 15 * datastruct.SECS_PER_MIN
+	dingtalk := dingtalk.NewClient(config.dingConfig.token, config.dingConfig.secret)
 
 	return &KafkaMonitor{
 		RecvDataChan: recvDataChan,
 		MonitorChan:  monitor_chan,
-		RateParam:    1.8,
-		InitDeadLine: int64(init_dead_line),
-		CheckSecs:    int64(check_secs),
+		RateParam:    config.monitorConfig.RateParam,
+		InitDeadLine: config.monitorConfig.InitDeadLine,
+		CheckSecs:    config.monitorConfig.CheckSecs,
+		DingClient:   dingtalk,
 
-		MonitorMarketDataWorker: monitorStruct.NewMonitorMarketData(rate_param, int64(init_dead_line),
-			int64(check_secs), monitor_chan),
+		MonitorMarketDataWorker: monitorStruct.NewMonitorMarketData(&config.monitorConfig, monitor_chan),
 	}
 }
 

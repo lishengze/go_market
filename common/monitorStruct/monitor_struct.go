@@ -27,14 +27,14 @@ type MonitorMarketData struct {
 	MonitorChan  *MonitorChannel
 }
 
-func NewMonitorMarketData(rate_param float64, init_dead_line int64, check_secs int64, monitor_channel *MonitorChannel) *MonitorMarketData {
+func NewMonitorMarketData(config *MonitorConfig, monitor_channel *MonitorChannel) *MonitorMarketData {
 	return &MonitorMarketData{
 		depth_cache_map: make(map[string]*MonitorAtom),
 		trade_cache_map: make(map[string]*MonitorAtom),
 		kline_cache_map: make(map[string]*MonitorAtom),
-		RateParam:       rate_param,
-		InitDeadLine:    init_dead_line,
-		CheckSecs:       check_secs,
+		RateParam:       config.RateParam,
+		InitDeadLine:    config.InitDeadLine,
+		CheckSecs:       config.CheckSecs,
 		MonitorChan:     monitor_channel,
 	}
 }

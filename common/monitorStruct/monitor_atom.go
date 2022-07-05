@@ -6,6 +6,12 @@ import (
 	"sync"
 )
 
+type MonitorConfig struct {
+	RateParam    float64
+	InitDeadLine int64
+	CheckSecs    int64
+}
+
 // 时间转换为毫秒计算
 type MonitorAtom struct {
 	first_time       int64
