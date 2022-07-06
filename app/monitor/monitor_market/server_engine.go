@@ -13,11 +13,8 @@ type ServerEngine struct {
 	Commer         *comm.Comm
 	WSClientWorker *WSClient
 
-	// OriginalDataChan *datastruct.DataChannel
 	KafkaMonitor *MonitorEngine
-
-	// MonitorDataChan chan *monitorStruct.MonitorData
-	WSMonotr *MonitorEngine
+	WSMonotr     *MonitorEngine
 }
 
 func NewServerEngine(config_info *Config) *ServerEngine {
