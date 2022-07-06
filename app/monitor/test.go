@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"market_server/app/monitor_market"
+	"market_server/app/monitor/monitor_market"
 	"os"
 
 	"github.com/zeromicro/go-zero/core/conf"
