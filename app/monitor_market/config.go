@@ -7,7 +7,13 @@ type DingConfig struct {
 	token  string
 }
 
+type WSConfig struct {
+	Address string
+	Url     string
+}
+
 type Config struct {
+	WsConfig      WSConfig
 	dingConfig    DingConfig
 	monitorConfig monitorStruct.MonitorConfig
 }

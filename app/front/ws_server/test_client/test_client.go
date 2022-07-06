@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"market_server/app/front/net"
+	"market_server/common/util"
 	"net/url"
 	"os"
 	"os/signal"
@@ -121,14 +122,49 @@ func read_func(c *websocket.Conn) {
 			return
 		}
 		log.Printf("recv: %s", message)
+
+		var m map[string]interface{}
+		if err := json.Unmarshal([]byte(message), &m); err != nil {
+			logx.Errorf("Error = %+v", err)
+			return
+		}
+
+		if _, ok := m["type"]; !ok {
+			logx.Error("Msg Error, ori msg: %+v", string(message))
+			return
+		}
+
+		if m["type"] == "heartbeat" {
+			err := c.WriteMessage(websocket.TextMessage, GetHeartbeatMsg())
+			if err != nil {
+				log.Println("write:", err)
+				return
+			}
+
+		}
 	}
+}
+
+func GetHeartbeatMsg() []byte {
+
+	heartbeat_map := map[string]interface{}{
+		"time": util.UTCNanoTime(),
+		"type": net.HEARTBEAT,
+	}
+	rst, err := json.Marshal(heartbeat_map)
+
+	if err != nil {
+		logx.Errorf("GetHeartbeatMsg: %+v", err)
+		return nil
+	}
+	return rst
 }
 
 func write_func(c *websocket.Conn) {
 
-	send_msg := GetTestTradeReqJson()
+	// send_msg := GetTestTradeReqJson()
 	// send_msg := GetTestDepthReqJson()
-	// send_msg := GetTestKlineReqJson()
+	send_msg := GetTestKlineReqJson()
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {

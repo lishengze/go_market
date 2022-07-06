@@ -8,7 +8,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type KafkaMonitor struct {
+type MonitorEngine struct {
 	RecvDataChan            *datastruct.DataChannel
 	MonitorMarketDataWorker *monitorStruct.MonitorMarketData
 	MonitorChan             *monitorStruct.MonitorChannel
@@ -19,30 +19,30 @@ type KafkaMonitor struct {
 	CheckSecs    int64
 }
 
-func NewKafkaMonitor(recvDataChan *datastruct.DataChannel, config *Config) *KafkaMonitor {
+func NewMonitorEngine(recvDataChan *datastruct.DataChannel, monitor_config *monitorStruct.MonitorConfig, ding_config *DingConfig) *MonitorEngine {
 	monitor_chan := monitorStruct.NewMonitorChannel()
-	dingtalk := dingtalk.NewClient(config.dingConfig.token, config.dingConfig.secret)
+	dingtalk := dingtalk.NewClient(ding_config.token, ding_config.secret)
 
-	return &KafkaMonitor{
+	return &MonitorEngine{
 		RecvDataChan: recvDataChan,
 		MonitorChan:  monitor_chan,
-		RateParam:    config.monitorConfig.RateParam,
-		InitDeadLine: config.monitorConfig.InitDeadLine,
-		CheckSecs:    config.monitorConfig.CheckSecs,
+		RateParam:    monitor_config.RateParam,
+		InitDeadLine: monitor_config.InitDeadLine,
+		CheckSecs:    monitor_config.CheckSecs,
 		DingClient:   dingtalk,
 
-		MonitorMarketDataWorker: monitorStruct.NewMonitorMarketData(&config.monitorConfig, monitor_chan),
+		MonitorMarketDataWorker: monitorStruct.NewMonitorMarketData(monitor_config, monitor_chan),
 	}
 }
 
-func (k *KafkaMonitor) Start() {
-	logx.Infof("KafkaMonitor Start!")
+func (k *MonitorEngine) Start() {
+	logx.Infof("MonitorEngine Start!")
 
 	k.StartListenRecvdata()
 }
 
-func (k *KafkaMonitor) StartListenRecvdata() {
-	logx.Info("[S] KafkaMonitor start_listen_recvdata")
+func (k *MonitorEngine) StartListenRecvdata() {
+	logx.Info("[S] MonitorEngine start_listen_recvdata")
 	go func() {
 		for {
 			select {
@@ -58,8 +58,8 @@ func (k *KafkaMonitor) StartListenRecvdata() {
 	logx.Info("[S] DBServer start_receiver Over!")
 }
 
-func (k *KafkaMonitor) StartListenInvalidData() {
-	logx.Info("[S] KafkaMonitor StartListenInvalidData")
+func (k *MonitorEngine) StartListenInvalidData() {
+	logx.Info("[S] MonitorEngine StartListenInvalidData")
 	go func() {
 		for {
 			select {
@@ -86,7 +86,7 @@ func catch_depth_exp(depth *datastruct.DepthQuote) {
 	}
 }
 
-func (k *KafkaMonitor) process_depth(depth *datastruct.DepthQuote) error {
+func (k *MonitorEngine) process_depth(depth *datastruct.DepthQuote) error {
 
 	defer catch_depth_exp(depth)
 
@@ -108,7 +108,7 @@ func catch_kline_exp(kline *datastruct.Kline) {
 	}
 }
 
-func (k *KafkaMonitor) process_kline(kline *datastruct.Kline) error {
+func (k *MonitorEngine) process_kline(kline *datastruct.Kline) error {
 	defer catch_kline_exp(kline)
 
 	k.MonitorMarketDataWorker.UpdateKline(kline.Symbol)
@@ -129,7 +129,7 @@ func catch_trade_exp(trade *datastruct.Trade) {
 	}
 }
 
-func (k *KafkaMonitor) process_trade(trade *datastruct.Trade) error {
+func (k *MonitorEngine) process_trade(trade *datastruct.Trade) error {
 	defer catch_trade_exp(trade)
 
 	k.MonitorMarketDataWorker.UpdateTrade(trade.Symbol)
@@ -137,17 +137,17 @@ func (k *KafkaMonitor) process_trade(trade *datastruct.Trade) error {
 	return nil
 }
 
-func (k *KafkaMonitor) process_invalid_depth(montior_atom *monitorStruct.MonitorAtom) error {
+func (k *MonitorEngine) process_invalid_depth(montior_atom *monitorStruct.MonitorAtom) error {
 
 	return nil
 }
 
-func (k *KafkaMonitor) process_invalid_trade(montior_atom *monitorStruct.MonitorAtom) error {
+func (k *MonitorEngine) process_invalid_trade(montior_atom *monitorStruct.MonitorAtom) error {
 
 	return nil
 }
 
-func (k *KafkaMonitor) process_invalid_kline(montior_atom *monitorStruct.MonitorAtom) error {
+func (k *MonitorEngine) process_invalid_kline(montior_atom *monitorStruct.MonitorAtom) error {
 
 	return nil
 }
