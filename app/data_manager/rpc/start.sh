@@ -4,10 +4,9 @@
 
 echo "args : $@"
 
+go build 
 
 nohup ./rpc $1 >log/main.log &
-
-go build 
 
 ll
 

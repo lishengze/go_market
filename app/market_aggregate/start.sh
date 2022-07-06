@@ -5,10 +5,11 @@
 echo "args : $@"
 
 
+go build
+
+
 nohup ./market_aggregate $1 >log/main.log &
 
-
-go build
 
 ll
 
