@@ -242,6 +242,21 @@ func (s *SubData) SubSymbol(ws *net.WSInfo) {
 	}
 
 	logx.Infof("After Sub %s, %s", ws.String(), s.SymbolInfo.String())
+
+	iter := s.SymbolInfo.ws_info.Iterator()
+	invalid_sub_list := make([]int64, s.SymbolInfo.ws_info.Size())
+	for iter.Begin(); iter.Next(); {
+		ws_info := iter.Value().(*net.WSInfo)
+
+		if !ws_info.IsAlive() {
+			invalid_sub_list = append(invalid_sub_list, ws_info.ID)
+		}
+	}
+
+	for _, id := range invalid_sub_list {
+		s.SymbolInfo.ws_info.Remove(id)
+		logx.Infof("SymbolInfo Remove: %d", id)
+	}
 }
 
 func (s *SubData) UnSubSymbol(ws *net.WSInfo) {
@@ -254,7 +269,7 @@ func (s *SubData) UnSubSymbol(ws *net.WSInfo) {
 
 	s.SymbolInfo.ws_info.Remove(ws.ID)
 
-	logx.Infof("SymbolInfo Remove %s : %+v", ws)
+	logx.Infof("SymbolInfo Remove : %d", ws.ID)
 }
 
 func (s *SubData) SubDepth(symbol string, ws *net.WSInfo) *datastruct.DepthQuote {

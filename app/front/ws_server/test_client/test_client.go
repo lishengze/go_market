@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -91,9 +92,9 @@ func TestGetJsonData() {
 	fmt.Println(string(rst3))
 }
 
-// var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
+var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
 
-var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
+// var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
 
 // var addr = flag.String("addr", "10.10.1.75:8114", "http service address")
 
@@ -126,30 +127,30 @@ func read_func(c *websocket.Conn) {
 
 func write_func(c *websocket.Conn) {
 
-	send_msg := GetTestTradeReqJson()
-	// send_msg := GetTestDepthReqJson()
-	// send_msg := GetTestKlineReqJson()
+	// send_msg := GetTestTradeReqJson()
+	// // send_msg := GetTestDepthReqJson()
+	// // send_msg := GetTestKlineReqJson()
 
-	err := c.WriteMessage(websocket.TextMessage, send_msg)
-	if err != nil {
-		log.Println("write:", err)
-		return
-	}
-
-	// ticker := time.NewTicker(time.Second)
-	// defer ticker.Stop()
-
-	// for {
-	// 	select {
-	// 	case t := <-ticker.C:
-	// 		fmt.Printf("Write: %s \n", t.String())
-	// 		err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
-	// 		if err != nil {
-	// 			log.Println("write:", err)
-	// 			return
-	// 		}
-	// 	}
+	// err := c.WriteMessage(websocket.TextMessage, send_msg)
+	// if err != nil {
+	// 	log.Println("write:", err)
+	// 	return
 	// }
+
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case t := <-ticker.C:
+			fmt.Printf("Write: %s \n", t.String())
+			err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
+			if err != nil {
+				log.Println("write:", err)
+				return
+			}
+		}
+	}
 }
 
 func basic_func() {

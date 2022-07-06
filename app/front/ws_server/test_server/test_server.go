@@ -28,9 +28,11 @@ var upgrader = websocket.Upgrader{} // use default options
 
 func echo(w http.ResponseWriter, r *http.Request) {
 
-	fmt.Printf("%+v, Echo: %+v \n", time.Now(), *r)
+	fmt.Printf("%+v, Echo: %+v \n", time.Now(), w)
 
 	c, err := upgrader.Upgrade(w, r, nil)
+
+	fmt.Printf("c: %+v \n", c)
 
 	ws := net.NewWSInfo(c)
 
