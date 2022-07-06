@@ -6,6 +6,11 @@ import (
 	"sync"
 )
 
+type MonitorData struct {
+	Symbol   string
+	DataType string
+}
+
 type MonitorConfig struct {
 	RateParam    float64
 	InitDeadLine int64

@@ -9,7 +9,7 @@ import (
 )
 
 type MonitorEngine struct {
-	RecvDataChan            *datastruct.DataChannel
+	RecvDataChan            chan *monitorStruct.MonitorData
 	MonitorMarketDataWorker *monitorStruct.MonitorMarketData
 	MonitorChan             *monitorStruct.MonitorChannel
 	DingClient              *dingtalk.Client
@@ -19,7 +19,7 @@ type MonitorEngine struct {
 	CheckSecs    int64
 }
 
-func NewMonitorEngine(recvDataChan *datastruct.DataChannel, monitor_config *monitorStruct.MonitorConfig, ding_config *DingConfig) *MonitorEngine {
+func NewMonitorEngine(recvDataChan chan *monitorStruct.MonitorData, monitor_config *monitorStruct.MonitorConfig, ding_config *DingConfig) *MonitorEngine {
 	monitor_chan := monitorStruct.NewMonitorChannel()
 	dingtalk := dingtalk.NewClient(ding_config.token, ding_config.secret)
 
@@ -46,12 +46,14 @@ func (k *MonitorEngine) StartListenRecvdata() {
 	go func() {
 		for {
 			select {
-			case new_depth := <-k.RecvDataChan.DepthChannel:
-				go k.process_depth(new_depth)
-			case new_kline := <-k.RecvDataChan.KlineChannel:
-				go k.process_kline(new_kline)
-			case new_trade := <-k.RecvDataChan.TradeChannel:
-				go k.process_trade(new_trade)
+			case data := <-k.RecvDataChan:
+				if data.DataType == datastruct.DEPTH_TYPE {
+					k.process_depth(data.Symbol)
+				} else if data.DataType == datastruct.TRADE_TYPE {
+					k.process_trade(data.Symbol)
+				} else if data.DataType == datastruct.KLINE_TYPE {
+					k.process_kline(data.Symbol)
+				}
 			}
 		}
 	}()
@@ -86,11 +88,11 @@ func catch_depth_exp(depth *datastruct.DepthQuote) {
 	}
 }
 
-func (k *MonitorEngine) process_depth(depth *datastruct.DepthQuote) error {
+func (k *MonitorEngine) process_depth(symbol string) error {
 
-	defer catch_depth_exp(depth)
+	// defer catch_depth_exp(depth)
 
-	k.MonitorMarketDataWorker.UpdateDepth(depth.Symbol)
+	k.MonitorMarketDataWorker.UpdateDepth(symbol)
 
 	return nil
 }
@@ -108,10 +110,10 @@ func catch_kline_exp(kline *datastruct.Kline) {
 	}
 }
 
-func (k *MonitorEngine) process_kline(kline *datastruct.Kline) error {
-	defer catch_kline_exp(kline)
+func (k *MonitorEngine) process_kline(symbol string) error {
+	// defer catch_kline_exp(kline)
 
-	k.MonitorMarketDataWorker.UpdateKline(kline.Symbol)
+	k.MonitorMarketDataWorker.UpdateKline(symbol)
 
 	return nil
 }
@@ -129,10 +131,10 @@ func catch_trade_exp(trade *datastruct.Trade) {
 	}
 }
 
-func (k *MonitorEngine) process_trade(trade *datastruct.Trade) error {
-	defer catch_trade_exp(trade)
+func (k *MonitorEngine) process_trade(symbol string) error {
+	// defer catch_trade_exp(trade)
 
-	k.MonitorMarketDataWorker.UpdateTrade(trade.Symbol)
+	k.MonitorMarketDataWorker.UpdateTrade(symbol)
 
 	return nil
 }
