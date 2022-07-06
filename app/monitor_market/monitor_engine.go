@@ -77,11 +77,11 @@ func (k *MonitorEngine) StartListenRecvdata() {
 				select {
 				case data := <-k.MonitorDataChan:
 					if data.DataType == datastruct.DEPTH_TYPE {
-						k.process_depth(data.Symbol)
+						go k.process_depth(data.Symbol)
 					} else if data.DataType == datastruct.TRADE_TYPE {
-						k.process_trade(data.Symbol)
+						go k.process_trade(data.Symbol)
 					} else if data.DataType == datastruct.KLINE_TYPE {
-						k.process_kline(data.Symbol)
+						go k.process_kline(data.Symbol)
 					}
 				}
 			}
@@ -91,11 +91,11 @@ func (k *MonitorEngine) StartListenRecvdata() {
 			for {
 				select {
 				case depth := <-k.OriginalDataChan.DepthChannel:
-					k.process_depth(depth.Exchange + "_" + depth.Symbol)
+					go k.process_depth(depth.Exchange + "_" + depth.Symbol)
 				case trade := <-k.OriginalDataChan.TradeChannel:
-					k.process_trade(trade.Exchange + "_" + trade.Symbol)
+					go k.process_trade(trade.Exchange + "_" + trade.Symbol)
 				case kline := <-k.OriginalDataChan.KlineChannel:
-					k.process_kline(kline.Exchange + "_" + kline.Symbol)
+					go k.process_kline(kline.Exchange + "_" + kline.Symbol)
 				}
 			}
 		}()
