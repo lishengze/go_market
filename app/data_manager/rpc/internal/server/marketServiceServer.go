@@ -134,7 +134,7 @@ func (s *MarketServiceServer) ProcessSymbolConfigStr(data string) {
 }
 
 func (s *MarketServiceServer) SetInitMeta() {
-	init_symbol_list := []string{"BTC_USDT", "ETH_USDT", "USD_USDT","BTC_USD", "ETH_USD"}
+	init_symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD","BTC_USD", "ETH_USD"}
 
 	symbol_exchange_set := make(map[string](map[string]struct{}))
 	new_meta := datastruct.Metadata{}
