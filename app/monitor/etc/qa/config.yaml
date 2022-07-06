@@ -1,5 +1,5 @@
 WS:
-  Address: "0.0.0.0:8114"
+  Address: "127.0.0.1:8114"
   Url: "/trading/marketws"
 
 Comm:
