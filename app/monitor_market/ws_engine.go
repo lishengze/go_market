@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"market_server/app/front/net"
+	"market_server/common/datastruct"
+	"market_server/common/monitorStruct"
 	"market_server/common/util"
 	"net/url"
 	"os"
@@ -14,16 +16,18 @@ import (
 )
 
 type WSClient struct {
-	Config     *WSConfig
-	Client     *websocket.Conn
-	SymbolList []string
+	Config      *WSConfig
+	Client      *websocket.Conn
+	SymbolList  []string
+	MonitorChan chan *monitorStruct.MonitorData
 }
 
-func NewWSClient(config *WSConfig, symbol_list []string) *WSClient {
+func NewWSClient(config *WSConfig, symbol_list []string, monitor_channel chan *monitorStruct.MonitorData) *WSClient {
 	return &WSClient{
-		Config:     config,
-		Client:     nil,
-		SymbolList: symbol_list,
+		Config:      config,
+		Client:      nil,
+		SymbolList:  symbol_list,
+		MonitorChan: monitor_channel,
 	}
 }
 
@@ -95,11 +99,11 @@ func (w *WSClient) StartListenData() {
 		if m["type"] == net.HEARTBEAT {
 			w.ProcessHeartbeat()
 		} else if m["type"] == net.DEPTH_UPDATE {
-
+			w.ProcessDepth(m)
 		} else if m["type"] == net.TRADE_UPATE {
-
+			w.ProcessTrade(m)
 		} else if m["type"] == net.KLINE_UPATE {
-
+			w.ProcessKline(m)
 		}
 	}
 }
@@ -200,13 +204,45 @@ func (w *WSClient) StartSubData() {
 }
 
 func (w *WSClient) ProcessDepth(m map[string]interface{}) {
+	defer catch_exp()
 
+	if value, ok := m["symbol"]; ok {
+		symbol := value.(string)
+		logx.Infof("WS depth: %s", symbol)
+
+		w.MonitorChan <- &monitorStruct.MonitorData{
+			Symbol:   symbol,
+			DataType: datastruct.DEPTH_TYPE,
+		}
+	}
 }
 
 func (w *WSClient) ProcessTrade(m map[string]interface{}) {
+	defer catch_exp()
 
+	if value, ok := m["symbol"]; ok {
+		symbol := value.(string)
+
+		logx.Infof("WS trade: %s", symbol)
+
+		w.MonitorChan <- &monitorStruct.MonitorData{
+			Symbol:   symbol,
+			DataType: datastruct.TRADE_TYPE,
+		}
+	}
 }
 
 func (w *WSClient) ProcessKline(m map[string]interface{}) {
+	defer catch_exp()
 
+	if value, ok := m["symbol"]; ok {
+		symbol := value.(string)
+
+		logx.Infof("WS kline: %s", symbol)
+
+		w.MonitorChan <- &monitorStruct.MonitorData{
+			Symbol:   symbol,
+			DataType: datastruct.KLINE_TYPE,
+		}
+	}
 }

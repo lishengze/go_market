@@ -1,6 +1,9 @@
 package monitorStruct
 
-import "time"
+import (
+	"market_server/common/datastruct"
+	"time"
+)
 
 type MonitorChannel struct {
 	DepthChan chan *MonitorAtom
@@ -72,7 +75,7 @@ func (m *MonitorMarketData) CheckAll() {
 
 func (m *MonitorMarketData) UpdateDepth(symbol string) {
 	if _, ok := m.depth_cache_map[symbol]; !ok {
-		m.depth_cache_map[symbol] = NewMonitorAtom(symbol, m.RateParam, int64(m.InitDeadLine))
+		m.depth_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.DEPTH_TYPE, m.RateParam, int64(m.InitDeadLine))
 	}
 
 	m.depth_cache_map[symbol].Update()
@@ -80,7 +83,7 @@ func (m *MonitorMarketData) UpdateDepth(symbol string) {
 
 func (m *MonitorMarketData) UpdateTrade(symbol string) {
 	if _, ok := m.trade_cache_map[symbol]; !ok {
-		m.trade_cache_map[symbol] = NewMonitorAtom(symbol, m.RateParam, int64(m.InitDeadLine))
+		m.trade_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.TRADE_TYPE, m.RateParam, int64(m.InitDeadLine))
 	}
 
 	m.trade_cache_map[symbol].Update()
@@ -88,7 +91,7 @@ func (m *MonitorMarketData) UpdateTrade(symbol string) {
 
 func (m *MonitorMarketData) UpdateKline(symbol string) {
 	if _, ok := m.kline_cache_map[symbol]; !ok {
-		m.kline_cache_map[symbol] = NewMonitorAtom(symbol, m.RateParam, int64(m.InitDeadLine))
+		m.kline_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.KLINE_TYPE, m.RateParam, int64(m.InitDeadLine))
 	}
 
 	m.kline_cache_map[symbol].Update()

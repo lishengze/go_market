@@ -1,6 +1,7 @@
 package monitorStruct
 
 import (
+	"fmt"
 	"market_server/common/datastruct"
 	"market_server/common/util"
 	"sync"
@@ -29,16 +30,31 @@ type MonitorAtom struct {
 
 	RateParam    float64
 	InitDeadLine int64
-	Symbol       string
+
+	Symbol   string
+	DataType string
+
+	InvalidInfo string
 
 	update_mutex sync.Mutex
 }
 
-func NewMonitorAtom(symbol string, rate_param float64, init_dead_line int64) *MonitorAtom {
+func (m *MonitorAtom) String() string {
+	return fmt.Sprintf("f:%s, l:%s, max: %dms, ave: %d ms",
+		util.TimeStrFromInt(m.first_time),
+		util.TimeStrFromInt(m.last_update_time),
+		m.max_time/datastruct.NANO_PER_MILL,
+		m.ave_time/datastruct.NANO_PER_MILL)
+}
+
+func NewMonitorAtom(symbol string, DataType string, rate_param float64, init_dead_line int64) *MonitorAtom {
 	return &MonitorAtom{
-		RateParam:        rate_param,
-		InitDeadLine:     init_dead_line,
-		Symbol:           symbol,
+		RateParam:    rate_param,
+		InitDeadLine: init_dead_line * datastruct.NANO_PER_SECS,
+
+		Symbol:   symbol,
+		DataType: DataType,
+
 		data_count:       0,
 		first_time:       0,
 		last_update_time: 0,
@@ -99,6 +115,14 @@ func (m *MonitorAtom) IsAlive() bool {
 
 	cur_time := util.UTCNanoTime()
 	delta_time := cur_time - m.last_update_time
+
+	m.InvalidInfo = fmt.Sprintf("%s.%s, f:%s, l:%s, max: %dms, ave: %d ms;\ndelta: %d, time_limit: %d",
+		m.DataType, m.Symbol,
+		util.TimeStrFromInt(m.first_time),
+		util.TimeStrFromInt(m.last_update_time),
+		m.max_time/datastruct.NANO_PER_MILL,
+		m.ave_time/datastruct.NANO_PER_MILL,
+		delta_time, m.TimeLimit())
 
 	if delta_time > m.TimeLimit() {
 		return false

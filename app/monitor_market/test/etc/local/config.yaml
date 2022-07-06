@@ -1,0 +1,32 @@
+WS:
+  Address: "18.162.42.238:8114"
+  Url: "/trading/marketws"
+
+Comm:
+  IP: "10.10.1.45:9092"
+  NetServerType: "KAFKA"
+  SerialType: "PROTOBUF"
+
+LogConfig: 
+  Compress: true
+  KeepDays: 0
+  Level: "info"
+  Mode: "file"
+  Path: "./log"
+  ServiceName: "client"
+  StackCooldownMillis: 100
+  TimeFormat:  "2006-01-02 15:04:05"
+
+MonitorConfigInfo:
+  RateParam: 1.5000
+  InitDeadLine: 900
+  CheckSecs: 30
+  
+MonitorMetaInfo:
+  Symbols: ["BTC_USDT"]
+
+
+DingConfigInfo:
+  Secret: "SEC796dd580e97650ec757f979f62387a19bad5c8ddc93ef2db72fb9f422341f70c"
+  Token: "48e8eb6bd7ade345e6a1f6f81ec0a331ad12f1661131b269ea09d574d41c4c34"
+

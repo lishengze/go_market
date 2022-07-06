@@ -9,28 +9,55 @@ import (
 )
 
 type MonitorEngine struct {
-	RecvDataChan            chan *monitorStruct.MonitorData
+	MonitorDataChan  chan *monitorStruct.MonitorData
+	OriginalDataChan *datastruct.DataChannel
+
 	MonitorMarketDataWorker *monitorStruct.MonitorMarketData
 	MonitorChan             *monitorStruct.MonitorChannel
-	DingClient              *dingtalk.Client
+
+	DingClient *dingtalk.Client
+	MetaInfo   string
 
 	RateParam    float64
 	InitDeadLine int64
 	CheckSecs    int64
 }
 
-func NewMonitorEngine(recvDataChan chan *monitorStruct.MonitorData, monitor_config *monitorStruct.MonitorConfig, ding_config *DingConfig) *MonitorEngine {
+func NewMonitorEngineWithOrignalDataChannel(original_data_chan *datastruct.DataChannel, monitor_config *monitorStruct.MonitorConfig,
+	ding_config *DingConfig, meta_info string) *MonitorEngine {
 	monitor_chan := monitorStruct.NewMonitorChannel()
-	dingtalk := dingtalk.NewClient(ding_config.token, ding_config.secret)
-
+	dingtalk := dingtalk.NewClient(ding_config.Token, ding_config.Secret)
 	return &MonitorEngine{
-		RecvDataChan: recvDataChan,
+		MonitorDataChan:  nil,
+		OriginalDataChan: original_data_chan,
+
 		MonitorChan:  monitor_chan,
 		RateParam:    monitor_config.RateParam,
 		InitDeadLine: monitor_config.InitDeadLine,
 		CheckSecs:    monitor_config.CheckSecs,
 		DingClient:   dingtalk,
 
+		MetaInfo:                meta_info,
+		MonitorMarketDataWorker: monitorStruct.NewMonitorMarketData(monitor_config, monitor_chan),
+	}
+}
+
+func NewMonitorEngineWithMonitorDataChannel(monitor_data_chan chan *monitorStruct.MonitorData, monitor_config *monitorStruct.MonitorConfig,
+	ding_config *DingConfig, meta_info string) *MonitorEngine {
+	monitor_chan := monitorStruct.NewMonitorChannel()
+	dingtalk := dingtalk.NewClient(ding_config.Token, ding_config.Secret)
+
+	return &MonitorEngine{
+		MonitorDataChan:  monitor_data_chan,
+		OriginalDataChan: nil,
+
+		MonitorChan:  monitor_chan,
+		RateParam:    monitor_config.RateParam,
+		InitDeadLine: monitor_config.InitDeadLine,
+		CheckSecs:    monitor_config.CheckSecs,
+		DingClient:   dingtalk,
+
+		MetaInfo:                meta_info,
 		MonitorMarketDataWorker: monitorStruct.NewMonitorMarketData(monitor_config, monitor_chan),
 	}
 }
@@ -43,20 +70,37 @@ func (k *MonitorEngine) Start() {
 
 func (k *MonitorEngine) StartListenRecvdata() {
 	logx.Info("[S] MonitorEngine start_listen_recvdata")
-	go func() {
-		for {
-			select {
-			case data := <-k.RecvDataChan:
-				if data.DataType == datastruct.DEPTH_TYPE {
-					k.process_depth(data.Symbol)
-				} else if data.DataType == datastruct.TRADE_TYPE {
-					k.process_trade(data.Symbol)
-				} else if data.DataType == datastruct.KLINE_TYPE {
-					k.process_kline(data.Symbol)
+
+	if k.MonitorDataChan != nil {
+		go func() {
+			for {
+				select {
+				case data := <-k.MonitorDataChan:
+					if data.DataType == datastruct.DEPTH_TYPE {
+						k.process_depth(data.Symbol)
+					} else if data.DataType == datastruct.TRADE_TYPE {
+						k.process_trade(data.Symbol)
+					} else if data.DataType == datastruct.KLINE_TYPE {
+						k.process_kline(data.Symbol)
+					}
 				}
 			}
-		}
-	}()
+		}()
+	} else if k.OriginalDataChan != nil {
+		go func() {
+			for {
+				select {
+				case depth := <-k.OriginalDataChan.DepthChannel:
+					k.process_depth(depth.Symbol)
+				case trade := <-k.OriginalDataChan.TradeChannel:
+					k.process_trade(trade.Symbol)
+				case kline := <-k.OriginalDataChan.KlineChannel:
+					k.process_kline(kline.Symbol)
+				}
+			}
+		}()
+	}
+
 	logx.Info("[S] DBServer start_receiver Over!")
 }
 
@@ -77,62 +121,33 @@ func (k *MonitorEngine) StartListenInvalidData() {
 	logx.Info("[S] DBServer start_receiver Over!")
 }
 
-func catch_depth_exp(depth *datastruct.DepthQuote) {
+func catch_exp() {
 	errMsg := recover()
 	if errMsg != nil {
-		logx.Errorf("catch_exp depth:  %+v\n", depth.String(3))
 		logx.Errorf("errMsg: %+v \n", errMsg)
-
-		logx.Infof("catch_exp depth:  %+v\n", depth.String(3))
 		logx.Infof("errMsg: %+v \n", errMsg)
 	}
 }
 
 func (k *MonitorEngine) process_depth(symbol string) error {
 
-	// defer catch_depth_exp(depth)
+	defer catch_exp()
 
 	k.MonitorMarketDataWorker.UpdateDepth(symbol)
 
 	return nil
 }
 
-func catch_kline_exp(kline *datastruct.Kline) {
-	errMsg := recover()
-	if errMsg != nil {
-		// fmt.Println("This is catch_exp func")
-		logx.Errorf("catch_exp kline:  %+v\n", kline.String())
-		logx.Errorf("errMsg: %+v \n", errMsg)
-
-		logx.Infof("catch_exp kline:  %+v\n", kline.String())
-		logx.Infof("errMsg: %+v \n", errMsg)
-		// fmt.Println(errMsg)
-	}
-}
-
 func (k *MonitorEngine) process_kline(symbol string) error {
-	// defer catch_kline_exp(kline)
+	defer catch_exp()
 
 	k.MonitorMarketDataWorker.UpdateKline(symbol)
 
 	return nil
 }
 
-func catch_trade_exp(trade *datastruct.Trade) {
-	errMsg := recover()
-	if errMsg != nil {
-		// fmt.Println("This is catch_exp func")
-		logx.Errorf("catch_exp trade:  %+v\n", trade.String())
-		logx.Errorf("errMsg: %+v \n", errMsg)
-
-		logx.Infof("catch_exp trade:  %+v\n", trade.String())
-		logx.Infof("errMsg: %+v \n", errMsg)
-		// fmt.Println(errMsg)
-	}
-}
-
 func (k *MonitorEngine) process_trade(symbol string) error {
-	// defer catch_trade_exp(trade)
+	defer catch_exp()
 
 	k.MonitorMarketDataWorker.UpdateTrade(symbol)
 
@@ -140,16 +155,19 @@ func (k *MonitorEngine) process_trade(symbol string) error {
 }
 
 func (k *MonitorEngine) process_invalid_depth(montior_atom *monitorStruct.MonitorAtom) error {
-
+	logx.Info(montior_atom.InvalidInfo)
+	k.DingClient.SendMessage(k.MetaInfo + "\n" + montior_atom.InvalidInfo)
 	return nil
 }
 
 func (k *MonitorEngine) process_invalid_trade(montior_atom *monitorStruct.MonitorAtom) error {
-
+	logx.Info(montior_atom.InvalidInfo)
+	k.DingClient.SendMessage(k.MetaInfo + "\n" + montior_atom.InvalidInfo)
 	return nil
 }
 
 func (k *MonitorEngine) process_invalid_kline(montior_atom *monitorStruct.MonitorAtom) error {
-
+	logx.Info(montior_atom.InvalidInfo)
+	k.DingClient.SendMessage(k.MetaInfo + "\n" + montior_atom.InvalidInfo)
 	return nil
 }

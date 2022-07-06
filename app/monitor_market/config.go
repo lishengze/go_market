@@ -1,10 +1,15 @@
 package monitor_market
 
-import "market_server/common/monitorStruct"
+import (
+	comm_config "market_server/common/config"
+	"market_server/common/monitorStruct"
+
+	"github.com/zeromicro/go-zero/core/logx"
+)
 
 type DingConfig struct {
-	secret string
-	token  string
+	Secret string
+	Token  string
 }
 
 type WSConfig struct {
@@ -12,8 +17,18 @@ type WSConfig struct {
 	Url     string
 }
 
+type MonitorMeta struct {
+	Symbols []string
+}
+
 type Config struct {
-	WsConfig      WSConfig
-	dingConfig    DingConfig
-	monitorConfig monitorStruct.MonitorConfig
+	WS   WSConfig
+	Comm comm_config.CommConfig
+
+	LogConfig logx.LogConf
+
+	MonitorConfigInfo monitorStruct.MonitorConfig
+	MonitorMetaInfo   MonitorMeta
+
+	DingConfigInfo DingConfig
 }
