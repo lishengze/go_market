@@ -262,7 +262,7 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	d.cache_period_data_mutex.Unlock()
 
 	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
-	d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), nil)
+	d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), d.GetUsdtUsdPrice(), nil)
 
 	return nil
 }
@@ -307,8 +307,8 @@ func (d *DataEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo) 
 	d.next_worker.PublishDepth(depth, ws)
 }
 
-func (d *DataEngine) PublishTrade(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, ws *net.WSInfo) {
-	d.next_worker.PublishTrade(trade, change_info, ws)
+func (d *DataEngine) PublishTrade(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, usdt_usd_price float64, ws *net.WSInfo) {
+	d.next_worker.PublishTrade(trade, change_info, usdt_usd_price, ws)
 }
 
 func (d *DataEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
@@ -337,6 +337,16 @@ func catch_sub_trade_exp(symbol string, ws *net.WSInfo) {
 	}
 }
 
+func (d *DataEngine) GetUsdtUsdPrice() float64 {
+	usdt_usd_price := 0.0
+
+	if trade, ok := d.trade_cache_map.Load("USDT_USD"); ok {
+		tmp_trade := trade.(*datastruct.Trade)
+		usdt_usd_price = tmp_trade.Price
+	}
+	return usdt_usd_price
+}
+
 func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) {
 	defer catch_sub_trade_exp(symbol, ws)
 
@@ -355,7 +365,7 @@ func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) {
 		}
 		d.cache_period_data_mutex.Unlock()
 
-		d.PublishTrade(trade.(*datastruct.Trade), d.cache_period_data[symbol].GetChangeInfo(), ws)
+		d.PublishTrade(trade.(*datastruct.Trade), d.cache_period_data[symbol].GetChangeInfo(), d.GetUsdtUsdPrice(), ws)
 	} else {
 		logx.Errorf("%s not cached", symbol)
 	}

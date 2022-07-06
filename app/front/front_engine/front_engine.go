@@ -126,7 +126,7 @@ func (f *FrontEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo)
 
 }
 
-func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, ws *net.WSInfo) {
+func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, usdt_usd_price float64, ws *net.WSInfo) {
 
 	defer func(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, ws *net.WSInfo) {
 		errMsg := recover()
@@ -144,7 +144,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastr
 	if ws != nil {
 		if ws.IsAlive() {
 			// logx.Infof("ws:%+v is not alive")
-			byte_data := NewTradeJsonMsg(trade, change_info)
+			byte_data := NewTradeJsonMsg(trade, change_info, usdt_usd_price)
 			err := ws.SendMsg(websocket.TextMessage, byte_data)
 
 			if err != nil {
@@ -155,7 +155,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastr
 			logx.Infof("ws:%+v is not alive", ws)
 		}
 	} else {
-		trade_pub_list := f.sub_data.GetTradePubInfoList(trade, change_info)
+		trade_pub_list := f.sub_data.GetTradePubInfoList(trade, change_info, usdt_usd_price)
 		// logx.Info("After GetTradePubInfoList")
 
 		for _, info := range trade_pub_list {

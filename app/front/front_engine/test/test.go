@@ -120,7 +120,7 @@ func TestPubTradeData() {
 
 	fmt.Printf("Original Data: %+v \n", trade)
 
-	rst := front_engine.NewTradeJsonMsg(trade, nil)
+	rst := front_engine.NewTradeJsonMsg(trade, nil, 0.0)
 
 	fmt.Printf("\nJson string: %s \n", string(rst))
 

@@ -158,15 +158,19 @@ type PubTradeJson struct {
 	ChangeRate float64 `json:"change_rate"`
 	High       float64 `json:"high"`
 	Low        float64 `json:"low"`
+	Time       int64   `json:"date"`
+	USDPrice   float64 `json:"usdPrice"`
 }
 
-func NewTradeJsonMsg(trade *datastruct.Trade, change_info *datastruct.ChangeInfo) []byte {
+func NewTradeJsonMsg(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, usdt_usd_price float64) []byte {
 
 	json_data := PubTradeJson{
 		TypeInfo: net.TRADE_UPATE,
 		Symbol:   trade.Symbol,
 		Price:    trade.Price,
 		Volume:   trade.Volume,
+		Time:     trade.Time / datastruct.NANO_PER_SECS,
+		USDPrice: usdt_usd_price,
 	}
 
 	if change_info != nil {
