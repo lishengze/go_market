@@ -139,7 +139,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastr
 		}
 	}(trade, change_info, ws)
 
-	logx.Info("PublishTrade:%+v, %+v\n", trade, change_info)
+	logx.Infof("PublishTrade:%+v, %+v\n", trade, change_info)
 
 	if ws != nil {
 		if ws.IsAlive() {

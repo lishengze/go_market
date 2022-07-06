@@ -75,12 +75,15 @@ func (d *DataEngine) SetTestFlag(value bool) {
 func (d *DataEngine) UpdateMeta(symbols []string) {
 	for _, symbol := range symbols {
 		if _, ok := d.cache_period_data[symbol]; !ok {
-			d.InitPeriodDara(symbol)
+			err := d.InitPeriodDara(symbol)
+			if err != nil {
+				logx.Errorf("UpdateMeta error: %+v", err)
+			}
 		}
 	}
 }
 
-func (a *DataEngine) InitPeriodDara(symbol string) {
+func (a *DataEngine) InitPeriodDara(symbol string) error {
 	logx.Infof("Init PeriodData: %s", symbol)
 	a.cache_period_data[symbol] = &PeriodData{
 		Symbol:                symbol,
@@ -105,7 +108,7 @@ func (a *DataEngine) InitPeriodDara(symbol string) {
 
 		a.cache_period_data[symbol].UpdateWithKlines(Klines)
 
-		return
+		return nil
 	}
 
 	end_time_nanos := uint64(util.TimeMinuteNanos())
@@ -122,18 +125,21 @@ func (a *DataEngine) InitPeriodDara(symbol string) {
 
 	hist_klines, err := a.msclient.RequestHistKlineData(context.Background(), req_hist_info)
 
-	logx.Infof("Init Period HistKline: %s", marketservice.HistKlineString(hist_klines))
-
-	if err != nil {
+	if err != nil || hist_klines == nil {
 		fmt.Printf("err %+v \n", err)
 		logx.Errorf("ReqHistKline Err: %+v\n", err)
+		return err
 	}
+
+	logx.Infof("Init Period HistKline: %s", marketservice.HistKlineString(hist_klines))
 
 	// fmt.Printf("Rst: %+v \n", hist_klines)
 
 	a.cache_period_data[symbol].UpdateWithPbKlines(hist_klines)
 
 	logx.Infof("Symbol Meta Info: %+v", a.cache_period_data[symbol].String())
+
+	return nil
 
 }
 
@@ -202,7 +208,12 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 
 	d.cache_period_data_mutex.Lock()
 	if _, ok := d.cache_period_data[kline.Symbol]; !ok {
-		d.InitPeriodDara(kline.Symbol)
+		err := d.InitPeriodDara(kline.Symbol)
+
+		if err != nil {
+			logx.Errorf("process_kline error: %+v", err)
+			return err
+		}
 
 		symbol_list := d.get_symbol_list()
 		d.PublishSymbol(symbol_list, nil)
@@ -238,15 +249,22 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
 	d.cache_period_data_mutex.Lock()
 	if _, ok := d.cache_period_data[trade.Symbol]; !ok {
-		d.InitPeriodDara(trade.Symbol)
+		err := d.InitPeriodDara(trade.Symbol)
+
+		if err != nil {
+			logx.Errorf("process_trade error: %+v", err)
+			return err
+		}
 
 		symbol_list := d.get_symbol_list()
 		d.PublishSymbol(symbol_list, nil)
+
+		d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
+		d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), nil)
+	} else {
+		d.PublishTrade(trade, nil, nil)
 	}
 	d.cache_period_data_mutex.Unlock()
-
-	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
-	d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), nil)
 
 	return nil
 }
@@ -326,7 +344,12 @@ func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) {
 
 	d.cache_period_data_mutex.Lock()
 	if _, ok := d.cache_period_data[symbol]; !ok {
-		d.InitPeriodDara(symbol)
+		err := d.InitPeriodDara(symbol)
+
+		if err != nil {
+			logx.Errorf("SubTrade error: %+v", err)
+			// return err
+		}
 
 		symbol_list := d.get_symbol_list()
 		d.PublishSymbol(symbol_list, nil)
