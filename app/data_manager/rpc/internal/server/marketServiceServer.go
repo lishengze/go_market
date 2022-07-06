@@ -122,7 +122,6 @@ func (s *MarketServiceServer) ProcessSymbolConfigStr(data string) {
 			symbol_exchange_set[symbol_config.Symbol][datastruct.BCTS_EXCHANGE] = struct{}{}
 		}
 
-		
 	}
 
 	new_meta.TradeMeta = symbol_exchange_set

@@ -258,13 +258,11 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
 		symbol_list := d.get_symbol_list()
 		d.PublishSymbol(symbol_list, nil)
-
-		d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
-		d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), nil)
-	} else {
-		d.PublishTrade(trade, nil, nil)
 	}
 	d.cache_period_data_mutex.Unlock()
+
+	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
+	d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), nil)
 
 	return nil
 }
@@ -342,22 +340,24 @@ func catch_sub_trade_exp(symbol string, ws *net.WSInfo) {
 func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) {
 	defer catch_sub_trade_exp(symbol, ws)
 
-	d.cache_period_data_mutex.Lock()
-	if _, ok := d.cache_period_data[symbol]; !ok {
-		err := d.InitPeriodDara(symbol)
-
-		if err != nil {
-			logx.Errorf("SubTrade error: %+v", err)
-			// return err
-		}
-
-		symbol_list := d.get_symbol_list()
-		d.PublishSymbol(symbol_list, nil)
-	}
-	d.cache_period_data_mutex.Unlock()
-
 	if trade, ok := d.trade_cache_map.Load(symbol); ok {
+		d.cache_period_data_mutex.Lock()
+		if _, ok := d.cache_period_data[symbol]; !ok {
+			err := d.InitPeriodDara(symbol)
+
+			if err != nil {
+				logx.Errorf("SubTrade error: %+v", err)
+				// return err
+			}
+
+			symbol_list := d.get_symbol_list()
+			d.PublishSymbol(symbol_list, nil)
+		}
+		d.cache_period_data_mutex.Unlock()
+
 		d.PublishTrade(trade.(*datastruct.Trade), d.cache_period_data[symbol].GetChangeInfo(), ws)
+	} else {
+		logx.Errorf("%s not cached", symbol)
 	}
 }
 

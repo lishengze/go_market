@@ -38,10 +38,10 @@ func main() {
 	fmt.Printf("Args: %+v \n", os.Args)
 	env := os.Args[1]
 
-	is_test := false
-	if len(os.Args) > 2 {
-		is_test = true
-	}
+	// is_test := false
+	// if len(os.Args) > 2 {
+	// 	is_test = true
+	// }
 
 	fmt.Printf("env: %+v \n", env)
 	var configFile = flag.String("f", "etc/"+env+"/marketData.yaml", "the config file")
@@ -67,7 +67,7 @@ func main() {
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
 
-	svr.SetTestValue(is_test)
+	// svr.SetTestValue(is_test)
 
 	svr.Start()
 	s.Start()

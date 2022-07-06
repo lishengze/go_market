@@ -18,7 +18,7 @@ type DepthPubInfo struct {
 func (d *DepthPubInfo) String() string {
 	// return fmt.Sprintf("ws_info: %s, depth: %s", d.ws_info.String(), d.data.String(3))
 
-	return fmt.Sprintf("ws_info: %s, depth: %s", d.ws_info.String(), d.data)
+	return fmt.Sprintf("ws_info: %s, depth: %s", d.ws_info.String(), string(d.data))
 }
 
 type SymbolPubInfo struct {
@@ -27,7 +27,7 @@ type SymbolPubInfo struct {
 }
 
 func (d *SymbolPubInfo) String() string {
-	return fmt.Sprintf("ws_info: %s, symbol_list: %+v", d.ws_info.String(), d.data)
+	return fmt.Sprintf("ws_info: %s, symbol_list: %+v", d.ws_info.String(), string(d.data))
 }
 
 type TradePubInfo struct {
@@ -38,7 +38,7 @@ type TradePubInfo struct {
 func (d *TradePubInfo) String() string {
 	// return fmt.Sprintf("ws_info: %s, trade: %s", d.ws_info.String(), d.data.String())
 
-	return fmt.Sprintf("ws_info: %s, trade: %s", d.ws_info.String(), d.data)
+	return fmt.Sprintf("ws_info: %s, trade: %s", d.ws_info.String(), string(d.data))
 }
 
 type KlinePubInfo struct {
@@ -49,7 +49,7 @@ type KlinePubInfo struct {
 }
 
 func (d *KlinePubInfo) String() string {
-	return fmt.Sprintf("ws_info: %s, kline: %s", d.ws_info.String(), d.data)
+	return fmt.Sprintf("ws_info: %s, kline: %s", d.ws_info.String(), string(d.data))
 }
 
 type SymbolSubInfo struct {
