@@ -91,11 +91,11 @@ func (k *MonitorEngine) StartListenRecvdata() {
 			for {
 				select {
 				case depth := <-k.OriginalDataChan.DepthChannel:
-					k.process_depth(depth.Symbol)
+					k.process_depth(depth.Exchange + "_" + depth.Symbol)
 				case trade := <-k.OriginalDataChan.TradeChannel:
-					k.process_trade(trade.Symbol)
+					k.process_trade(trade.Exchange + "_" + trade.Symbol)
 				case kline := <-k.OriginalDataChan.KlineChannel:
-					k.process_kline(kline.Symbol)
+					k.process_kline(kline.Exchange + "_" + kline.Symbol)
 				}
 			}
 		}()

@@ -7,10 +7,6 @@ Comm:
   NetServerType: "KAFKA"
   SerialType: "PROTOBUF"
 
-DingConfigInfo:
-  secret: 
-  token:
-
 LogConfig: 
   Compress: true
   KeepDays: 0
@@ -28,3 +24,7 @@ MonitorConfigInfo:
   
 MonitorMetaInfo:
   Symbols: ["BTC_USDT"]
+
+DingConfigInfo:
+  Secret: "SEC796dd580e97650ec757f979f62387a19bad5c8ddc93ef2db72fb9f422341f70c"
+  Token: "48e8eb6bd7ade345e6a1f6f81ec0a331ad12f1661131b269ea09d574d41c4c34"
