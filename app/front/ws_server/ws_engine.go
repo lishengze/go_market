@@ -426,7 +426,6 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 		}
 
 		logx.Infof("0.1")
-
 		resolution = uint32(tmp)
 
 		logx.Infof("0.2")
