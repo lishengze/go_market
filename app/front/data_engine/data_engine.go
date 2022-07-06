@@ -248,12 +248,6 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
 	d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), nil)
 
-	// if period_data, ok := d.cache_period_data[trade.Symbol]; ok {
-
-	// } else {
-	// 	d.PublishTrade(trade, nil, nil)
-	// }
-
 	return nil
 }
 
