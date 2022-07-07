@@ -144,6 +144,7 @@ func (k *KafkaServer) InitKafka(serializer datastruct.SerializerI,
 		return err
 	}
 
+	k.UpdateCreateTopics()
 	k.StartListenPubChan()
 
 	return nil
@@ -322,11 +323,12 @@ func (k *KafkaServer) ConsumeSingleTopic(consume_item *ConsumeItem) {
 		return
 	}
 
+	logx.Infof("Conume Topic: %s ", consume_item.Topic)
+
 	for {
 		for partition := range partitionList {
 			pc, err := consumer.ConsumePartition(consume_item.Topic, int32(partition), sarama.OffsetNewest)
 
-			logx.Info("[After] ConsumePartition ")
 			if err != nil {
 				logx.Error(err.Error())
 				continue

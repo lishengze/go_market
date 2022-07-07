@@ -15,12 +15,12 @@ type WorkerI interface {
 
 	SubSymbol(ws *net.WSInfo)
 
-	SubTrade(symbol string, ws *net.WSInfo)
+	SubTrade(symbol string, ws *net.WSInfo) (string, bool)
 	UnSubTrade(symbol string, ws *net.WSInfo)
 
-	SubDepth(symbol string, ws *net.WSInfo)
+	SubDepth(symbol string, ws *net.WSInfo) (string, bool)
 	UnSubDepth(symbol string, ws *net.WSInfo)
 
-	SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo)
+	SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) (string, bool)
 	UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo)
 }

@@ -37,7 +37,7 @@ type ErrorMsg struct {
 
 func (w *WSInfo) SendErrorMsg(msg string) {
 	json_data := ErrorMsg{
-		TypeInfo: DEPTH_UPDATE,
+		TypeInfo: ERROR,
 		Info:     msg,
 	}
 

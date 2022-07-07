@@ -347,7 +347,7 @@ func (d *DataEngine) GetUsdtUsdPrice() float64 {
 	return usdt_usd_price
 }
 
-func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) {
+func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) (string, bool) {
 	defer catch_sub_trade_exp(symbol, ws)
 
 	if trade, ok := d.trade_cache_map.Load(symbol); ok {
@@ -357,17 +357,19 @@ func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) {
 
 			if err != nil {
 				logx.Errorf("SubTrade error: %+v", err)
-				// return err
+				d.PublishTrade(trade.(*datastruct.Trade), nil, d.GetUsdtUsdPrice(), ws)
+			} else {
+				d.PublishTrade(trade.(*datastruct.Trade), d.cache_period_data[symbol].GetChangeInfo(), d.GetUsdtUsdPrice(), ws)
 			}
 
 			symbol_list := d.get_symbol_list()
 			d.PublishSymbol(symbol_list, nil)
 		}
 		d.cache_period_data_mutex.Unlock()
-
-		d.PublishTrade(trade.(*datastruct.Trade), d.cache_period_data[symbol].GetChangeInfo(), d.GetUsdtUsdPrice(), ws)
+		return "", true
 	} else {
-		logx.Errorf("%s not cached", symbol)
+		logx.Errorf("trade %s not cached", symbol)
+		return fmt.Sprintf("trade %s not cached", symbol), false
 	}
 }
 
@@ -385,11 +387,15 @@ func catch_sub_depth_exp(symbol string, ws *net.WSInfo) {
 	}
 }
 
-func (d *DataEngine) SubDepth(symbol string, ws *net.WSInfo) {
+func (d *DataEngine) SubDepth(symbol string, ws *net.WSInfo) (string, bool) {
 	defer catch_sub_depth_exp(symbol, ws)
 
 	if depth, ok := d.depth_cache_map.Load(symbol); ok {
 		d.PublishDepth(depth.(*datastruct.DepthQuote), ws)
+		return "", true
+	} else {
+		logx.Errorf("depth %s not cached", symbol)
+		return fmt.Sprintf("depth %s not cached", symbol), false
 	}
 }
 
@@ -541,7 +547,7 @@ func catch_sub_kline_exp(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo
 	}
 }
 
-func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
+func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) (string, bool) {
 	defer catch_sub_kline_exp(req_kline_info, ws)
 
 	rst := d.GetHistKlineData(req_kline_info)
@@ -550,8 +556,11 @@ func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.W
 		logx.Statf("DataEngine: Hist: %s", datastruct.HistKlineString(rst.Klines))
 
 		d.next_worker.PublishHistKline(rst, ws)
+
+		return "", true
 	} else {
-		logx.Errorf("GetHistKlineData Failed")
+		logx.Errorf("kline %s get hist data failed! ", req_kline_info.String())
+		return fmt.Sprintf("depth %s get hist data failed!", req_kline_info.String()), false
 	}
 
 }

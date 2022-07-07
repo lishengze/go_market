@@ -272,27 +272,59 @@ func (f *FrontEngine) SubSymbol(ws *net.WSInfo) {
 	f.next_worker.SubSymbol(ws)
 }
 
-func (f *FrontEngine) SubTrade(symbol string, ws *net.WSInfo) {
+func (f *FrontEngine) SubTrade(symbol string, ws *net.WSInfo) (string, bool) {
 	f.sub_data.SubTrade(symbol, ws)
-	f.next_worker.SubTrade(symbol, ws)
+	errMsg, ok := f.next_worker.SubTrade(symbol, ws)
+
+	if !ok {
+		f.sub_data.UnSubTrade(symbol, ws)
+
+		if ws.IsAlive() {
+			ws.SendErrorMsg(errMsg)
+		}
+	}
+
+	return errMsg, ok
 }
 
 func (f *FrontEngine) UnSubTrade(symbol string, ws *net.WSInfo) {
 	f.sub_data.UnSubTrade(symbol, ws)
 }
 
-func (f *FrontEngine) SubDepth(symbol string, ws *net.WSInfo) {
+func (f *FrontEngine) SubDepth(symbol string, ws *net.WSInfo) (string, bool) {
 	f.sub_data.SubDepth(symbol, ws)
-	f.next_worker.SubDepth(symbol, ws)
+	errMsg, ok := f.next_worker.SubDepth(symbol, ws)
+
+	if !ok {
+		f.sub_data.UnSubDepth(symbol, ws)
+
+		if ws.IsAlive() {
+			ws.SendErrorMsg(errMsg)
+		}
+	}
+
+	return errMsg, ok
+
 }
 
 func (f *FrontEngine) UnSubDepth(symbol string, ws *net.WSInfo) {
 	f.sub_data.UnSubDepth(symbol, ws)
 }
 
-func (f *FrontEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
+func (f *FrontEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) (string, bool) {
 	f.sub_data.SubKline(req_kline_info, ws)
-	f.next_worker.SubKline(req_kline_info, ws)
+	errMsg, ok := f.next_worker.SubKline(req_kline_info, ws)
+
+	if !ok {
+		f.sub_data.UnSubKline(req_kline_info, ws)
+
+		if ws.IsAlive() {
+			ws.SendErrorMsg(errMsg)
+		}
+	}
+
+	return errMsg, ok
+
 }
 
 func (f *FrontEngine) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
