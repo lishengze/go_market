@@ -142,6 +142,8 @@ func (k *KafkaServer) InitKafka(serializer datastruct.SerializerI,
 	err = k.InitApi()
 	if err != nil {
 		return err
+	} else {
+		logx.Infof("InitApi Err: %+v", err)
 	}
 
 	k.UpdateCreateTopics()
