@@ -206,18 +206,24 @@ func (k *KafkaServer) UpdateCreateTopics() error {
 func (k *KafkaServer) StartListenPubChan() {
 	logx.Info("KafkaServer.StartListenPubChan")
 
-	go func() {
-		for {
-			select {
-			case local_depth := <-k.PubDataChan.DepthChannel:
-				go k.PublishDepth(local_depth)
-			case local_kline := <-k.PubDataChan.KlineChannel:
-				go k.PublishKline(local_kline)
-			case local_trade := <-k.PubDataChan.TradeChannel:
-				go k.PublishTrade(local_trade)
+	if k.PubDataChan != nil {
+		go func() {
+			for {
+				select {
+				case local_depth := <-k.PubDataChan.DepthChannel:
+					go k.PublishDepth(local_depth)
+				case local_kline := <-k.PubDataChan.KlineChannel:
+					go k.PublishKline(local_kline)
+				case local_trade := <-k.PubDataChan.TradeChannel:
+					go k.PublishTrade(local_trade)
+				}
 			}
-		}
-	}()
+		}()
+	} else {
+		logx.Errorf("kafa PubDataChan is nil")
+		logx.Infof("kafa PubDataChan is nil")
+	}
+
 }
 
 func (k *KafkaServer) IsTopicConsumed(topic string) bool {
