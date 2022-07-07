@@ -186,6 +186,8 @@ func (k *KafkaServer) InitApi() error {
 }
 
 func (k *KafkaServer) UpdateCreateTopics() error {
+	logx.Info("UpdateCreateTopics")
+
 	online_topics, err := k.Client.Topics()
 	if err != nil {
 		logx.Errorf("Get Online Topics Failed %s ", err.Error())

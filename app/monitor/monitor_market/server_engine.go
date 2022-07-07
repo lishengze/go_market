@@ -54,6 +54,8 @@ func (s *ServerEngine) StartCommer() {
 
 	logx.Infof("[I] InitMeta: %v \n", new_meta)
 
+	s.Commer.Start()
+
 	s.Commer.UpdateMetaData(&new_meta)
 }
 
