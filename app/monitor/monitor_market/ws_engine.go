@@ -77,13 +77,13 @@ func (k *WSClient) OutputRcvInfo(key, value interface{}) bool {
 
 func (k *WSClient) UpdateStatisticInfo() {
 
-	logx.Statf("kafka Statistic Start: %+v \n", k.statistic_start)
+	logx.Statf("Websocket Statistic Start: %+v \n", k.statistic_start)
 
 	k.rcv_statistic_info.Range(k.OutputRcvInfo)
 
 	k.statistic_start = time.Now()
 
-	logx.Statf("kafka Statistic End: %+v \n", k.statistic_start)
+	logx.Statf("Websocket Statistic End: %+v \n", k.statistic_start)
 }
 
 func (w *WSClient) InitClient() error {
