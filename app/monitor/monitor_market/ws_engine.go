@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -20,14 +22,19 @@ type WSClient struct {
 	Client      *websocket.Conn
 	SymbolList  []string
 	MonitorChan chan *monitorStruct.MonitorData
+
+	statistic_secs     int
+	rcv_statistic_info sync.Map
+	statistic_start    time.Time
 }
 
 func NewWSClient(config *WSConfig, symbol_list []string, monitor_channel chan *monitorStruct.MonitorData) *WSClient {
 	return &WSClient{
-		Config:      config,
-		Client:      nil,
-		SymbolList:  symbol_list,
-		MonitorChan: monitor_channel,
+		Config:         config,
+		Client:         nil,
+		SymbolList:     symbol_list,
+		MonitorChan:    monitor_channel,
+		statistic_secs: 15,
 	}
 }
 
@@ -41,6 +48,42 @@ func (w *WSClient) Start() {
 	go w.StartListenData()
 
 	go w.StartSubData()
+
+	go w.StatisticTimeTaskMain()
+}
+
+func (k *WSClient) StatisticTimeTaskMain() {
+	logx.Info("---- StatisticTimeTask Start!")
+	duration := time.Duration((time.Duration)(k.statistic_secs) * time.Second)
+	timer := time.Tick(duration)
+
+	k.statistic_start = time.Now()
+	for {
+		select {
+		case <-timer:
+			k.UpdateStatisticInfo()
+		}
+	}
+}
+
+func (k *WSClient) OutputRcvInfo(key, value interface{}) bool {
+	if value.(int) != 0 {
+		logx.Statf("[rcv] %s : %d ", key, value)
+		k.rcv_statistic_info.Store(key, 0)
+	}
+
+	return true
+}
+
+func (k *WSClient) UpdateStatisticInfo() {
+
+	logx.Statf("kafka Statistic Start: %+v \n", k.statistic_start)
+
+	k.rcv_statistic_info.Range(k.OutputRcvInfo)
+
+	k.statistic_start = time.Now()
+
+	logx.Statf("kafka Statistic End: %+v \n", k.statistic_start)
 }
 
 func (w *WSClient) InitClient() error {
@@ -108,6 +151,15 @@ func (w *WSClient) StartListenData() {
 	}
 }
 
+func (w *WSClient) UpdateRecvInfo(msg string) {
+	if value, ok := w.rcv_statistic_info.Load(msg); ok {
+		w.rcv_statistic_info.Store(msg, value.(int)+1)
+	} else {
+		w.rcv_statistic_info.Store(msg, 1)
+	}
+
+}
+
 func (w *WSClient) ProcessHeartbeat() {
 	err := w.Client.WriteMessage(websocket.TextMessage, GetHeartbeatMsg())
 	if err != nil {
@@ -167,6 +219,7 @@ func GetTestKlineReqJson(symbol string) []byte {
 
 func (w *WSClient) StartSubDepth() {
 	send_msg := GetTestDepthReqJson(w.SymbolList)
+	logx.Infof("WS SubInfo %s ", string(send_msg))
 
 	err := w.Client.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {
@@ -177,6 +230,7 @@ func (w *WSClient) StartSubDepth() {
 
 func (w *WSClient) StartSubTrade() {
 	send_msg := GetTestTradeReqJson(w.SymbolList)
+	logx.Infof("WS SubInfo %s ", string(send_msg))
 
 	err := w.Client.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {
@@ -188,6 +242,7 @@ func (w *WSClient) StartSubTrade() {
 func (w *WSClient) StartSubKline() {
 	for _, symbol := range w.SymbolList {
 		send_msg := GetTestKlineReqJson(symbol)
+		logx.Infof("WS SubInfo %s ", string(send_msg))
 
 		err := w.Client.WriteMessage(websocket.TextMessage, send_msg)
 		if err != nil {
@@ -208,10 +263,14 @@ func (w *WSClient) ProcessDepth(m map[string]interface{}) {
 
 	if value, ok := m["symbol"]; ok {
 		symbol := value.(string)
-		logx.Infof("WS depth: %s", symbol)
+
+		msg := datastruct.BCTS_EXCHANGE + "_" + symbol
+		w.UpdateRecvInfo(msg)
+
+		logx.Infof("WS depth: %s", msg)
 
 		w.MonitorChan <- &monitorStruct.MonitorData{
-			Symbol:   symbol,
+			Symbol:   msg,
 			DataType: datastruct.DEPTH_TYPE,
 		}
 	}
@@ -223,10 +282,13 @@ func (w *WSClient) ProcessTrade(m map[string]interface{}) {
 	if value, ok := m["symbol"]; ok {
 		symbol := value.(string)
 
-		logx.Infof("WS trade: %s", symbol)
+		msg := datastruct.BCTS_EXCHANGE + "_" + symbol
+		w.UpdateRecvInfo(msg)
+
+		logx.Infof("WS trade: %s", msg)
 
 		w.MonitorChan <- &monitorStruct.MonitorData{
-			Symbol:   symbol,
+			Symbol:   msg,
 			DataType: datastruct.TRADE_TYPE,
 		}
 	}
@@ -238,10 +300,13 @@ func (w *WSClient) ProcessKline(m map[string]interface{}) {
 	if value, ok := m["symbol"]; ok {
 		symbol := value.(string)
 
-		logx.Infof("WS kline: %s", symbol)
+		msg := datastruct.BCTS_EXCHANGE + "_" + symbol
+		w.UpdateRecvInfo(msg)
+
+		logx.Infof("WS kline: %s", msg)
 
 		w.MonitorChan <- &monitorStruct.MonitorData{
-			Symbol:   symbol,
+			Symbol:   msg,
 			DataType: datastruct.KLINE_TYPE,
 		}
 	}
