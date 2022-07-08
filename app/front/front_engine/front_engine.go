@@ -245,7 +245,7 @@ func (f *FrontEngine) PublishHistKline(klines *datastruct.RspHistKline, ws *net.
 	f.sub_data.ProcessKlineHistData(klines)
 
 	if ws != nil {
-		logx.Infof("PublishHistKline: %s", klines.SimpleTimeList())
+		logx.Slowf("PublishHistKline: %s", klines.SimpleTimeList())
 
 		byte_data := NewHistKlineJsonMsg(klines)
 		if ws.IsAlive() {
