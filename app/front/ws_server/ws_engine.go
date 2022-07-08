@@ -491,6 +491,9 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 		Count:     count,
 		Frequency: resolution,
 	}
+
+	logx.Slowf("WSEngine: SubKline %s,", req_kline.String())
+
 	w.next_worker.SubKline(req_kline, ws)
 }
 

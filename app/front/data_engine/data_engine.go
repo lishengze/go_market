@@ -550,6 +550,8 @@ func catch_sub_kline_exp(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo
 func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) (string, bool) {
 	defer catch_sub_kline_exp(req_kline_info, ws)
 
+	logx.Slowf("DataEngine SubKline %s,", req_kline_info.String())
+
 	rst := d.GetHistKlineData(req_kline_info)
 
 	if rst != nil {
