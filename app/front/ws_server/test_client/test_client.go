@@ -173,7 +173,7 @@ func write_func(c *websocket.Conn) {
 		return
 	}
 
-	time.Sleep(5)
+	time.Sleep(time.Second * 5)
 
 	send_msg2 := GetTestKlineReqJson(300)
 
