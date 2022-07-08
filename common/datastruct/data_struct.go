@@ -156,7 +156,7 @@ func (r *RspHistKline) TimeList() string {
 }
 
 func (r *RspHistKline) SimpleTimeList() string {
-	rst := HistKlineString(r.Klines)
+	rst := HistKlineSimpleTime(r.Klines)
 	return rst
 }
 
@@ -190,6 +190,23 @@ func HistKlineString(hist_line *treemap.Map) string {
 
 	if iter.Last() {
 		rst = rst + fmt.Sprintf("Last : %s ", iter.Value().(*Kline).String())
+	}
+
+	return rst
+}
+
+func HistKlineSimpleTime(hist_line *treemap.Map) string {
+
+	rst := fmt.Sprintf("HistKline, Size: %d, ", hist_line.Size())
+
+	iter := hist_line.Iterator()
+
+	if iter.First() {
+		rst = rst + fmt.Sprintf("First : %s ", util.TimeStrFromInt(iter.Value().(*Kline).Time))
+	}
+
+	if iter.Last() {
+		rst = rst + fmt.Sprintf("Last : %s ", util.TimeStrFromInt(iter.Value().(*Kline).Time))
 	}
 
 	return rst
