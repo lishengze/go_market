@@ -68,9 +68,9 @@ func GetTestDepthReqJson() []byte {
 func GetTestKlineReqJson() []byte {
 	sub_info := map[string]interface{}{
 		"type":      net.KLINE_SUB,
-		"symbol":    "BTC_USDT",
-		"count":     "2",
-		"frequency": "300",
+		"symbol":    "ETH_USDT",
+		"count":     "1000",
+		"frequency": "900",
 	}
 	rst, err := json.Marshal(sub_info)
 	if err != nil {
