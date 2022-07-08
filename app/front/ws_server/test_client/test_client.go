@@ -70,7 +70,7 @@ func GetTestKlineReqJson() []byte {
 		"type":      net.KLINE_SUB,
 		"symbol":    "BTC_USDT",
 		"count":     "2",
-		"frequency": "900",
+		"frequency": "300",
 	}
 	rst, err := json.Marshal(sub_info)
 	if err != nil {
@@ -92,9 +92,9 @@ func TestGetJsonData() {
 	fmt.Println(string(rst3))
 }
 
-// var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
+var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
 
-var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
+// var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
 
 // var addr = flag.String("addr", "10.10.1.75:8114", "http service address")
 
@@ -162,9 +162,9 @@ func GetHeartbeatMsg() []byte {
 
 func write_func(c *websocket.Conn) {
 
-	send_msg := GetTestTradeReqJson()
+	// send_msg := GetTestTradeReqJson()
 	// send_msg := GetTestDepthReqJson()
-	// send_msg := GetTestKlineReqJson()
+	send_msg := GetTestKlineReqJson()
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {
