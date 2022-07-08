@@ -445,12 +445,12 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 
 	d.UpdateCacheKlinesWithHist(tmp)
 
-	logx.Slowf("OriKlineTime: %s", datastruct.HistKlineTimeList(tmp))
+	logx.Slowf("OriKlineTime: %s", datastruct.HistKlineTimeList(tmp, 3))
 	// fmt.Printf("OriKlineTime: %s \n", datastruct.HistKlineTimeList(tmp))
 
 	trans_kline := d.TrasOriKlineData(req_kline_info, tmp)
 
-	logx.Slowf("TransKlineTime: %s", datastruct.HistKlineTimeList(trans_kline))
+	logx.Slowf("TransKlineTime: %s", datastruct.HistKlineTimeList(trans_kline, 3))
 	// fmt.Printf("TransKlineTime: %s\n", datastruct.HistKlineTimeList(trans_kline))
 
 	return &datastruct.RspHistKline{

@@ -151,7 +151,7 @@ type ChangeInfo struct {
 }
 
 func (r *RspHistKline) TimeList() string {
-	rst := HistKlineTimeList(r.Klines)
+	rst := HistKlineTimeList(r.Klines, 0)
 	return rst
 }
 
@@ -212,14 +212,32 @@ func HistKlineSimpleTime(hist_line *treemap.Map) string {
 	return rst
 }
 
-func HistKlineTimeList(hist_line *treemap.Map) string {
+func HistKlineTimeList(hist_line *treemap.Map, size int) string {
 
 	rst := fmt.Sprintf("Size: %d; \n", hist_line.Size())
 
-	iter := hist_line.Iterator()
+	if size == 0 || size*2 > hist_line.Size() {
+		iter := hist_line.Iterator()
 
-	for iter.Begin(); iter.Next(); {
-		rst = rst + fmt.Sprintf("%s, \n", util.TimeStrFromInt(iter.Value().(*Kline).Time))
+		for iter.Begin(); iter.Next(); {
+			rst = rst + fmt.Sprintf("%s, \n", util.TimeStrFromInt(iter.Value().(*Kline).Time))
+		}
+	} else {
+		first_count := 0
+		iter := hist_line.Iterator()
+
+		rst = rst + fmt.Sprintf("First %d data: \n", size)
+		for iter.Begin(); iter.Next() && first_count < size; {
+			rst = rst + fmt.Sprintf("%s, \n", util.TimeStrFromInt(iter.Value().(*Kline).Time))
+			first_count += 1
+		}
+
+		first_count = 0
+		rst = rst + fmt.Sprintf("Last %d data: \n", size)
+		for iter.End(); iter.Prev() && first_count < size; {
+			rst = rst + fmt.Sprintf("%s, \n", util.TimeStrFromInt(iter.Value().(*Kline).Time))
+			first_count += 1
+		}
 	}
 
 	// if iter.First() {
