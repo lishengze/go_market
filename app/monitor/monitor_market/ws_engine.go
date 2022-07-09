@@ -133,7 +133,7 @@ func (w *WSClient) StartListenData() {
 }
 
 func (w *WSClient) ProcessMsg(message []byte) {
-	defer catch_exp()
+	defer util.CatchExp("WSClient::ProcessMsg")
 
 	var m map[string]interface{}
 	if err := json.Unmarshal([]byte(message), &m); err != nil {
@@ -265,7 +265,7 @@ func (w *WSClient) StartSubData() {
 }
 
 func (w *WSClient) ProcessDepth(m map[string]interface{}) {
-	defer catch_exp()
+	defer util.CatchExp("WSClient::ProcessDepth")
 
 	if value, ok := m["symbol"]; ok {
 		symbol := value.(string)
@@ -283,7 +283,7 @@ func (w *WSClient) ProcessDepth(m map[string]interface{}) {
 }
 
 func (w *WSClient) ProcessTrade(m map[string]interface{}) {
-	defer catch_exp()
+	defer util.CatchExp("WSClient::ProcessTrade")
 
 	if value, ok := m["symbol"]; ok {
 		symbol := value.(string)
@@ -301,7 +301,7 @@ func (w *WSClient) ProcessTrade(m map[string]interface{}) {
 }
 
 func (w *WSClient) ProcessKline(m map[string]interface{}) {
-	defer catch_exp()
+	defer util.CatchExp("WSClient::ProcessKline")
 
 	if value, ok := m["symbol"]; ok {
 		symbol := value.(string)
