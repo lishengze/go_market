@@ -253,7 +253,7 @@ func (w *WSClient) StartSubKline() {
 }
 
 func (w *WSClient) StartSubData() {
-	w.StartSubDepth()
+	// w.StartSubDepth()
 	w.StartSubTrade()
 	w.StartSubKline()
 }
