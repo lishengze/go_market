@@ -38,7 +38,7 @@ func NewMonitorEngineWithOrignalDataChannel(original_data_chan *datastruct.DataC
 		DingClient:   dingtalk,
 
 		MetaInfo:                meta_info,
-		MonitorMarketDataWorker: monitorStruct.NewMonitorMarketData(monitor_config, monitor_chan),
+		MonitorMarketDataWorker: monitorStruct.NewMonitorMarketData(meta_info, monitor_config, monitor_chan),
 	}
 }
 
@@ -58,7 +58,7 @@ func NewMonitorEngineWithMonitorDataChannel(monitor_data_chan chan *monitorStruc
 		DingClient:   dingtalk,
 
 		MetaInfo:                meta_info,
-		MonitorMarketDataWorker: monitorStruct.NewMonitorMarketData(monitor_config, monitor_chan),
+		MonitorMarketDataWorker: monitorStruct.NewMonitorMarketData(meta_info, monitor_config, monitor_chan),
 	}
 }
 

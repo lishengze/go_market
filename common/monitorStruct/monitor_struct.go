@@ -3,6 +3,8 @@ package monitorStruct
 import (
 	"market_server/common/datastruct"
 	"time"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type MonitorChannel struct {
@@ -28,9 +30,11 @@ type MonitorMarketData struct {
 	InitDeadLine int64
 	CheckSecs    int64
 	MonitorChan  *MonitorChannel
+
+	MetaInfo string
 }
 
-func NewMonitorMarketData(config *MonitorConfig, monitor_channel *MonitorChannel) *MonitorMarketData {
+func NewMonitorMarketData(meta_info string, config *MonitorConfig, monitor_channel *MonitorChannel) *MonitorMarketData {
 	return &MonitorMarketData{
 		depth_cache_map: make(map[string]*MonitorAtom),
 		trade_cache_map: make(map[string]*MonitorAtom),
@@ -39,6 +43,7 @@ func NewMonitorMarketData(config *MonitorConfig, monitor_channel *MonitorChannel
 		InitDeadLine:    config.InitDeadLine,
 		CheckSecs:       config.CheckSecs,
 		MonitorChan:     monitor_channel,
+		MetaInfo:        meta_info,
 	}
 }
 
@@ -79,6 +84,7 @@ func (m *MonitorMarketData) UpdateDepth(symbol string) {
 	}
 
 	m.depth_cache_map[symbol].Update()
+	logx.Slowf("Depth update info: %s", m.depth_cache_map[symbol].String())
 }
 
 func (m *MonitorMarketData) UpdateTrade(symbol string) {
@@ -87,6 +93,8 @@ func (m *MonitorMarketData) UpdateTrade(symbol string) {
 	}
 
 	m.trade_cache_map[symbol].Update()
+
+	logx.Slowf("Trade update info: %s", m.depth_cache_map[symbol].String())
 }
 
 func (m *MonitorMarketData) UpdateKline(symbol string) {
@@ -95,4 +103,6 @@ func (m *MonitorMarketData) UpdateKline(symbol string) {
 	}
 
 	m.kline_cache_map[symbol].Update()
+
+	logx.Slowf("Kline update info: %s", m.depth_cache_map[symbol].String())
 }
