@@ -35,6 +35,7 @@ type MonitorAtom struct {
 
 	Symbol   string
 	DataType string
+	MetaInfo string
 
 	InvalidInfo string
 
@@ -49,13 +50,14 @@ func (m *MonitorAtom) String() string {
 		m.ave_time/datastruct.NANO_PER_MILL)
 }
 
-func NewMonitorAtom(symbol string, DataType string, rate_param float64, init_dead_line int64) *MonitorAtom {
+func NewMonitorAtom(symbol string, DataType string, meta_info string, rate_param float64, init_dead_line int64) *MonitorAtom {
 	return &MonitorAtom{
 		RateParam:    rate_param,
 		InitDeadLine: init_dead_line * datastruct.NANO_PER_SECS,
 
 		Symbol:   symbol,
 		DataType: DataType,
+		MetaInfo: meta_info,
 
 		data_count:       0,
 		first_time:       0,
@@ -82,7 +84,7 @@ func (m *MonitorAtom) Update() {
 	}
 
 	delta_time := cur_time - m.last_update_time
-	logx.Slowf("cur_time: %s, last_update_time:%s, delta_time: %d ",
+	logx.Slowf("%s, %s, cur_time: %s, last_update_time:%s, delta_time: %d ", m.MetaInfo, m.Symbol,
 		util.TimeStrFromInt(cur_time), util.TimeStrFromInt(m.last_update_time), delta_time)
 
 	m.last_update_time = cur_time
