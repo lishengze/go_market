@@ -39,6 +39,7 @@ func NewWSClient(config *WSConfig, symbol_list []string, monitor_channel chan *m
 }
 
 func (w *WSClient) Start() {
+	logx.Info("------- WSClient Start -------")
 	err := w.InitClient()
 
 	if err != nil {
