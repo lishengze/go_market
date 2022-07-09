@@ -136,7 +136,7 @@ func (k *MonitorEngine) process_depth(symbol string) error {
 
 	defer util.CatchExp("MonitorEngine::process_depth")
 
-	logx.Slowf("%s Update depth %s", k.MetaInfo, symbol)
+	// logx.Slowf("%s Update depth %s", k.MetaInfo, symbol)
 
 	k.MonitorMarketDataWorker.UpdateDepth(symbol)
 
@@ -146,7 +146,7 @@ func (k *MonitorEngine) process_depth(symbol string) error {
 func (k *MonitorEngine) process_kline(symbol string) error {
 	defer util.CatchExp("MonitorEngine::process_kline")
 
-	logx.Slowf("%s Update kline %s", k.MetaInfo, symbol)
+	// logx.Slowf("%s Update kline %s", k.MetaInfo, symbol)
 
 	k.MonitorMarketDataWorker.UpdateKline(symbol)
 
@@ -156,7 +156,7 @@ func (k *MonitorEngine) process_kline(symbol string) error {
 func (k *MonitorEngine) process_trade(symbol string) error {
 	defer util.CatchExp("MonitorEngine::process_trade")
 
-	logx.Slowf("%s Update Trade %s", k.MetaInfo, symbol)
+	// logx.Slowf("%s Update Trade %s", k.MetaInfo, symbol)
 
 	k.MonitorMarketDataWorker.UpdateTrade(symbol)
 

@@ -5,6 +5,8 @@ import (
 	"market_server/common/datastruct"
 	"market_server/common/util"
 	"sync"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type MonitorData struct {
@@ -75,6 +77,9 @@ func (m *MonitorAtom) Update() {
 	}
 
 	delta_time := cur_time - m.last_update_time
+	logx.Slowf("cur_time: %s, last_update_time:%s, delta_time: %d ",
+		util.TimeStrFromInt(cur_time), util.TimeStrFromInt(m.last_update_time), delta_time)
+
 	m.last_update_time = cur_time
 
 	m.sum_time += delta_time
