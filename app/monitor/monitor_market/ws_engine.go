@@ -2,7 +2,6 @@ package monitor_market
 
 import (
 	"encoding/json"
-	"log"
 	"market_server/app/front/net"
 	"market_server/common/datastruct"
 	"market_server/common/monitorStruct"
@@ -92,7 +91,7 @@ func (w *WSClient) InitClient() error {
 	signal.Notify(interrupt, os.Interrupt)
 
 	u := url.URL{Scheme: "ws", Host: w.Config.Address, Path: w.Config.Url}
-	log.Printf("connecting to %s", u.String())
+	logx.Infof("connecting to %s", u.String())
 
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 
@@ -124,10 +123,10 @@ func (w *WSClient) StartListenData() {
 	for {
 		_, message, err := w.Client.ReadMessage()
 		if err != nil {
-			log.Println("read:", err)
+			logx.Infof("Read Err: %+v", err)
 			return
 		}
-		log.Printf("recv: %s", message)
+		logx.Infof("recv: %s", message)
 
 		var m map[string]interface{}
 		if err := json.Unmarshal([]byte(message), &m); err != nil {
