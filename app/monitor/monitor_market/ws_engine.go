@@ -128,26 +128,32 @@ func (w *WSClient) StartListenData() {
 		}
 		logx.Infof("WSClient Msg: %s", message)
 
-		var m map[string]interface{}
-		if err := json.Unmarshal([]byte(message), &m); err != nil {
-			logx.Errorf("Error = %+v", err)
-			return
-		}
+		go w.ProcessMsg(message)
+	}
+}
 
-		if _, ok := m["type"]; !ok {
-			logx.Errorf("Msg Error, ori msg: %+v", string(message))
-			return
-		}
+func (w *WSClient) ProcessMsg(message []byte) {
+	defer catch_exp()
 
-		if m["type"] == net.HEARTBEAT {
-			w.ProcessHeartbeat()
-		} else if m["type"] == net.DEPTH_UPDATE {
-			w.ProcessDepth(m)
-		} else if m["type"] == net.TRADE_UPATE {
-			w.ProcessTrade(m)
-		} else if m["type"] == net.KLINE_UPATE {
-			w.ProcessKline(m)
-		}
+	var m map[string]interface{}
+	if err := json.Unmarshal([]byte(message), &m); err != nil {
+		logx.Errorf("Error = %+v", err)
+		return
+	}
+
+	if _, ok := m["type"]; !ok {
+		logx.Errorf("Msg Error, ori msg: %+v", string(message))
+		return
+	}
+
+	if m["type"] == net.HEARTBEAT {
+		w.ProcessHeartbeat()
+	} else if m["type"] == net.DEPTH_UPDATE {
+		w.ProcessDepth(m)
+	} else if m["type"] == net.TRADE_UPATE {
+		w.ProcessTrade(m)
+	} else if m["type"] == net.KLINE_UPATE {
+		w.ProcessKline(m)
 	}
 }
 
