@@ -143,7 +143,7 @@ func (k *MonitorEngine) process_depth(symbol string) error {
 func (k *MonitorEngine) process_kline(symbol string) error {
 	defer catch_exp()
 
-	logx.Slowf("%s Update depth %s", k.MetaInfo, symbol)
+	logx.Slowf("%s Update kline %s", k.MetaInfo, symbol)
 
 	k.MonitorMarketDataWorker.UpdateKline(symbol)
 
