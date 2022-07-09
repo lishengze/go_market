@@ -131,13 +131,14 @@ func (m *MonitorAtom) IsAlive() bool {
 	cur_time := util.UTCNanoTime()
 	delta_time := cur_time - m.last_update_time
 
-	m.InvalidInfo = fmt.Sprintf("%s.%s, f:%s, l:%s, max: %dms, ave: %d ms;\ndelta: %d, time_limit: %d",
+	m.InvalidInfo = fmt.Sprintf("%s.%s, f:%s, l:%s, max: %dms, ave: %d ms;\ndelta: %dms, time_limit: %dms",
 		m.DataType, m.Symbol,
 		util.TimeStrFromInt(m.first_time),
 		util.TimeStrFromInt(m.last_update_time),
 		m.max_time/datastruct.NANO_PER_MILL,
 		m.ave_time/datastruct.NANO_PER_MILL,
-		delta_time, m.TimeLimit())
+		delta_time/datastruct.NANO_PER_MILL,
+		m.TimeLimit()/datastruct.NANO_PER_MILL)
 
 	if delta_time > m.TimeLimit() {
 		return false
