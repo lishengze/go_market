@@ -2,6 +2,7 @@ package monitorStruct
 
 import (
 	"market_server/common/datastruct"
+	"market_server/common/util"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -79,6 +80,8 @@ func (m *MonitorMarketData) CheckAll() {
 }
 
 func (m *MonitorMarketData) UpdateDepth(symbol string) {
+
+	defer util.CatchExp("MonitorMarketData::UpdateDepth")
 	if _, ok := m.depth_cache_map[symbol]; !ok {
 		m.depth_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.DEPTH_TYPE, m.RateParam, int64(m.InitDeadLine))
 	}
@@ -88,6 +91,8 @@ func (m *MonitorMarketData) UpdateDepth(symbol string) {
 }
 
 func (m *MonitorMarketData) UpdateTrade(symbol string) {
+	defer util.CatchExp("MonitorMarketData::UpdateTrade")
+
 	if _, ok := m.trade_cache_map[symbol]; !ok {
 		m.trade_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.TRADE_TYPE, m.RateParam, int64(m.InitDeadLine))
 	}
@@ -98,6 +103,8 @@ func (m *MonitorMarketData) UpdateTrade(symbol string) {
 }
 
 func (m *MonitorMarketData) UpdateKline(symbol string) {
+	defer util.CatchExp("MonitorMarketData::UpdateKline")
+
 	if _, ok := m.kline_cache_map[symbol]; !ok {
 		m.kline_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.KLINE_TYPE, m.RateParam, int64(m.InitDeadLine))
 	}
