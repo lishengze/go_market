@@ -64,7 +64,7 @@ func NewKafka(serializer datastruct.SerializerI,
 		PubDataChan:    pub_data_chan,
 		config:         config,
 		consume_topics: make(map[string]struct{}),
-		statistic_secs: 10,
+		statistic_secs: 15,
 		ConsumeSet:     make(map[string](*ConsumeItem)),
 		created_topics: make(map[string]struct{}),
 	}

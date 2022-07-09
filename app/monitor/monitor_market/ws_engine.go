@@ -33,7 +33,7 @@ func NewWSClient(config *WSConfig, symbol_list []string, monitor_channel chan *m
 		Client:         nil,
 		SymbolList:     symbol_list,
 		MonitorChan:    monitor_channel,
-		statistic_secs: 15,
+		statistic_secs: 22,
 	}
 }
 
@@ -126,7 +126,7 @@ func (w *WSClient) StartListenData() {
 			logx.Infof("Read Err: %+v", err)
 			return
 		}
-		logx.Infof("WSClient Msg: %s", message)
+		// logx.Infof("WSClient Msg: %s", message)
 
 		go w.ProcessMsg(message)
 	}

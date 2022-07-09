@@ -62,4 +62,6 @@ func (s *ServerEngine) StartCommer() {
 func (s *ServerEngine) Start() {
 	go s.StartCommer()
 	go s.WSClientWorker.Start()
+	go s.KafkaMonitor.Start()
+	go s.WSMonotr.Start()
 }
