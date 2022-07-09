@@ -76,6 +76,11 @@ func (m *MonitorAtom) Update() {
 		m.first_time = cur_time
 	}
 
+	if m.last_update_time == 0 {
+		m.last_update_time = cur_time
+		return
+	}
+
 	delta_time := cur_time - m.last_update_time
 	logx.Slowf("cur_time: %s, last_update_time:%s, delta_time: %d ",
 		util.TimeStrFromInt(cur_time), util.TimeStrFromInt(m.last_update_time), delta_time)
