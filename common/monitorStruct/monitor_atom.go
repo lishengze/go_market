@@ -5,8 +5,6 @@ import (
 	"market_server/common/datastruct"
 	"market_server/common/util"
 	"sync"
-
-	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type MonitorData struct {
@@ -29,6 +27,7 @@ type MonitorAtom struct {
 	sum_time int64
 	max_time int64
 	ave_time int64
+	lst_time int64
 
 	RateParam    float64
 	InitDeadLine int64
@@ -43,11 +42,12 @@ type MonitorAtom struct {
 }
 
 func (m *MonitorAtom) String() string {
-	return fmt.Sprintf("f:%s, l:%s, max: %dms, ave: %d ms",
+	return fmt.Sprintf("f:%s, l:%s, lst: %dus, max: %dus, ave: %d us",
 		util.TimeStrFromInt(m.first_time),
 		util.TimeStrFromInt(m.last_update_time),
-		m.max_time/datastruct.NANO_PER_MILL,
-		m.ave_time/datastruct.NANO_PER_MILL)
+		m.lst_time/datastruct.NANO_PER_MICR,
+		m.max_time/datastruct.NANO_PER_MICR,
+		m.ave_time/datastruct.NANO_PER_MICR)
 }
 
 func NewMonitorAtom(symbol string, DataType string, meta_info string, rate_param float64, init_dead_line int64) *MonitorAtom {
@@ -65,6 +65,7 @@ func NewMonitorAtom(symbol string, DataType string, meta_info string, rate_param
 		sum_time:         0,
 		max_time:         0,
 		ave_time:         0,
+		lst_time:         0,
 	}
 }
 
@@ -84,10 +85,12 @@ func (m *MonitorAtom) Update() {
 	}
 
 	delta_time := cur_time - m.last_update_time
-	logx.Slowf("%s, %s, cur_time: %s, last_update_time:%s, delta_time: %d ", m.MetaInfo, m.Symbol,
-		util.TimeStrFromInt(cur_time), util.TimeStrFromInt(m.last_update_time), delta_time)
+	// logx.Slowf("%s, %s, cur_time: %s, last_update_time:%s, delta_time: %d ", m.MetaInfo, m.Symbol,
+	// 	util.TimeStrFromInt(cur_time), util.TimeStrFromInt(m.last_update_time), delta_time)
 
 	m.last_update_time = cur_time
+
+	m.lst_time = delta_time
 
 	m.sum_time += delta_time
 	m.data_count++
