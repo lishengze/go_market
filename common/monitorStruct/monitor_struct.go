@@ -84,7 +84,7 @@ func (m *MonitorMarketData) UpdateDepth(symbol string) {
 	}
 
 	m.depth_cache_map[symbol].Update()
-	logx.Slowf("Depth update info: %s", m.depth_cache_map[symbol].String())
+	logx.Slowf("%s Depth update info: %s", m.MetaInfo, m.depth_cache_map[symbol].String())
 }
 
 func (m *MonitorMarketData) UpdateTrade(symbol string) {
@@ -94,7 +94,7 @@ func (m *MonitorMarketData) UpdateTrade(symbol string) {
 
 	m.trade_cache_map[symbol].Update()
 
-	logx.Slowf("Trade update info: %s", m.depth_cache_map[symbol].String())
+	logx.Slowf("%s Trade update info: %s", m.MetaInfo, m.depth_cache_map[symbol].String())
 }
 
 func (m *MonitorMarketData) UpdateKline(symbol string) {
@@ -104,5 +104,5 @@ func (m *MonitorMarketData) UpdateKline(symbol string) {
 
 	m.kline_cache_map[symbol].Update()
 
-	logx.Slowf("Kline update info: %s", m.depth_cache_map[symbol].String())
+	logx.Slowf("%s Kline update info: %s", m.MetaInfo, m.depth_cache_map[symbol].String())
 }

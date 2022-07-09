@@ -273,7 +273,7 @@ func (w *WSClient) ProcessDepth(m map[string]interface{}) {
 		msg := datastruct.BCTS_EXCHANGE + "_" + symbol
 		w.UpdateRecvInfo(msg)
 
-		logx.Slowf("WS depth: %s", msg)
+		// logx.Slowf("WS depth: %s", msg)
 
 		w.MonitorChan <- &monitorStruct.MonitorData{
 			Symbol:   msg,
@@ -291,7 +291,7 @@ func (w *WSClient) ProcessTrade(m map[string]interface{}) {
 		msg := datastruct.BCTS_EXCHANGE + "_" + symbol
 		w.UpdateRecvInfo(msg)
 
-		logx.Slowf("WS trade: %s", msg)
+		// logx.Slowf("WS trade: %s", msg)
 
 		w.MonitorChan <- &monitorStruct.MonitorData{
 			Symbol:   msg,
@@ -309,7 +309,7 @@ func (w *WSClient) ProcessKline(m map[string]interface{}) {
 		msg := datastruct.BCTS_EXCHANGE + "_" + symbol
 		w.UpdateRecvInfo(msg)
 
-		logx.Slowf("WS kline: %s", msg)
+		// logx.Slowf("WS kline: %s", msg)
 
 		w.MonitorChan <- &monitorStruct.MonitorData{
 			Symbol:   msg,
