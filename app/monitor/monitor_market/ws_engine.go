@@ -53,7 +53,7 @@ func (w *WSClient) Start() {
 }
 
 func (k *WSClient) StatisticTimeTaskMain() {
-	logx.Info("---- StatisticTimeTask Start!")
+	logx.Info("---- WSClient StatisticTimeTask Start!")
 	duration := time.Duration((time.Duration)(k.statistic_secs) * time.Second)
 	timer := time.Tick(duration)
 
@@ -77,13 +77,13 @@ func (k *WSClient) OutputRcvInfo(key, value interface{}) bool {
 
 func (k *WSClient) UpdateStatisticInfo() {
 
-	logx.Statf("Websocket Statistic Start: %+v \n", k.statistic_start)
+	logx.Statf("Websocket Statistic Start: %+v \n", util.TimeToSecString(k.statistic_start))
 
 	k.rcv_statistic_info.Range(k.OutputRcvInfo)
 
 	k.statistic_start = time.Now()
 
-	logx.Statf("Websocket Statistic End: %+v \n", k.statistic_start)
+	logx.Statf("Websocket Statistic End: %+v \n", util.TimeToSecString(k.statistic_start))
 }
 
 func (w *WSClient) InitClient() error {
@@ -126,7 +126,7 @@ func (w *WSClient) StartListenData() {
 			logx.Infof("Read Err: %+v", err)
 			return
 		}
-		logx.Infof("recv: %s", message)
+		logx.Infof("WSClient Msg: %s", message)
 
 		var m map[string]interface{}
 		if err := json.Unmarshal([]byte(message), &m); err != nil {
@@ -179,7 +179,7 @@ func GetTestTradeReqJson(symbol_list []string) []byte {
 		logx.Errorf("GetTestTradeReqJson: %+v \n", err)
 		return nil
 	} else {
-		logx.Infof("SubJson: %s", string(rst))
+		// logx.Infof("SubJson: %s", string(rst))
 		return rst
 	}
 }
@@ -195,7 +195,7 @@ func GetTestDepthReqJson(symbol_list []string) []byte {
 		logx.Errorf("GetTestDepthReqJson: %+v \n", err)
 		return nil
 	} else {
-		logx.Infof("SubJson: %s", string(rst))
+		// logx.Infof("SubJson: %s", string(rst))
 		return rst
 	}
 }
@@ -212,7 +212,7 @@ func GetTestKlineReqJson(symbol string) []byte {
 		logx.Errorf("GetTestKlineReqJson: %+v \n", err)
 		return nil
 	} else {
-		logx.Infof("SubJson: %s", string(rst))
+		// logx.Infof("SubJson: %s", string(rst))
 		return rst
 	}
 }

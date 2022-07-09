@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"market_server/common/config"
 	"market_server/common/datastruct"
+	"market_server/common/util"
 	"sync"
 	"time"
 
@@ -74,7 +75,7 @@ func NewKafka(serializer datastruct.SerializerI,
 }
 
 func (k *KafkaServer) StatisticTimeTaskMain() {
-	logx.Info("---- StatisticTimeTask Start!")
+	logx.Info("---- Kafka StatisticTimeTask Start! -----")
 	duration := time.Duration((time.Duration)(k.statistic_secs) * time.Second)
 	timer := time.Tick(duration)
 
@@ -106,7 +107,7 @@ func (k *KafkaServer) OutputPubInfo(key, value interface{}) bool {
 
 func (k *KafkaServer) UpdateStatisticInfo() {
 
-	logx.Statf("kafka Statistic Start: %+v \n", k.statistic_start)
+	logx.Statf("kafka Statistic Start: %s \n", util.TimeToSecString(k.statistic_start))
 
 	k.rcv_statistic_info.Range(k.OutputRcvInfo)
 
@@ -114,7 +115,7 @@ func (k *KafkaServer) UpdateStatisticInfo() {
 
 	k.statistic_start = time.Now()
 
-	logx.Statf("kafka Statistic End: %+v \n", k.statistic_start)
+	logx.Statf("kafka Statistic End: %s \n", util.TimeToSecString(k.statistic_start))
 }
 
 func (k *KafkaServer) CreatedTopics() map[string]struct{} {
