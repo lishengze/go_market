@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -65,12 +66,12 @@ func GetTestDepthReqJson() []byte {
 	}
 }
 
-func GetTestKlineReqJson() []byte {
+func GetTestKlineReqJson(frequency int) []byte {
 	sub_info := map[string]interface{}{
 		"type":      net.KLINE_SUB,
-		"symbol":    "BTC_USDT",
-		"count":     "2",
-		"frequency": "900",
+		"symbol":    "ETH_USDT",
+		"count":     "1000",
+		"frequency": fmt.Sprintf("%d", frequency),
 	}
 	rst, err := json.Marshal(sub_info)
 	if err != nil {
@@ -85,16 +86,16 @@ func GetTestKlineReqJson() []byte {
 func TestGetJsonData() {
 	rst1 := GetTestTradeReqJson()
 	rst2 := GetTestDepthReqJson()
-	rst3 := GetTestKlineReqJson()
+	rst3 := GetTestKlineReqJson(600)
 
 	fmt.Println(string(rst1))
 	fmt.Println(string(rst2))
 	fmt.Println(string(rst3))
 }
 
-// var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
+var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
 
-var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
+// var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
 
 // var addr = flag.String("addr", "10.10.1.75:8114", "http service address")
 
@@ -162,11 +163,21 @@ func GetHeartbeatMsg() []byte {
 
 func write_func(c *websocket.Conn) {
 
-	send_msg := GetTestTradeReqJson()
+	// send_msg := GetTestTradeReqJson()
 	// send_msg := GetTestDepthReqJson()
-	// send_msg := GetTestKlineReqJson()
+	send_msg := GetTestKlineReqJson(60)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
+	if err != nil {
+		log.Println("write:", err)
+		return
+	}
+
+	time.Sleep(time.Second * 5)
+
+	send_msg2 := GetTestKlineReqJson(300)
+
+	err = c.WriteMessage(websocket.TextMessage, send_msg2)
 	if err != nil {
 		log.Println("write:", err)
 		return

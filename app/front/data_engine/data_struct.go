@@ -323,9 +323,9 @@ func (p *PeriodData) UpdateMeta() {
 
 	p.Count = p.time_cache_data.Size()
 
-	if p.Symbol == "BTC_USDT" {
-		logx.Slowf("[Meta] Period %s", p.String())
-	}
+	// if p.Symbol == "BTC_USDT" {
+	// 	logx.Slowf("[Meta] Period %s", p.String())
+	// }
 
 }
 

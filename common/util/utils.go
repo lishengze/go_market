@@ -26,6 +26,14 @@ func ExceptionFunc() {
 	}
 }
 
+func CatchExp(func_name string) {
+	errMsg := recover()
+	if errMsg != nil {
+		logx.Errorf("%s errMsg: %+v \n", func_name, errMsg)
+		logx.Infof("%s errMsg: %+v \n", func_name, errMsg)
+	}
+}
+
 func CurrTimeString() string {
 	return TimeToSecString(time.Now())
 }

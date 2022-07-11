@@ -159,7 +159,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastr
 		// logx.Info("After GetTradePubInfoList")
 
 		for _, info := range trade_pub_list {
-			logx.Slowf("trade_pub_info: %s \n", info.String())
+			// logx.Slowf("trade_pub_info: %s \n", info.String())
 			if info.ws_info.IsAlive() {
 				err := info.ws_info.SendMsg(websocket.TextMessage, info.data)
 				if err != nil {
@@ -193,7 +193,7 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 
 		if ws.IsAlive() {
 
-			logx.Infof("[PubKline]: %s", kline.String())
+			logx.Slowf("[PubKline]: %s", kline.String())
 			byte_data := NewKlineUpdateJsonMsg(kline)
 			err := ws.SendMsg(websocket.TextMessage, byte_data)
 
@@ -214,7 +214,7 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 					Frequency: uint32(info.Resolution),
 				}
 
-				// logx.Infof("kline_pub_info: %s \n", info.String())
+				logx.Slowf("kline_pub_info: %s \n", info.String())
 				if info.ws_info.IsAlive() {
 					err := info.ws_info.SendMsg(1, info.data)
 					if err != nil {
@@ -245,7 +245,7 @@ func (f *FrontEngine) PublishHistKline(klines *datastruct.RspHistKline, ws *net.
 	f.sub_data.ProcessKlineHistData(klines)
 
 	if ws != nil {
-		logx.Infof("PublishHistKline: %s", klines.SimpleTimeList())
+		logx.Slowf("PublishHistKline: %s", klines.SimpleTimeList())
 
 		byte_data := NewHistKlineJsonMsg(klines)
 		if ws.IsAlive() {

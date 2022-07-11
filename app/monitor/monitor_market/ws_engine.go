@@ -2,7 +2,6 @@ package monitor_market
 
 import (
 	"encoding/json"
-	"log"
 	"market_server/app/front/net"
 	"market_server/common/datastruct"
 	"market_server/common/monitorStruct"
@@ -34,11 +33,12 @@ func NewWSClient(config *WSConfig, symbol_list []string, monitor_channel chan *m
 		Client:         nil,
 		SymbolList:     symbol_list,
 		MonitorChan:    monitor_channel,
-		statistic_secs: 15,
+		statistic_secs: 22,
 	}
 }
 
 func (w *WSClient) Start() {
+	logx.Info("------- WSClient Start -------")
 	err := w.InitClient()
 
 	if err != nil {
@@ -53,7 +53,7 @@ func (w *WSClient) Start() {
 }
 
 func (k *WSClient) StatisticTimeTaskMain() {
-	logx.Info("---- StatisticTimeTask Start!")
+	logx.Info("---- WSClient StatisticTimeTask Start!")
 	duration := time.Duration((time.Duration)(k.statistic_secs) * time.Second)
 	timer := time.Tick(duration)
 
@@ -77,13 +77,13 @@ func (k *WSClient) OutputRcvInfo(key, value interface{}) bool {
 
 func (k *WSClient) UpdateStatisticInfo() {
 
-	logx.Statf("Websocket Statistic Start: %+v \n", k.statistic_start)
+	logx.Statf("Websocket Statistic Start: %+v \n", util.TimeToSecString(k.statistic_start))
 
 	k.rcv_statistic_info.Range(k.OutputRcvInfo)
 
 	k.statistic_start = time.Now()
 
-	logx.Statf("Websocket Statistic End: %+v \n", k.statistic_start)
+	logx.Statf("Websocket Statistic End: %+v \n", util.TimeToSecString(k.statistic_start))
 }
 
 func (w *WSClient) InitClient() error {
@@ -91,7 +91,7 @@ func (w *WSClient) InitClient() error {
 	signal.Notify(interrupt, os.Interrupt)
 
 	u := url.URL{Scheme: "ws", Host: w.Config.Address, Path: w.Config.Url}
-	log.Printf("connecting to %s", u.String())
+	logx.Infof("connecting to %s", u.String())
 
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 
@@ -123,31 +123,37 @@ func (w *WSClient) StartListenData() {
 	for {
 		_, message, err := w.Client.ReadMessage()
 		if err != nil {
-			log.Println("read:", err)
+			logx.Infof("Read Err: %+v", err)
 			return
 		}
-		log.Printf("recv: %s", message)
+		// logx.Infof("WSClient Msg: %s", message)
 
-		var m map[string]interface{}
-		if err := json.Unmarshal([]byte(message), &m); err != nil {
-			logx.Errorf("Error = %+v", err)
-			return
-		}
+		go w.ProcessMsg(message)
+	}
+}
 
-		if _, ok := m["type"]; !ok {
-			logx.Errorf("Msg Error, ori msg: %+v", string(message))
-			return
-		}
+func (w *WSClient) ProcessMsg(message []byte) {
+	defer util.CatchExp("WSClient::ProcessMsg")
 
-		if m["type"] == net.HEARTBEAT {
-			w.ProcessHeartbeat()
-		} else if m["type"] == net.DEPTH_UPDATE {
-			w.ProcessDepth(m)
-		} else if m["type"] == net.TRADE_UPATE {
-			w.ProcessTrade(m)
-		} else if m["type"] == net.KLINE_UPATE {
-			w.ProcessKline(m)
-		}
+	var m map[string]interface{}
+	if err := json.Unmarshal([]byte(message), &m); err != nil {
+		logx.Errorf("Error = %+v", err)
+		return
+	}
+
+	if _, ok := m["type"]; !ok {
+		logx.Errorf("Msg Error, ori msg: %+v", string(message))
+		return
+	}
+
+	if m["type"] == net.HEARTBEAT {
+		w.ProcessHeartbeat()
+	} else if m["type"] == net.DEPTH_UPDATE {
+		w.ProcessDepth(m)
+	} else if m["type"] == net.TRADE_UPATE {
+		w.ProcessTrade(m)
+	} else if m["type"] == net.KLINE_UPATE {
+		w.ProcessKline(m)
 	}
 }
 
@@ -179,7 +185,7 @@ func GetTestTradeReqJson(symbol_list []string) []byte {
 		logx.Errorf("GetTestTradeReqJson: %+v \n", err)
 		return nil
 	} else {
-		logx.Infof("SubJson: %s", string(rst))
+		// logx.Infof("SubJson: %s", string(rst))
 		return rst
 	}
 }
@@ -195,7 +201,7 @@ func GetTestDepthReqJson(symbol_list []string) []byte {
 		logx.Errorf("GetTestDepthReqJson: %+v \n", err)
 		return nil
 	} else {
-		logx.Infof("SubJson: %s", string(rst))
+		// logx.Infof("SubJson: %s", string(rst))
 		return rst
 	}
 }
@@ -212,7 +218,7 @@ func GetTestKlineReqJson(symbol string) []byte {
 		logx.Errorf("GetTestKlineReqJson: %+v \n", err)
 		return nil
 	} else {
-		logx.Infof("SubJson: %s", string(rst))
+		// logx.Infof("SubJson: %s", string(rst))
 		return rst
 	}
 }
@@ -253,13 +259,13 @@ func (w *WSClient) StartSubKline() {
 }
 
 func (w *WSClient) StartSubData() {
-	w.StartSubDepth()
+	// w.StartSubDepth()
 	w.StartSubTrade()
 	w.StartSubKline()
 }
 
 func (w *WSClient) ProcessDepth(m map[string]interface{}) {
-	defer catch_exp()
+	defer util.CatchExp("WSClient::ProcessDepth")
 
 	if value, ok := m["symbol"]; ok {
 		symbol := value.(string)
@@ -267,7 +273,7 @@ func (w *WSClient) ProcessDepth(m map[string]interface{}) {
 		msg := datastruct.BCTS_EXCHANGE + "_" + symbol
 		w.UpdateRecvInfo(msg)
 
-		logx.Infof("WS depth: %s", msg)
+		// logx.Slowf("WS depth: %s", msg)
 
 		w.MonitorChan <- &monitorStruct.MonitorData{
 			Symbol:   msg,
@@ -277,7 +283,7 @@ func (w *WSClient) ProcessDepth(m map[string]interface{}) {
 }
 
 func (w *WSClient) ProcessTrade(m map[string]interface{}) {
-	defer catch_exp()
+	defer util.CatchExp("WSClient::ProcessTrade")
 
 	if value, ok := m["symbol"]; ok {
 		symbol := value.(string)
@@ -285,7 +291,7 @@ func (w *WSClient) ProcessTrade(m map[string]interface{}) {
 		msg := datastruct.BCTS_EXCHANGE + "_" + symbol
 		w.UpdateRecvInfo(msg)
 
-		logx.Infof("WS trade: %s", msg)
+		// logx.Slowf("WS trade: %s", msg)
 
 		w.MonitorChan <- &monitorStruct.MonitorData{
 			Symbol:   msg,
@@ -295,7 +301,7 @@ func (w *WSClient) ProcessTrade(m map[string]interface{}) {
 }
 
 func (w *WSClient) ProcessKline(m map[string]interface{}) {
-	defer catch_exp()
+	defer util.CatchExp("WSClient::ProcessKline")
 
 	if value, ok := m["symbol"]; ok {
 		symbol := value.(string)
@@ -303,7 +309,7 @@ func (w *WSClient) ProcessKline(m map[string]interface{}) {
 		msg := datastruct.BCTS_EXCHANGE + "_" + symbol
 		w.UpdateRecvInfo(msg)
 
-		logx.Infof("WS kline: %s", msg)
+		// logx.Slowf("WS kline: %s", msg)
 
 		w.MonitorChan <- &monitorStruct.MonitorData{
 			Symbol:   msg,

@@ -2,7 +2,10 @@ package monitorStruct
 
 import (
 	"market_server/common/datastruct"
+	"market_server/common/util"
 	"time"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type MonitorChannel struct {
@@ -28,9 +31,11 @@ type MonitorMarketData struct {
 	InitDeadLine int64
 	CheckSecs    int64
 	MonitorChan  *MonitorChannel
+
+	MetaInfo string
 }
 
-func NewMonitorMarketData(config *MonitorConfig, monitor_channel *MonitorChannel) *MonitorMarketData {
+func NewMonitorMarketData(meta_info string, config *MonitorConfig, monitor_channel *MonitorChannel) *MonitorMarketData {
 	return &MonitorMarketData{
 		depth_cache_map: make(map[string]*MonitorAtom),
 		trade_cache_map: make(map[string]*MonitorAtom),
@@ -39,6 +44,7 @@ func NewMonitorMarketData(config *MonitorConfig, monitor_channel *MonitorChannel
 		InitDeadLine:    config.InitDeadLine,
 		CheckSecs:       config.CheckSecs,
 		MonitorChan:     monitor_channel,
+		MetaInfo:        meta_info,
 	}
 }
 
@@ -74,25 +80,36 @@ func (m *MonitorMarketData) CheckAll() {
 }
 
 func (m *MonitorMarketData) UpdateDepth(symbol string) {
+
+	defer util.CatchExp("MonitorMarketData::UpdateDepth")
 	if _, ok := m.depth_cache_map[symbol]; !ok {
-		m.depth_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.DEPTH_TYPE, m.RateParam, int64(m.InitDeadLine))
+		m.depth_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.DEPTH_TYPE, m.MetaInfo, m.RateParam, int64(m.InitDeadLine))
 	}
 
 	m.depth_cache_map[symbol].Update()
+	logx.Slowf("%s,%s Depth update info: %s", m.MetaInfo, m.depth_cache_map[symbol].String())
 }
 
 func (m *MonitorMarketData) UpdateTrade(symbol string) {
+	defer util.CatchExp("MonitorMarketData::UpdateTrade")
+
 	if _, ok := m.trade_cache_map[symbol]; !ok {
-		m.trade_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.TRADE_TYPE, m.RateParam, int64(m.InitDeadLine))
+		m.trade_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.TRADE_TYPE, m.MetaInfo, m.RateParam, int64(m.InitDeadLine))
 	}
 
 	m.trade_cache_map[symbol].Update()
+
+	logx.Slowf("%s Trade update info: %s", m.MetaInfo, m.trade_cache_map[symbol].String())
 }
 
 func (m *MonitorMarketData) UpdateKline(symbol string) {
+	defer util.CatchExp("MonitorMarketData::UpdateKline")
+
 	if _, ok := m.kline_cache_map[symbol]; !ok {
-		m.kline_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.KLINE_TYPE, m.RateParam, int64(m.InitDeadLine))
+		m.kline_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.KLINE_TYPE, m.MetaInfo, m.RateParam, int64(m.InitDeadLine))
 	}
 
 	m.kline_cache_map[symbol].Update()
+
+	logx.Slowf("%s Kline update info: %s", m.MetaInfo, m.kline_cache_map[symbol].String())
 }

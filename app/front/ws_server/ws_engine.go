@@ -122,13 +122,13 @@ func (w *WSEngine) ChecktHeartbeat() {
 		}
 	}(w)
 
-	logx.Infof("ChecktHeartbeat, WSConSet.Size: %d", len(w.WSConSet))
+	// logx.Infof("ChecktHeartbeat, WSConSet.Size: %d", len(w.WSConSet))
 
 	var dead_ws = []*net.WSInfo{}
 
 	for _, ws := range w.WSConSet {
-		logx.Infof("ws: %s, last_time: %s, cur_time: %s,  HeartbeatLostSecs: %d\n",
-			ws.String(), util.TimeStrFromInt(ws.LastReqTime), util.TimeToSecString(time.Now()), w.WsConfig.HeartbeatLostSecs)
+		// logx.Infof("ws: %s, last_time: %s, cur_time: %s,  HeartbeatLostSecs: %d\n",
+		// ws.String(), util.TimeStrFromInt(ws.LastReqTime), util.TimeToSecString(time.Now()), w.WsConfig.HeartbeatLostSecs)
 
 		if !ws.IsAlive() || !ws.CheckAlive(int64(w.WsConfig.HeartbeatLostSecs)) {
 			logx.Errorf("ws: %s is dead! last_time: %s, cur_time: %s,  HeartbeatLostSecs: %d\n",
@@ -491,7 +491,10 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 		Count:     count,
 		Frequency: resolution,
 	}
-	w.next_worker.SubKline(req_kline, ws)
+
+	logx.Slowf("WSEngine: SubKline %s,", req_kline.String())
+
+	go w.next_worker.SubKline(req_kline, ws)
 }
 
 func (w *WSEngine) ProcessUnSubKline(m map[string]interface{}, ws *net.WSInfo) {
