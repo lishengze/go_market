@@ -82,7 +82,7 @@ func newNacosClient(c config.Config, onConfigUpdate func(c MpuConfig)) nacosconf
 		Type:    nacosconf.YAML,
 		OnChange: func(namespace, group, dataId, data string) {
 			var c MpuConfig
-			err := conf.LoadConfigFromYamlBytes([]byte(data), &c)
+			err := conf.LoadFromYamlBytes([]byte(data), &c)
 			if err != nil {
 				logx.Errorf("load config from nacos err:%v, data:%s", err, data)
 				return
@@ -156,7 +156,7 @@ func NewMpu(c config.Config) Mpu {
 	}
 
 	var mpuConfig MpuConfig
-	err = conf.LoadConfigFromYamlBytes([]byte(content), &mpuConfig)
+	err = conf.LoadFromYamlBytes([]byte(content), &mpuConfig)
 	if err != nil {
 		panic(fmt.Sprintf("convert nacos config err:%v", err))
 	}

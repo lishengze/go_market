@@ -24,7 +24,7 @@ NacosConf:
     - Host: "10.8.78.83"
       Port: 8848
   Client:
-    NamespaceId: "exterior-interactor"
+    NamespaceId: "bcts"
     TimeoutMs: 5000
     CacheDir: "./log/binance/nacos/"
     LogDir: "./log/binance/nacoscache/"
