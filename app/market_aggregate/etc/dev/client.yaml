@@ -4,7 +4,7 @@ Comm:
   SerialType: "PROTOBUF"
 
 Nacos:
-  IpAddr: "36.255.220.139"
+  IpAddr: "10.8.78.83"
   Port: 8848
   NamespaceId: "bcts"
   TimeoutMs: 5000
