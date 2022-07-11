@@ -67,7 +67,7 @@ func (w *Worker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtrlCo
 	if w.nextWorker != nil {
 		w.nextWorker.Execute(depth_quote, configs)
 	} else {
-		logx.Statf("%s Worker Has No Next Worker!\n", w.WorkerName)
+		logx.Slowf("%s Worker Has No Next Worker!\n", w.WorkerName)
 	}
 
 	return false
@@ -174,7 +174,7 @@ func (w *FeeWorker) Execute(depth_quote *datastruct.DepthQuote, configs *RiskCtr
 	if w.nextWorker != nil {
 		return w.nextWorker.Execute(depth_quote, configs)
 	} else {
-		logx.Statf("%s Worker Has No Next Worker!\n", w.WorkerName)
+		logx.Slowf("%s Worker Has No Next Worker!\n", w.WorkerName)
 		return true
 	}
 }
@@ -185,9 +185,9 @@ func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtr
 	if cur_config, ok := (*configs)[depth_quote.Symbol]; ok {
 
 		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
-			logx.Statf("Symbol:%s, Config:%+v \n", depth_quote.Symbol, cur_config)
+			logx.Slowf("Symbol:%s, Config:%+v \n", depth_quote.Symbol, cur_config)
 
-			logx.Stat("\nBefore FeeCtrl: \n" + depth_quote.String(3))
+			logx.Slow("\nBefore FeeCtrl: \n" + depth_quote.String(3))
 		}
 
 		new_asks := w.calc_depth_fee(depth_quote.Asks, cur_config, true)
@@ -197,7 +197,7 @@ func (w *FeeWorker) Process(depth_quote *datastruct.DepthQuote, configs *RiskCtr
 		depth_quote.Bids = new_bids
 
 		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
-			logx.Stat("\nAfter FeeCtrl: \n" + depth_quote.String(3))
+			logx.Slow("\nAfter FeeCtrl: \n" + depth_quote.String(3))
 		}
 
 	} else {
@@ -260,7 +260,7 @@ func (w *QuotebiasWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 	if cur_config, ok := (*configs)[depth_quote.Symbol]; ok {
 
 		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
-			logx.Stat("\nBefore QuotebiasCtrl: \n" + depth_quote.String(3))
+			logx.Slow("\nBefore QuotebiasCtrl: \n" + depth_quote.String(3))
 		}
 
 		new_asks := calc_depth_bias(depth_quote.Asks, cur_config, true)
@@ -270,7 +270,7 @@ func (w *QuotebiasWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 		depth_quote.Bids = new_bids
 
 		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
-			logx.Stat("\nAfter QuotebiasCtrl: \n" + depth_quote.String(3))
+			logx.Slow("\nAfter QuotebiasCtrl: \n" + depth_quote.String(3))
 		}
 
 	} else {
@@ -290,7 +290,7 @@ func (w *QuotebiasWorker) Execute(depth_quote *datastruct.DepthQuote, configs *R
 	if w.nextWorker != nil {
 		w.nextWorker.Execute(depth_quote, configs)
 	} else {
-		logx.Statf("%s Worker Has No Next Worker!\n", w.WorkerName)
+		logx.Slowf("%s Worker Has No Next Worker!\n", w.WorkerName)
 	}
 
 	return false
@@ -321,7 +321,7 @@ func calc_watermark(depth_quote *datastruct.DepthQuote) float64 {
 		}
 	}
 
-	logx.Statf("\n------ ask_crossed_price_list:%v \n", ask_crossed_price_list)
+	logx.Slowf("\n------ ask_crossed_price_list:%v \n", ask_crossed_price_list)
 
 	bid_crossed_price_list := []float64{}
 	for bid_iter.End(); bid_iter.Prev(); {
@@ -331,11 +331,11 @@ func calc_watermark(depth_quote *datastruct.DepthQuote) float64 {
 			break
 		}
 	}
-	logx.Statf("\n------bid_crossed_price_list:%v \n", bid_crossed_price_list)
+	logx.Slowf("\n------bid_crossed_price_list:%v \n", bid_crossed_price_list)
 
 	rst = (ask_crossed_price_list[len(ask_crossed_price_list)/2] + bid_crossed_price_list[len(bid_crossed_price_list)/2]) / 2
 
-	logx.Statf("\n-------watermark: %v \n", rst)
+	logx.Slowf("\n-------watermark: %v \n", rst)
 
 	return rst
 }
@@ -347,7 +347,7 @@ func filter_depth_by_watermark(depth *treemap.Map, watermark float64, price_minu
 	depth_iter := depth.Iterator()
 	new_price := watermark + float64(price_minum_change)
 
-	logx.Statf("\nNewPrice: %v\n", new_price)
+	logx.Slowf("\nNewPrice: %v\n", new_price)
 
 	if isAsk {
 
@@ -432,7 +432,7 @@ func (w *WatermarkWorker) Execute(depth_quote *datastruct.DepthQuote, configs *R
 	if w.nextWorker != nil {
 		w.nextWorker.Execute(depth_quote, configs)
 	} else {
-		logx.Statf("%s Worker Has No Next Worker!\n", w.WorkerName)
+		logx.Slowf("%s Worker Has No Next Worker!\n", w.WorkerName)
 	}
 
 	return false
@@ -442,14 +442,14 @@ func (w *WatermarkWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 	defer util.ExceptionFunc()
 
 	if check_cross(depth_quote) == false {
-		logx.Statf("++++++ WatermarkWorker:Process Has No Cross Depth! +++++\n\n")
+		logx.Slowf("++++++ WatermarkWorker:Process Has No Cross Depth! +++++\n\n")
 		return true
 	}
 
 	if cur_config, ok := (*configs)[depth_quote.Symbol]; ok {
 
 		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
-			logx.Statf("\nBefore WatermarkWorker: \n" + depth_quote.String(3))
+			logx.Slowf("\nBefore WatermarkWorker: \n" + depth_quote.String(3))
 		}
 
 		watermark := calc_watermark(depth_quote)
@@ -463,7 +463,7 @@ func (w *WatermarkWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 		filter_depth_by_watermark(depth_quote.Bids, watermark, cur_config.PriceMinumChange*-1, false)
 
 		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
-			logx.Statf("\nAfter WatermarkWorker: \n" + depth_quote.String(3))
+			logx.Slowf("\nAfter WatermarkWorker: \n" + depth_quote.String(3))
 		}
 	} else {
 
@@ -517,7 +517,7 @@ func (w *PrecisionWorker) Execute(depth_quote *datastruct.DepthQuote, configs *R
 	if w.nextWorker != nil {
 		w.nextWorker.Execute(depth_quote, configs)
 	} else {
-		logx.Statf("%s Worker Has No Next Worker!\n", w.WorkerName)
+		logx.Slowf("%s Worker Has No Next Worker!\n", w.WorkerName)
 	}
 
 	return false
@@ -529,7 +529,7 @@ func (w *PrecisionWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 	if cur_config, ok := (*configs)[depth_quote.Symbol]; ok {
 
 		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
-			logx.Statf("\nBefore PrecisionWorker: \n" + depth_quote.String(3))
+			logx.Slowf("\nBefore PrecisionWorker: \n" + depth_quote.String(3))
 		}
 
 		new_asks := resize_depth_precision(depth_quote.Asks, cur_config)
@@ -539,7 +539,7 @@ func (w *PrecisionWorker) Process(depth_quote *datastruct.DepthQuote, configs *R
 		depth_quote.Bids = new_bids
 
 		if depth_quote.Symbol == w.cfg.RiskTestConfig.TestSymbol {
-			logx.Statf("\nAfter PrecisionWorker: \n" + depth_quote.String(3))
+			logx.Slowf("\nAfter PrecisionWorker: \n" + depth_quote.String(3))
 		}
 	} else {
 		logx.Error("Symbol: " + string(depth_quote.Symbol) + " Has no config")
@@ -640,7 +640,7 @@ func (r *RiskWorkerManager) UpdateConfig(RiskConfig *RiskCtrlConfigMap) {
 		}
 	}
 
-	logx.Statf("\n------- r.RiskConfig: %+v\n\n", r.RiskConfig)
+	logx.Slowf("\n------- r.RiskConfig: %+v\n\n", r.RiskConfig)
 }
 
 func (r *RiskWorkerManager) AddWorker(NewWorker RiskWorkerInterface) {
