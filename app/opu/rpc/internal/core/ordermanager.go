@@ -73,11 +73,11 @@ func newOrderManagerWithoutSend(getAccountManagerFn func(order *model.Order) (*a
 
 	go om.run()
 	go om.startStatusHeartBeat()
-
-	if order.Status == exmodel.OrderStatusPending.String() {
-		// pending 的订单直接做超时处理
-		om.updateOrder("", "0", "place order time out", exmodel.OrderStatusRejected)
-	}
+	// 此逻辑基本不会触发，如果存在pending的历史订单，需要排查是否下单成功
+	//if order.Status == exmodel.OrderStatusPending.String() {
+	//	// pending 的订单直接做超时处理
+	//	om.updateOrder("", "0", "place order time out", exmodel.OrderStatusRejected)
+	//}
 
 	return om
 
