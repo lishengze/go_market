@@ -74,6 +74,11 @@ func newOrderManagerWithoutSend(getAccountManagerFn func(order *model.Order) (*a
 	go om.run()
 	go om.startStatusHeartBeat()
 
+	if order.Status == exmodel.OrderStatusPending.String() {
+		// pending 的订单直接做超时处理
+		om.updateOrder("", "0", "place order time out", exmodel.OrderStatusRejected)
+	}
+
 	return om
 
 }
@@ -152,6 +157,10 @@ func (o *orderManager) cancelOrder() {
 
 		time.Sleep(time.Second)
 	}
+}
+
+func (o *orderManager) rejectIfPending() {
+
 }
 
 func (o *orderManager) run() {
