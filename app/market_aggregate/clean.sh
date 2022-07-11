@@ -7,7 +7,7 @@ kill -9 $PID
 
 rm -fr market_aggregate
 
-ll
+ls -a
 
 sleep 2s
 

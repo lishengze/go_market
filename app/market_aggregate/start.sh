@@ -11,7 +11,7 @@ go build
 nohup ./market_aggregate $1 >log/main.log &
 
 
-ll
+ls -a
 
 sleep 2s
 

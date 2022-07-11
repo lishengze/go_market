@@ -8,7 +8,7 @@ go build
 
 nohup ./rpc $1 >log/main.log &
 
-ll
+ls -a
 
 sleep 2s
 
