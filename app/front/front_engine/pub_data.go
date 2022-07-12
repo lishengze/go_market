@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"market_server/app/front/net"
 	"market_server/common/datastruct"
+	"market_server/common/util"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -246,6 +247,14 @@ type PubKlineJson struct {
 	Resolution int              `json:"frequency"`
 	DataCount  int              `json:"data_count"`
 	Data       []PubKlineDetail `json:"data"`
+}
+
+func (p *PubKlineJson) TimeList() string {
+	rst := "TimeList: "
+	for _, kline_detail := range p.Data {
+		rst = rst + util.TimeStrFromInt(kline_detail.Tick*datastruct.NANO_PER_SECS) + ", "
+	}
+	return rst
 }
 
 func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {

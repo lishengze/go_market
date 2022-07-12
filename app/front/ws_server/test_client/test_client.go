@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"market_server/app/front/front_engine"
 	"market_server/app/front/net"
 	"market_server/common/util"
 	"net/url"
@@ -69,7 +70,7 @@ func GetTestKlineReqJson(frequency int) []byte {
 	sub_info := map[string]interface{}{
 		"type":      net.KLINE_SUB,
 		"symbol":    "ETH_USDT",
-		"count":     "1000",
+		"count":     "2",
 		"frequency": fmt.Sprintf("%d", frequency),
 	}
 	rst, err := json.Marshal(sub_info)
@@ -114,11 +115,11 @@ func GetHeartbeat() []byte {
 }
 
 func read_func(c *websocket.Conn) {
-	log.Println("Read_Func Start!")
+	logx.Info("Read_Func Start!")
 	for {
 		_, message, err := c.ReadMessage()
 		if err != nil {
-			log.Println("read:", err)
+			logx.Info("read:", err)
 			return
 		}
 		log.Printf("recv: %s", message)
@@ -137,12 +138,26 @@ func read_func(c *websocket.Conn) {
 		if m["type"] == "heartbeat" {
 			err := c.WriteMessage(websocket.TextMessage, GetHeartbeatMsg())
 			if err != nil {
-				log.Println("write:", err)
+				logx.Info("write:", err)
 				return
 			}
-
 		}
+
+		if m["type"] == net.KLINE_UPATE {
+			var kline_data front_engine.PubKlineJson
+			if err := json.Unmarshal([]byte(message), &kline_data); err != nil {
+				logx.Errorf("Error = %+v", err)
+				return
+			} else {
+				logx.Infof("kline_data: %s", kline_data.TimeList())
+			}
+		}
+
 	}
+}
+
+func process_kline(kline_list []front_engine.PubKlineDetail) {
+
 }
 
 func GetHeartbeatMsg() []byte {
@@ -162,13 +177,13 @@ func GetHeartbeatMsg() []byte {
 
 func write_func(c *websocket.Conn) {
 
-	send_msg := GetTestTradeReqJson()
+	// send_msg := GetTestTradeReqJson()
 	// send_msg := GetTestDepthReqJson()
-	// send_msg := GetTestKlineReqJson(60)
+	send_msg := GetTestKlineReqJson(900)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {
-		log.Println("write:", err)
+		logx.Info("write:", err)
 		return
 	}
 
@@ -178,7 +193,7 @@ func write_func(c *websocket.Conn) {
 
 	// err = c.WriteMessage(websocket.TextMessage, send_msg2)
 	// if err != nil {
-	// 	log.Println("write:", err)
+	// 	logx.Info("write:", err)
 	// 	return
 	// }
 
@@ -191,7 +206,7 @@ func write_func(c *websocket.Conn) {
 	// 		fmt.Printf("Write: %s \n", t.String())
 	// 		err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
 	// 		if err != nil {
-	// 			log.Println("write:", err)
+	// 			logx.Info("write:", err)
 	// 			return
 	// 		}
 	// 	}
@@ -225,7 +240,7 @@ func basic_func() {
 		select {
 
 		case <-interrupt:
-			log.Println("interrupt")
+			logx.Info("interrupt")
 			return
 		}
 	}
