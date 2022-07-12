@@ -93,9 +93,9 @@ func TestGetJsonData() {
 	fmt.Println(string(rst3))
 }
 
-var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
+// var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
 
-// var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
+var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
 
 // var addr = flag.String("addr", "10.10.1.75:8114", "http service address")
 

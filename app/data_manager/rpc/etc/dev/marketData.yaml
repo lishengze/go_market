@@ -6,12 +6,12 @@ Etcd:
   Key: marketdata.rpc
   
 Comm:
-  IP: "152.32.254.76:9117"
+  IP: "10.8.147.73:8117"
   NetServerType: "KAFKA"
   SerialType: "PROTOBUF"
 
 Nacos:
-  IpAddr: "36.255.220.139"
+  IpAddr: "10.8.78.83"
   Port: 8848
   NamespaceId: "bcts"
   TimeoutMs: 5000
@@ -33,7 +33,7 @@ LogConfig:
   TimeFormat:  "2006-01-02 15:04:05"
 
 Mysql:
-  Addr: "bcts:bcts@tcp(127.0.0.1:3306)/market"
+  Addr: "bcts:bcts@tcp(10.8.91.149:3306)/market"
   max_open_conns: 16
   max_idle_conns: 8
   conn_max_life_time: 300

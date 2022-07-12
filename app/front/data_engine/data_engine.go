@@ -355,11 +355,16 @@ func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) (string, bool) {
 		if _, ok := d.cache_period_data[symbol]; !ok {
 			err := d.InitPeriodDara(symbol)
 
-			if err != nil {
-				logx.Errorf("SubTrade error: %+v", err)
-				d.PublishTrade(trade.(*datastruct.Trade), nil, d.GetUsdtUsdPrice(), ws)
-			} else {
-				d.PublishTrade(trade.(*datastruct.Trade), d.cache_period_data[symbol].GetChangeInfo(), d.GetUsdtUsdPrice(), ws)
+			if d.GetUsdtUsdPrice() != 0.0 {
+				trade_value := trade.(*datastruct.Trade)
+				usd_price := trade_value.Price * d.GetUsdtUsdPrice()
+
+				if err != nil {
+					logx.Errorf("SubTrade error: %+v", err)
+					d.PublishTrade(trade_value, nil, usd_price, ws)
+				} else {
+					d.PublishTrade(trade_value, d.cache_period_data[symbol].GetChangeInfo(), usd_price, ws)
+				}
 			}
 
 			symbol_list := d.get_symbol_list()
