@@ -7,14 +7,14 @@ import (
 )
 
 func main() {
-	api := binance.NewNativeApiWithProxy(exmodel.EmptyAccountConfig, "http://localhost:1081")
+	api, _ := binance.NewNativeApi(exmodel.AccountConfig{Proxy: "http://localhost:1081"})
 
 	s := binance.NewSymbolManager(api)
 	d := binance.NewDepthManager(s, api)
 	//t := binance.NewMarketTradeManager(s, api)
 	//k := extools.NewKlineGenerator()
 
-	d.Sub( "BTC_USDT")
+	d.Sub("BTC_USDT")
 	//d.Sub("SAND_USDT", "BTC_USDT")
 	//t.Sub("BTC_USDT")
 	//t.Sub("SAND_USDT", "BTC_USDT")

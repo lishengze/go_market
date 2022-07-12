@@ -21,7 +21,10 @@ func newSymbolManager(svcCtx *svcCtx, exchange, proxy string) *symbolManager {
 
 	switch exchange {
 	case exmodel.FTX.String():
-		api := ftx.NewNativeApiWithProxy(exmodel.EmptyAccountConfig, proxy)
+		api, err := ftx.NewNativeApi(exmodel.AccountConfig{Proxy: proxy})
+		if err != nil {
+			panic(err)
+		}
 		sm = ftx.NewSymbolManager(api)
 	default:
 		panic(fmt.Sprintf("not support exchange:%s", exchange))

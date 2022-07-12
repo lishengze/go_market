@@ -6,11 +6,10 @@ import (
 )
 
 func main() {
-	api := ftx.NewNativeApiWithProxy(exmodel.EmptyAccountConfig, "http://localhost:1081")
+	api, _ := ftx.NewNativeApi(exmodel.AccountConfig{Proxy: "http://localhost:1081"})
 	s := ftx.NewSymbolManager(api)
 
 	d := ftx.NewDepthManager(s, api)
-
 
 	d.Sub("XRP_USD")
 	d.Sub("ETH_USD")
@@ -24,7 +23,7 @@ func main() {
 	//	fmt.Printf("bid %+v \n",item.Bids)
 	//}
 
-	for range d.OutputCh(){
+	for range d.OutputCh() {
 
 	}
 

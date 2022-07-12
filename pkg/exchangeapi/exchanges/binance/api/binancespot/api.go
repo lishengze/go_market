@@ -18,7 +18,7 @@ type Api struct {
 func NewApi(base extools.ExBase) *Api {
 	return &Api{
 		ApiType: exmodel.ApiTypeSpot,
-		base: base,
+		base:    base,
 	}
 }
 
@@ -86,7 +86,7 @@ func (o *Api) GetStreamDiffDepth() (httptools.AutoWsSubscriber, error) {
 				return [][]byte{m}, err
 			}, func(config *httptools.WsSubscriberConfig) {
 				config.Tag = "binance-spot-diff-wsdepth"
-				config.Proxy = o.base.Config().Proxy
+				config.Proxy = o.base.Config().AccountConfig.Proxy
 				config.MaxTopicCount = 50
 				config.KeepaliveInterval = time.Second * 10
 			})
@@ -119,7 +119,7 @@ func (o *Api) GetStreamKline() (httptools.AutoWsSubscriber, error) {
 				return [][]byte{m}, err
 			}, func(config *httptools.WsSubscriberConfig) {
 				config.Tag = "binance-spot-kline"
-				config.Proxy = o.base.Config().Proxy
+				config.Proxy = o.base.Config().AccountConfig.Proxy
 				config.MaxTopicCount = 50
 				config.KeepaliveInterval = time.Second * 10
 			})
@@ -152,7 +152,7 @@ func (o *Api) GetStreamMarketTrade() (httptools.AutoWsSubscriber, error) {
 				return [][]byte{m}, err
 			}, func(config *httptools.WsSubscriberConfig) {
 				config.Tag = "binance-spot-wstrade"
-				config.Proxy = o.base.Config().Proxy
+				config.Proxy = o.base.Config().AccountConfig.Proxy
 				config.MaxTopicCount = 50
 				config.KeepaliveInterval = time.Second * 10
 			})

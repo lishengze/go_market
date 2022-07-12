@@ -3,6 +3,7 @@ package exmodel
 var EmptyAccountConfig = AccountConfig{}
 
 type AccountConfig struct {
+	Proxy          string
 	Alias          string
 	Key            string
 	Secret         string

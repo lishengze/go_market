@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	api := ftx.NewNativeApiWithProxy(exmodel.EmptyAccountConfig, "http://localhost:1081")
+	api, _ := ftx.NewNativeApi(exmodel.AccountConfig{Proxy: "http://localhost:1081"})
 	s := ftx.NewSymbolManager(api)
 
 	m := ftx.NewMarketTradeManager(s, api)

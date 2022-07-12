@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	api := binance.NewNativeApiWithProxy(exmodel.EmptyAccountConfig, "http://localhost:1081")
+	api, _ := binance.NewNativeApi(exmodel.AccountConfig{Proxy: "http://localhost:1081"})
 	k, err := api.SpotApi.GetStreamKline()
 	if err != nil {
 		log.Fatalln(err)

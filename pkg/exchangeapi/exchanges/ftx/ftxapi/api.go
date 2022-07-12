@@ -69,7 +69,7 @@ func (o *Api) GetStreamMarketTrade() (httptools.AutoWsSubscriber, error) {
 				return msg, nil
 			}, func(config *httptools.WsSubscriberConfig) {
 				config.Tag = "ftx-wstrade"
-				config.Proxy = o.base.Config().Proxy
+				config.Proxy = o.base.Config().AccountConfig.Proxy
 				config.MaxTopicCount = 50
 				config.KeepaliveInterval = time.Second * 15
 			})
@@ -116,7 +116,7 @@ func (o *Api) GetStreamDepth() (httptools.AutoWsSubscriber, error) {
 				return msg, nil
 			}, func(config *httptools.WsSubscriberConfig) {
 				config.Tag = "ftx-wsdepth"
-				config.Proxy = o.base.Config().Proxy
+				config.Proxy = o.base.Config().AccountConfig.Proxy
 				config.MaxTopicCount = 50
 				config.KeepaliveInterval = time.Second * 10
 			})
@@ -219,7 +219,7 @@ func (o *Api) GetTradeWsTransceiver() (httptools.WsTransceiver, error) {
 		return data, err
 	}, func(config *httptools.WsTransceiverConfig) {
 		config.Tag = "ftx-wsfills"
-		config.Proxy = o.base.Config().Proxy
+		config.Proxy = o.base.Config().AccountConfig.Proxy
 		config.KeepaliveInterval = time.Second * 15
 	})
 
@@ -275,7 +275,7 @@ func (o *Api) GetOrderWsTransceiver() (httptools.WsTransceiver, error) {
 		return data, err
 	}, func(config *httptools.WsTransceiverConfig) {
 		config.Tag = "ftx-wsorders"
-		config.Proxy = o.base.Config().Proxy
+		config.Proxy = o.base.Config().AccountConfig.Proxy
 		config.KeepaliveInterval = time.Second * 15
 	})
 

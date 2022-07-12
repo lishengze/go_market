@@ -128,13 +128,19 @@ func NewMpu(c config.Config) Mpu {
 
 	switch exmodel.Exchange(c.Exchange) {
 	case exmodel.BINANCE:
-		api := binance.NewNativeApiWithProxy(exmodel.EmptyAccountConfig, c.Proxy)
+		api, err := binance.NewNativeApi(exmodel.AccountConfig{Proxy: c.Proxy})
+		if err != nil {
+			panic(err)
+		}
 		m.SymbolManager = binance.NewSymbolManager(api)
 		m.DepthManager = binance.NewDepthManager(m.SymbolManager, api)
 		m.MarketTradeManager = binance.NewMarketTradeManager(m.SymbolManager, api)
 		m.KlineGenerator = extools.NewKlineGenerator()
 	case exmodel.FTX:
-		api := ftx.NewNativeApiWithProxy(exmodel.EmptyAccountConfig, c.Proxy)
+		api, err := ftx.NewNativeApi(exmodel.AccountConfig{Proxy: c.Proxy})
+		if err != nil {
+			panic(err)
+		}
 		m.SymbolManager = ftx.NewSymbolManager(api)
 		m.DepthManager = ftx.NewDepthManager(m.SymbolManager, api)
 		m.MarketTradeManager = ftx.NewMarketTradeManager(m.SymbolManager, api)

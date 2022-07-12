@@ -9,13 +9,13 @@ import (
 )
 
 func main() {
-	//api := ftx.NewNativeApiWithProxy(exmodel.EmptyAccountConfig, "http://localhost:1081")
-	api := ftx.NewNativeApiWithProxy(exmodel.AccountConfig{
+	api, _ := ftx.NewNativeApi(exmodel.AccountConfig{
+		Proxy:          "http://localhost:1081",
 		Alias:          "FTX_MCA_OTC_TRADING",
 		Key:            "1IVOM9S2EELFcOZGJ3RLIg3X_ETRwOM4sDH9a_D5",
 		Secret:         "A3US9cW3biFIO9xQYfRdTFpD4UX0gNCcTyzY2F5W",
 		SubAccountName: "Xpert RFQ",
-	}, "http://localhost:1081")
+	})
 	//rsp, err := api.GetMarket()
 	//if err != nil {
 	//	log.Fatalln(err)
