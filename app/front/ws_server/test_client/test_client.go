@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -163,9 +162,9 @@ func GetHeartbeatMsg() []byte {
 
 func write_func(c *websocket.Conn) {
 
-	// send_msg := GetTestTradeReqJson()
+	send_msg := GetTestTradeReqJson()
 	// send_msg := GetTestDepthReqJson()
-	send_msg := GetTestKlineReqJson(60)
+	// send_msg := GetTestKlineReqJson(60)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {
@@ -173,15 +172,15 @@ func write_func(c *websocket.Conn) {
 		return
 	}
 
-	time.Sleep(time.Second * 5)
+	// time.Sleep(time.Second * 5)
 
-	send_msg2 := GetTestKlineReqJson(300)
+	// send_msg2 := GetTestKlineReqJson(300)
 
-	err = c.WriteMessage(websocket.TextMessage, send_msg2)
-	if err != nil {
-		log.Println("write:", err)
-		return
-	}
+	// err = c.WriteMessage(websocket.TextMessage, send_msg2)
+	// if err != nil {
+	// 	log.Println("write:", err)
+	// 	return
+	// }
 
 	// ticker := time.NewTicker(time.Second)
 	// defer ticker.Stop()

@@ -414,7 +414,7 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 		return
 	}
 
-	logx.Infof("0")
+	// logx.Infof("0")
 	if value, ok := m["frequency"]; ok {
 		// value_type := reflect.TypeOf(value)
 		// true_value := reflect.ValueOf(value)
@@ -425,24 +425,24 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 			return
 		}
 
-		logx.Infof("0.1")
+		// logx.Infof("0.1")
 		resolution = uint32(tmp)
 
-		logx.Infof("0.2")
+		// logx.Infof("0.2")
 		if resolution%datastruct.SECS_PER_MIN != 0 {
 			ws.SendErrorMsg(fmt.Sprintf("resolution : %d mod 60 != 0  ", resolution))
 			logx.Errorf("resolution : %d mod 60 != 0  ", resolution)
 			return
 		}
 
-		logx.Infof("0.3")
+		// logx.Infof("0.3")
 	} else {
 		ws.SendErrorMsg(fmt.Sprintf("sub_kline: No frequency Data %+v", m))
 		logx.Error("ProcessSubTrade: No frequency Data %+v", m)
 		return
 	}
 
-	logx.Infof("1")
+	// logx.Infof("1")
 	if value, ok := m["count"]; ok {
 		tmp, err := strconv.Atoi(value.(string))
 		if err != nil {
@@ -456,7 +456,7 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 		logx.Errorf("subkline: No count Data %+v", m)
 	}
 
-	logx.Infof("2")
+	// logx.Infof("2")
 	if value, ok := m["start_time"]; ok {
 		tmp, err := strconv.Atoi(value.(string))
 		if err != nil {
@@ -475,7 +475,7 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 		end_time = uint64(tmp)
 	}
 
-	logx.Infof("3")
+	// logx.Infof("3")
 
 	if uint64(count)+start_time+end_time == 0 {
 		logx.Errorf("subkline: No data_count start_time end_time Data %+v", m)

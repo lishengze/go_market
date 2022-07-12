@@ -262,7 +262,10 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	d.cache_period_data_mutex.Unlock()
 
 	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
-	d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), d.GetUsdtUsdPrice(), nil)
+
+	usd_price := trade.Price * d.GetUsdtUsdPrice()
+
+	d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), usd_price, nil)
 
 	return nil
 }
