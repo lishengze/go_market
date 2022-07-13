@@ -248,7 +248,7 @@ type PubKlineJson struct {
 	Resolution      int              `json:"frequency"`
 	DataCount       int              `json:"data_count"`
 	Data            []PubKlineDetail `json:"data"`
-	ReqArriveTime   int64            `json:"req_arrive_time"`
+	ReqProcessTime  int64            `json:"req_process_time"`
 	ReqResponseTime int64            `json:"req_response_time"`
 }
 
@@ -287,7 +287,7 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 		Resolution:      int(hist_kline.ReqInfo.Frequency),
 		DataCount:       hist_kline.Klines.Size(),
 		Data:            kline_data,
-		ReqArriveTime:   hist_kline.ReqInfo.ReqArriveTime,
+		ReqProcessTime:  util.UTCNanoTime() - hist_kline.ReqInfo.ReqArriveTime,
 		ReqResponseTime: util.UTCNanoTime(),
 	}
 

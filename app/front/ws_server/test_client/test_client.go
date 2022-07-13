@@ -7,6 +7,7 @@ import (
 	"log"
 	"market_server/app/front/front_engine"
 	"market_server/app/front/net"
+	"market_server/common/datastruct"
 	"market_server/common/util"
 	"net/url"
 	"os"
@@ -144,20 +145,21 @@ func read_func(c *websocket.Conn) {
 		}
 
 		if m["type"] == net.KLINE_UPATE {
-			var kline_data front_engine.PubKlineJson
-			if err := json.Unmarshal([]byte(message), &kline_data); err != nil {
-				logx.Errorf("Error = %+v", err)
-				return
-			} else {
-				logx.Infof("kline_data: %s", kline_data.TimeList())
-			}
+			process_kline(message)
 		}
 
 	}
 }
 
-func process_kline(kline_list []front_engine.PubKlineDetail) {
-
+func process_kline(message []byte) {
+	var kline_data front_engine.PubKlineJson
+	if err := json.Unmarshal([]byte(message), &kline_data); err != nil {
+		logx.Errorf("Error = %+v", err)
+		return
+	} else {
+		delta_time := util.UTCNanoTime() - kline_data.ReqResponseTime
+		logx.Infof("delta_time: %dus, kline_data: %s", delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
+	}
 }
 
 func GetHeartbeatMsg() []byte {
