@@ -1,6 +1,7 @@
 package front_engine
 
 import (
+	"encoding/json"
 	"fmt"
 	"market_server/app/front/net"
 	"market_server/common/datastruct"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type DepthPubInfo struct {
@@ -49,7 +51,14 @@ type KlinePubInfo struct {
 }
 
 func (d *KlinePubInfo) String() string {
-	return fmt.Sprintf("ws_info: %s, kline: %s", d.ws_info.String(), string(d.data))
+	var kline_data PubKlineJson
+	if err := json.Unmarshal([]byte(d.data), &kline_data); err != nil {
+		logx.Errorf("Error = %+v", err)
+		return fmt.Sprintf("ws_info: %s, kline: nil", d.ws_info.String())
+	} else {
+		// logx.Infof("Rsp Update New Kline Time: %s", kline_data.TimeList())
+		return fmt.Sprintf("ws_info: %s, kline: %s", d.ws_info.String(), kline_data.TimeList())
+	}
 }
 
 type SymbolSubInfo struct {
