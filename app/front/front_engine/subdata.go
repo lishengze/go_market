@@ -157,7 +157,7 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 		}
 
 		if datastruct.IsOldKlineEnd(kline, int64(resolution)) {
-			logx.Slowf("Old Kline End: %s", kline.String())
+			logx.Slowf("Old Kline End: rsl:%d, %s", resolution, kline.String())
 
 			var pub_kline *datastruct.Kline
 			if kline.Resolution != resolution {
@@ -187,7 +187,7 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 			s.KlineInfo.Info[kline.Symbol][resolution].cache_data = datastruct.NewKlineWithKline(pub_kline)
 
 		} else if datastruct.IsNewKlineStart(kline, int64(resolution)) {
-			logx.Slowf("New Kline Start: %s", kline.String())
+			logx.Slowf("New Kline Start: rsl:%d, %s", resolution, kline.String())
 
 			s.KlineInfo.Info[kline.Symbol][resolution].cache_data = datastruct.NewKlineWithKline(kline)
 			s.KlineInfo.Info[kline.Symbol][resolution].cache_data.Resolution = resolution
