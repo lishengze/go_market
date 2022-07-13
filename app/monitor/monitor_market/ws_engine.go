@@ -127,7 +127,7 @@ func (w *WSClient) StartListenData() {
 			logx.Errorf("WS Read Err: %+v", err)
 			return
 		}
-		// logx.Infof("WSClient Msg: %s", message)
+		logx.Infof("WSClient Msg: %s", message)
 
 		go w.ProcessMsg(message)
 	}
