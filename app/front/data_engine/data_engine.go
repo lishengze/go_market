@@ -85,6 +85,7 @@ func (d *DataEngine) UpdateMeta(symbols []string) {
 }
 
 func (a *DataEngine) InitPeriodDara(symbol string) error {
+	util.CatchExp("InitPeriodDara " + symbol)
 	logx.Infof("Init PeriodData: %s", symbol)
 	a.cache_period_data[symbol] = &PeriodData{
 		Symbol:                symbol,
