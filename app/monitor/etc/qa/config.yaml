@@ -18,7 +18,7 @@ LogConfig:
   TimeFormat:  "2006-01-02 15:04:05"
 
 MonitorConfigInfo:
-  RateParam: 1.5000
+  RateParam: 1.1
   InitDeadLine: 900
   CheckSecs: 30
   

@@ -113,6 +113,8 @@ func (m *MonitorAtom) TimeLimit() int64 {
 
 	static_time_limit := m.max_time * int64(m.RateParam)
 
+	return static_time_limit
+
 	if static_time_limit > m.InitDeadLine {
 		return static_time_limit
 	}
