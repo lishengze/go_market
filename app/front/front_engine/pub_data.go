@@ -27,7 +27,7 @@ func NewSymbolListMsg(symbol_list []string) []byte {
 		logx.Errorf("NewSymbolListMsg: json_data: %+v, symbol_list: %+v, error: %s",
 			json_data, symbol_list, err.Error())
 	} else {
-		logx.Slowf("SymbolList json_data: %+v ", json_data)
+		// logx.Slowf("SymbolList json_data: %+v ", json_data)
 	}
 
 	return rst
