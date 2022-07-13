@@ -171,10 +171,16 @@ func (t *Trade) String() string {
 	return res
 }
 
+// func (k *Kline) String() string {
+// 	res := fmt.Sprintf("%s.%s, %s, v: %f, o: %f, h: %f, l: %f, c: %f, \n",
+// 		k.Exchange, k.Symbol, util.TimeStrFromInt(k.Time), k.Volume,
+// 		k.Open, k.High, k.Low, k.Close)
+// 	return res
+// }
+
 func (k *Kline) String() string {
-	res := fmt.Sprintf("%s.%s, %s, v: %f, o: %f, h: %f, l: %f, c: %f, \n",
-		k.Exchange, k.Symbol, util.TimeStrFromInt(k.Time), k.Volume,
-		k.Open, k.High, k.Low, k.Close)
+	res := fmt.Sprintf("%s.%s, %s, v: %f\n",
+		k.Exchange, k.Symbol, util.TimeStrFromInt(k.Time), k.Volume)
 	return res
 }
 
