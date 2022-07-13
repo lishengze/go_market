@@ -71,7 +71,7 @@ func GetTestKlineReqJson(frequency int) []byte {
 	sub_info := map[string]interface{}{
 		"type":      net.KLINE_SUB,
 		"symbol":    "BTC_USDT",
-		"count":     "20",
+		"count":     "1000",
 		"frequency": fmt.Sprintf("%d", frequency),
 	}
 	rst, err := json.Marshal(sub_info)
@@ -158,7 +158,7 @@ func process_kline(message []byte) {
 		return
 	} else {
 		delta_time := util.UTCNanoTime() - kline_data.ReqResponseTime
-		logx.Infof("delta_time: %dus, kline_data: %s", delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
+		logx.Infof("req_process_time: %d ns,delta_time: %dus, kline_data: %s", kline_data.ReqProcessTime, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
 	}
 }
 
@@ -181,7 +181,7 @@ func write_func(c *websocket.Conn) {
 
 	// send_msg := GetTestTradeReqJson()
 	// send_msg := GetTestDepthReqJson()
-	send_msg := GetTestKlineReqJson(60)
+	send_msg := GetTestKlineReqJson(900)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {
