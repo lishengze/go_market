@@ -70,6 +70,7 @@ func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
 func (m *MarketServiceServer) Start() {
 	m.dbServer.StartListenRecvdata()
 	m.commer.Start()
+	m.SetInitMeta()
 
 	if m.IsTest {
 		m.SetInitMeta()
@@ -133,7 +134,7 @@ func (s *MarketServiceServer) ProcessSymbolConfigStr(data string) {
 }
 
 func (s *MarketServiceServer) SetInitMeta() {
-	init_symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD","BTC_USD", "ETH_USD"}
+	init_symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD","BTC_USD", "ETH_USD", "ETH_BTC"}
 
 	symbol_exchange_set := make(map[string](map[string]struct{}))
 	new_meta := datastruct.Metadata{}
