@@ -276,7 +276,7 @@ func (a *Aggregator) aggregate_kline() {
 	for _, kline := range a.kline_aggregated {
 		new_kline := datastruct.NewKline(kline)
 		kline.Time = 0
-		new_kline.Time = int64(util.UTCNanoTime())
+		new_kline.Time = util.UTCNanoTime() - datastruct.NANO_PER_MIN
 		a.publish_kline(new_kline)
 	}
 }

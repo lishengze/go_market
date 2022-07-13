@@ -2,6 +2,7 @@ package front_engine
 
 import (
 	"encoding/json"
+	"fmt"
 	"market_server/app/front/net"
 	"market_server/common/datastruct"
 	"market_server/common/util"
@@ -252,7 +253,7 @@ type PubKlineJson struct {
 func (p *PubKlineJson) TimeList() string {
 	rst := ", "
 	for _, kline_detail := range p.Data {
-		rst = rst + util.TimeStrFromInt(kline_detail.Tick*datastruct.NANO_PER_SECS) + ", "
+		rst = rst + fmt.Sprintf("%s, v: %f;", util.TimeStrFromInt(kline_detail.Tick*datastruct.NANO_PER_SECS), kline_detail.Volume)
 	}
 	return rst
 }
