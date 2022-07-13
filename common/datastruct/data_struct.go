@@ -172,9 +172,9 @@ func (t *Trade) String() string {
 }
 
 func (k *Kline) String() string {
-	res := fmt.Sprintf("%s.%s, %+v, o: %f, h: %f, l: %f, c: %f, v: %f\n",
-		k.Exchange, k.Symbol, time.Unix(int64(k.Time/NANO_PER_SECS), k.Time%NANO_PER_SECS),
-		k.Open, k.High, k.Low, k.Close, k.Volume)
+	res := fmt.Sprintf("%s.%s, %s, v: %f, o: %f, h: %f, l: %f, c: %f, \n",
+		k.Exchange, k.Symbol, util.TimeStrFromInt(k.Time), k.Volume,
+		k.Open, k.High, k.Low, k.Close)
 	return res
 }
 

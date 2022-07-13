@@ -179,7 +179,7 @@ func write_func(c *websocket.Conn) {
 
 	// send_msg := GetTestTradeReqJson()
 	// send_msg := GetTestDepthReqJson()
-	send_msg := GetTestKlineReqJson(900)
+	send_msg := GetTestKlineReqJson(300)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {
