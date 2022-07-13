@@ -205,7 +205,7 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 
 func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 
-	logx.Slowf("[SD], Hist, Rsl: %d, %s", hist_kline.ReqInfo.Frequency, datastruct.HistKlineSimpleTime(hist_kline.Klines))
+	logx.Slowf("[SD] HistK, rsl: %d, %s", hist_kline.ReqInfo.Frequency, datastruct.HistKlineSimpleTime(hist_kline.Klines))
 
 	iter := hist_kline.Klines.Iterator()
 	iter.Last()
