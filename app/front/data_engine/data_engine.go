@@ -9,6 +9,7 @@ import (
 	"market_server/app/front/worker"
 	"market_server/common/datastruct"
 	"market_server/common/util"
+	"strings"
 	"sync"
 
 	"github.com/emirpasic/gods/maps/treemap"
@@ -263,7 +264,7 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
 	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
 
-	usd_price := trade.Price * d.GetUsdtUsdPrice()
+	usd_price := trade.Price * d.GetUsdtUsdPrice(trade.Symbol)
 
 	d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), usd_price, nil)
 
@@ -340,13 +341,16 @@ func catch_sub_trade_exp(symbol string, ws *net.WSInfo) {
 	}
 }
 
-func (d *DataEngine) GetUsdtUsdPrice() float64 {
-	usdt_usd_price := 0.0
+func (d *DataEngine) GetUsdtUsdPrice(symbol string) float64 {
+	usdt_usd_price := 1.0
 
-	if trade, ok := d.trade_cache_map.Load("USDT_USD"); ok {
-		tmp_trade := trade.(*datastruct.Trade)
-		usdt_usd_price = tmp_trade.Price
+	if strings.Contains(symbol, "USDT") {
+		if trade, ok := d.trade_cache_map.Load("USDT_USD"); ok {
+			tmp_trade := trade.(*datastruct.Trade)
+			usdt_usd_price = tmp_trade.Price
+		}
 	}
+
 	return usdt_usd_price
 }
 
@@ -358,9 +362,10 @@ func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) (string, bool) {
 		if _, ok := d.cache_period_data[symbol]; !ok {
 			err := d.InitPeriodDara(symbol)
 
-			if d.GetUsdtUsdPrice() != 0.0 {
+			if d.GetUsdtUsdPrice(symbol) != 0.0 {
 				trade_value := trade.(*datastruct.Trade)
-				usd_price := trade_value.Price * d.GetUsdtUsdPrice()
+
+				usd_price := trade_value.Price * d.GetUsdtUsdPrice(symbol)
 
 				if err != nil {
 					logx.Errorf("SubTrade error: %+v", err)
