@@ -203,7 +203,7 @@ func HistKlineString(hist_line *treemap.Map) string {
 
 func HistKlineSimpleTime(hist_line *treemap.Map) string {
 
-	rst := fmt.Sprintf("HistKline, Size: %d, ", hist_line.Size())
+	rst := fmt.Sprintf("Size: %d, ", hist_line.Size())
 
 	iter := hist_line.Iterator()
 
