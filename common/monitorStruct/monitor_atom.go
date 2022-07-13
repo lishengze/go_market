@@ -115,6 +115,10 @@ func (m *MonitorAtom) TimeLimit() int64 {
 
 	static_time_limit := m.max_time * int64(m.RateParam)
 
+	if static_time_limit == 0.0 {
+		static_time_limit = util.UTCNanoTime()
+	}
+
 	return static_time_limit
 
 	if static_time_limit > m.InitDeadLine {
