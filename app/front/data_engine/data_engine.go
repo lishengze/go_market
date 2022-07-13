@@ -312,6 +312,7 @@ func (d *DataEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo) 
 }
 
 func (d *DataEngine) PublishTrade(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, usdt_usd_price float64, ws *net.WSInfo) {
+
 	d.next_worker.PublishTrade(trade, change_info, usdt_usd_price, ws)
 }
 
