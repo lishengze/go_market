@@ -196,7 +196,7 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 			cache_kline.Low = util.MinFloat64(cache_kline.Low, kline.Low)
 			cache_kline.High = util.MaxFloat64(cache_kline.High, kline.High)
 
-			logx.Slowf("Cached Kline: %s", kline.String())
+			logx.Slowf("Cached Kline:%d, %s", resolution, kline.String())
 		}
 	}
 
@@ -205,7 +205,7 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 
 func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 
-	logx.Slowf("[SubD], Hist, Rsl: %d, %s", hist_kline.ReqInfo.Frequency, datastruct.HistKlineSimpleTime(hist_kline.Klines))
+	logx.Slowf("[SD], Hist, Rsl: %d, %s", hist_kline.ReqInfo.Frequency, datastruct.HistKlineSimpleTime(hist_kline.Klines))
 
 	iter := hist_kline.Klines.Iterator()
 	iter.Last()
