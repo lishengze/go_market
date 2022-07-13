@@ -5,6 +5,8 @@ import (
 	"market_server/common/datastruct"
 	"market_server/common/util"
 	"sync"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type MonitorData struct {
@@ -143,6 +145,9 @@ func (m *MonitorAtom) IsAlive() bool {
 		m.TimeLimit()/datastruct.NANO_PER_MILL)
 
 	if delta_time > m.TimeLimit() {
+
+		logx.Errorf("InvalidInfo %s", m.InvalidInfo)
+
 		return false
 	} else {
 		return true

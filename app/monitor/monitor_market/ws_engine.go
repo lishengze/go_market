@@ -123,7 +123,8 @@ func (w *WSClient) StartListenData() {
 	for {
 		_, message, err := w.Client.ReadMessage()
 		if err != nil {
-			logx.Infof("Read Err: %+v", err)
+			logx.Infof("WS Read Err: %+v", err)
+			logx.Errorf("WS Read Err: %+v", err)
 			return
 		}
 		// logx.Infof("WSClient Msg: %s", message)
