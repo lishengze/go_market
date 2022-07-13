@@ -158,7 +158,7 @@ func process_kline(message []byte) {
 		return
 	} else {
 		delta_time := util.UTCNanoTime() - kline_data.ReqResponseTime
-		logx.Infof("req_process_time: %d us,delta_time: %dus, kline_data: %s", kline_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
+		logx.Infof("req_process_time: %d us, ws_time: %dus, kline_data: %s", kline_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
 	}
 }
 
