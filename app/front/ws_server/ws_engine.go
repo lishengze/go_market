@@ -254,7 +254,7 @@ func catch_exp(msg []byte, ws *net.WSInfo) {
 func (w *WSEngine) ProcessMessage(msg []byte, ws *net.WSInfo) {
 	defer catch_exp(msg, ws)
 
-	// logx.Infof("Original Msg: %s \n", string(msg))
+	logx.Slowf("Original ws: %s, Msg: %s \n", ws.String(), string(msg))
 	ws.SetLastReqTime(util.UTCNanoTime())
 
 	if len(string(msg)) < 8 {
@@ -484,12 +484,14 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 	}
 
 	req_kline := &datastruct.ReqHistKline{
-		Symbol:    symbol,
-		Exchange:  datastruct.BCTS_EXCHANGE,
-		StartTime: start_time,
-		EndTime:   end_time,
-		Count:     count,
-		Frequency: resolution,
+		Symbol:          symbol,
+		Exchange:        datastruct.BCTS_EXCHANGE,
+		StartTime:       start_time,
+		EndTime:         end_time,
+		Count:           count,
+		Frequency:       resolution,
+		ReqArriveTime:   util.UTCNanoTime(),
+		ReqResponseTime: 0,
 	}
 
 	logx.Slowf("WSEngine: SubKline %s,", req_kline.String())
