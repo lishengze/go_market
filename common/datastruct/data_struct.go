@@ -138,8 +138,9 @@ func (r *ReqHistKline) String() string {
 }
 
 type RspHistKline struct {
-	ReqInfo *ReqHistKline
-	Klines  *treemap.Map
+	ReqInfo        *ReqHistKline
+	Klines         *treemap.Map
+	IsLastComplete bool
 }
 
 type ChangeInfo struct {

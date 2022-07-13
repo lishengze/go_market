@@ -195,6 +195,7 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 			cache_kline.Close = kline.Close
 			cache_kline.Low = util.MinFloat64(cache_kline.Low, kline.Low)
 			cache_kline.High = util.MaxFloat64(cache_kline.High, kline.High)
+			cache_kline.Volume = cache_kline.Volume + kline.Volume
 
 			logx.Slowf("Cached Kline:%d, %s", resolution, kline.String())
 		}
@@ -225,7 +226,7 @@ func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 		logx.Slowf("[Store] %s ", last_kline.String())
 	}
 
-	if hist_kline.Klines.Size() > int(hist_kline.ReqInfo.Count) {
+	if !hist_kline.IsLastComplete {
 		logx.Infof("hist_kline.Klines.Size: %d, hist_kline.ReqInfo.Count: %d, last kline %+v, is not complete kline data, leave it in cache, wait for next round!",
 			hist_kline.Klines.Size(), int(hist_kline.ReqInfo.Count), last_kline)
 		hist_kline.Klines.Remove(last_kline.Time)

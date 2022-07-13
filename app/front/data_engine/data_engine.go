@@ -456,14 +456,15 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 	logx.Slowf("OriKlineTime: %s", datastruct.HistKlineTimeList(tmp, 3))
 	// fmt.Printf("OriKlineTime: %s \n", datastruct.HistKlineTimeList(tmp))
 
-	trans_kline := d.TrasOriKlineData(req_kline_info, tmp)
+	trans_kline, is_last_complete := d.TrasOriKlineData(req_kline_info, tmp)
 
 	logx.Slowf("TransKlineTime: %s", datastruct.HistKlineTimeList(trans_kline, 3))
 	// fmt.Printf("TransKlineTime: %s\n", datastruct.HistKlineTimeList(trans_kline))
 
 	return &datastruct.RspHistKline{
-		ReqInfo: req_kline_info,
-		Klines:  trans_kline,
+		ReqInfo:        req_kline_info,
+		Klines:         trans_kline,
+		IsLastComplete: is_last_complete,
 	}
 }
 
@@ -481,14 +482,14 @@ func catch_trasoriklinedaata_exp(req_kline_info *datastruct.ReqHistKline) {
 	}
 }
 
-func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, ori_klines *treemap.Map) *treemap.Map {
+func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, ori_klines *treemap.Map) (*treemap.Map, bool) {
 	defer catch_trasoriklinedaata_exp(req_kline_info)
 
 	rst := treemap.NewWith(utils.Int64Comparator)
 	resolution := int(req_kline_info.Frequency)
 
 	if ori_klines.Size() == 0 {
-		return rst
+		return rst, false
 	}
 
 	iter := ori_klines.Iterator()
@@ -526,15 +527,18 @@ func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, o
 			cache_kline.Close = cur_kline.Close
 			cache_kline.Low = util.MinFloat64(cache_kline.Low, cur_kline.Low)
 			cache_kline.High = util.MaxFloat64(cache_kline.High, cur_kline.High)
+			cache_kline.Volume = cache_kline.Volume + cur_kline.Volume
 		}
 	}
 
+	is_last_complete := true
 	if cache_kline.Time != pub_kline.Time {
 		pub_kline = datastruct.NewKlineWithKline(cache_kline)
 		rst.Put(pub_kline.Time, pub_kline)
+		is_last_complete = false
 	}
 
-	return rst
+	return rst, is_last_complete
 }
 
 func (d *DataEngine) UpdateCacheKlinesWithHist(klines *treemap.Map) {
