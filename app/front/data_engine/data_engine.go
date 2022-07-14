@@ -386,6 +386,7 @@ func (d *DataEngine) SubTrade(req_trade *datastruct.ReqTrade, ws *net.WSInfo) (s
 						ReqWSTime:     req_trade.ReqWSTime,
 						ReqArriveTime: req_trade.ReqArriveTime,
 					}
+					logx.Slowf("[DE HeaderTrade] %s, ReqWSTime %d ns", req_trade.Symbol, rsp_trade.ReqWSTime)
 					go d.PublishTrade(&rsp_trade, ws)
 				} else {
 					rsp_trade := datastruct.RspTrade{
@@ -395,6 +396,8 @@ func (d *DataEngine) SubTrade(req_trade *datastruct.ReqTrade, ws *net.WSInfo) (s
 						ReqWSTime:     req_trade.ReqWSTime,
 						ReqArriveTime: req_trade.ReqArriveTime,
 					}
+
+					logx.Slowf("[DE HeaderTrade] %s, ReqWSTime %d ns", req_trade.Symbol, rsp_trade.ReqWSTime)
 					go d.PublishTrade(&rsp_trade, ws)
 				}
 			}

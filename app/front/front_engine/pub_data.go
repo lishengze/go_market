@@ -196,8 +196,8 @@ func NewTradeJsonMsg(trade *datastruct.RspTrade) []byte {
 		logx.Errorf("NewTradeJsonMsg: trade: %s, change_info: %s, error: %s",
 			trade.TradeData.String(), trade.ChangeData.String(), err.Error())
 	} else {
-		logx.Slowf("Trade %s, ReqProcessTime: %d, ReqResponseTime: %d",
-			json_data.Symbol, json_data.ReqProcessTime, json_data.ReqResponseTime)
+		// logx.Slowf("Trade %s, ReqProcessTime: %d, ReqResponseTime: %d",
+		// 	json_data.Symbol, json_data.ReqProcessTime, json_data.ReqResponseTime)
 	}
 
 	return rst

@@ -1,6 +1,7 @@
 package front_engine
 
 import (
+	"encoding/json"
 	"market_server/app/front/config"
 	"market_server/app/front/net"
 	"market_server/app/front/worker"
@@ -145,6 +146,15 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 		if ws.IsAlive() {
 			// logx.Infof("ws:%+v is not alive")
 			byte_data := NewTradeJsonMsg(trade)
+
+			var trade_data PubTradeJson
+			if err := json.Unmarshal([]byte(byte_data), &trade_data); err != nil {
+				// logx.Errorf("Error = %+v", err)
+				// return
+			} else {
+				logx.Slowf("Trade %s, req_ws_time: %d us, req_process_time: %dus ", trade_data.Symbol, trade_data.ReqWSTime/datastruct.NANO_PER_MICR, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR)
+			}
+
 			err := ws.SendMsg(websocket.TextMessage, byte_data)
 
 			if err != nil {
