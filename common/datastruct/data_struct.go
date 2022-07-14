@@ -125,6 +125,7 @@ type Trade struct {
 
 type ReqTrade struct {
 	Symbol          string
+	ReqWSTime       int64
 	ReqArriveTime   int64
 	ReqResponseTime int64
 }
@@ -133,6 +134,7 @@ type RspTrade struct {
 	TradeData       *Trade
 	ChangeData      *ChangeInfo
 	UsdPrice        float64
+	ReqWSTime       int64
 	ReqArriveTime   int64
 	ReqResponseTime int64
 }

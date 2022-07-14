@@ -162,6 +162,7 @@ type PubTradeJson struct {
 	Low             float64 `json:"low"`
 	Time            int64   `json:"date"`
 	USDPrice        float64 `json:"usdPrice"`
+	ReqWSTime       int64   `json:"req_ws_time"`
 	ReqProcessTime  int64   `json:"req_process_time"`
 	ReqResponseTime int64   `json:"req_response_time"`
 }
@@ -175,6 +176,7 @@ func NewTradeJsonMsg(trade *datastruct.RspTrade) []byte {
 		Volume:          trade.TradeData.Volume,
 		Time:            trade.TradeData.Time / datastruct.NANO_PER_SECS,
 		USDPrice:        trade.UsdPrice,
+		ReqWSTime:       trade.ReqWSTime,
 		ReqProcessTime:  util.UTCNanoTime() - trade.ReqArriveTime,
 		ReqResponseTime: util.UTCNanoTime(),
 	}

@@ -367,9 +367,22 @@ func (w *WSEngine) ProcessSubTrade(m map[string]interface{}, ws *net.WSInfo) {
 		// logx.Infof("value: %+v", value)
 		symbol_list := value.([]interface{})
 
+		var req_start_time int64
+		var err error
+		req_start_time = 0
+		if value, ok := m["req_start_time"]; ok {
+			req_start_time, err = strconv.ParseInt(value.(string), 10, 64)
+			if err != nil {
+				// ws.SendErrorMsg(fmt.Sprintf("subkline frequency is not string: %+v ", m))
+				// logx.Errorf("subkline frequency is not string: %+v ", m)
+				// return
+			}
+		}
+
 		for _, symbol := range symbol_list {
 			req_trade := &datastruct.ReqTrade{
 				Symbol:        symbol.(string),
+				ReqWSTime:     util.UTCNanoTime() - req_start_time,
 				ReqArriveTime: util.UTCNanoTime(),
 			}
 			go w.next_worker.SubTrade(req_trade, ws)

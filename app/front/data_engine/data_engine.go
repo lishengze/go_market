@@ -312,28 +312,28 @@ func (d *DataEngine) SubSymbol(ws *net.WSInfo) {
 }
 
 func (d *DataEngine) PublishSymbol(symbol_list []string, ws *net.WSInfo) {
-	go d.next_worker.PublishSymbol(symbol_list, ws)
+	d.next_worker.PublishSymbol(symbol_list, ws)
 }
 
 func (d *DataEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo) {
-	go d.next_worker.PublishDepth(depth, ws)
+	d.next_worker.PublishDepth(depth, ws)
 }
 
 func (d *DataEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 
-	go d.next_worker.PublishTrade(trade, ws)
+	d.next_worker.PublishTrade(trade, ws)
 }
 
 func (d *DataEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
-	go d.next_worker.PublishKline(kline, ws)
+	d.next_worker.PublishKline(kline, ws)
 }
 
 func (d *DataEngine) PublishHistKline(kline *datastruct.RspHistKline, ws *net.WSInfo) {
-	go d.next_worker.PublishHistKline(kline, ws)
+	d.next_worker.PublishHistKline(kline, ws)
 }
 
 func (d *DataEngine) PublishChangeinfo(change_info *datastruct.ChangeInfo, ws *net.WSInfo) {
-	go d.next_worker.PublishChangeinfo(change_info, ws)
+	d.next_worker.PublishChangeinfo(change_info, ws)
 }
 
 func catch_sub_trade_exp(symbol string, ws *net.WSInfo) {
@@ -383,17 +383,19 @@ func (d *DataEngine) SubTrade(req_trade *datastruct.ReqTrade, ws *net.WSInfo) (s
 						TradeData:     trade_value,
 						ChangeData:    nil,
 						UsdPrice:      usd_price,
+						ReqWSTime:     req_trade.ReqWSTime,
 						ReqArriveTime: req_trade.ReqArriveTime,
 					}
-					d.PublishTrade(&rsp_trade, ws)
+					go d.PublishTrade(&rsp_trade, ws)
 				} else {
 					rsp_trade := datastruct.RspTrade{
 						TradeData:     trade_value,
 						ChangeData:    d.cache_period_data[symbol].GetChangeInfo(),
 						UsdPrice:      usd_price,
+						ReqWSTime:     req_trade.ReqWSTime,
 						ReqArriveTime: req_trade.ReqArriveTime,
 					}
-					d.PublishTrade(&rsp_trade, ws)
+					go d.PublishTrade(&rsp_trade, ws)
 				}
 			}
 

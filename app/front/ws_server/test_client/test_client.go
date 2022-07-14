@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -48,9 +49,11 @@ func NewTestMain() *TestMain {
 func (t *TestMain) GetTestTradeReqJson() []byte {
 	symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD", "BTC_USD", "ETH_USD", "ETH_BTC"}
 	// symbol_list := []string{"BTC_USDT", "ETH_USDT"}
+	req_start_time := strconv.FormatInt(util.UTCNanoTime(), 10)
 	sub_info := map[string]interface{}{
-		"type":   net.TRADE_SUB,
-		"symbol": symbol_list,
+		"type":           net.TRADE_SUB,
+		"symbol":         symbol_list,
+		"req_start_time": req_start_time,
 	}
 	rst, err := json.Marshal(sub_info)
 
