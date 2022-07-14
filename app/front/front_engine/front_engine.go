@@ -152,7 +152,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 				// logx.Errorf("Error = %+v", err)
 				// return
 			} else {
-				logx.Slowf("Trade %s, req_ws_time: %d us, req_process_time: %dus ", trade_data.Symbol, trade_data.ReqWSTime/datastruct.NANO_PER_MICR, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR)
+				// logx.Slowf("Trade %s, req_ws_time: %d us, req_process_time: %dus ", trade_data.Symbol, trade_data.ReqWSTime/datastruct.NANO_PER_MICR, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR)
 			}
 
 			err := ws.SendMsg(websocket.TextMessage, byte_data)

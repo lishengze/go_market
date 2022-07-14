@@ -361,10 +361,13 @@ func (d *DataEngine) GetUsdPrice(symbol string) float64 {
 
 	if symbol_list[1] != "USD" {
 		trans_symbol := symbol_list[1] + "_USD"
+
 		if trade, ok := d.trade_cache_map.Load(trans_symbol); ok {
 			tmp_trade := trade.(*datastruct.Trade)
 			usd_price = tmp_trade.Price
 		}
+
+		logx.Slowf("trans_symbol: %s, usd_price: %f", trans_symbol, usd_price)
 	}
 
 	return usd_price
@@ -397,7 +400,7 @@ func (d *DataEngine) SubTrade(req_trade *datastruct.ReqTrade, ws *net.WSInfo) (s
 					ReqWSTime:     req_trade.ReqWSTime,
 					ReqArriveTime: req_trade.ReqArriveTime,
 				}
-				logx.Slowf("[DE Trade] %s, ReqWSTime %d ns", req_trade.Symbol, rsp_trade.ReqWSTime)
+				// logx.Slowf("[DE Trade] %s, ReqWSTime %d ns", req_trade.Symbol, rsp_trade.ReqWSTime)
 				go d.PublishTrade(&rsp_trade, ws)
 			} else {
 				rsp_trade := datastruct.RspTrade{
@@ -408,7 +411,7 @@ func (d *DataEngine) SubTrade(req_trade *datastruct.ReqTrade, ws *net.WSInfo) (s
 					ReqArriveTime: req_trade.ReqArriveTime,
 				}
 
-				logx.Slowf("[DE Trade] %s, ReqWSTime %d ns", req_trade.Symbol, rsp_trade.ReqWSTime)
+				// logx.Slowf("[DE Trade] %s, ReqWSTime %d ns", req_trade.Symbol, rsp_trade.ReqWSTime)
 				go d.PublishTrade(&rsp_trade, ws)
 			}
 		}

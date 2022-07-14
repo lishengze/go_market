@@ -48,8 +48,8 @@ func NewTestMain() *TestMain {
 }
 
 func (t *TestMain) GetTestTradeReqJson() []byte {
-	symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD", "BTC_USD", "ETH_USD", "ETH_BTC"}
-	// symbol_list := []string{"BTC_USDT", "ETH_USDT"}
+	// symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD", "BTC_USD", "ETH_USD", "ETH_BTC"}
+	symbol_list := []string{"ETH_BTC"}
 	req_start_time := strconv.FormatInt(util.UTCNanoTime(), 10)
 	sub_info := map[string]interface{}{
 		"type":           net.TRADE_SUB,
@@ -193,7 +193,11 @@ func (t *TestMain) process_trade(message []byte) {
 		delta_time := util.UTCNanoTime() - trade_data.ReqResponseTime
 		if _, ok := t.TradeUpdatedSymbolMap[trade_data.Symbol]; !ok {
 			logx.Infof("Trade %s, req_process_time: %d us, ws_time: %dus ", trade_data.Symbol, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
-			fmt.Printf("Trade %s, req_ws:%d us, req_process_time: %d us, ws_time: %dus \n", trade_data.Symbol, trade_data.ReqWSTime/datastruct.NANO_PER_MICR, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
+			fmt.Printf("Trade %s, req_ws:%d us, req_process_time: %d us, ws_time: %dus, %s \n",
+				trade_data.Symbol, trade_data.ReqWSTime/datastruct.NANO_PER_MICR,
+				trade_data.ReqProcessTime/datastruct.NANO_PER_MICR,
+				delta_time/datastruct.NANO_PER_MICR, trade_data.String())
+
 			t.TradeUpdatedSymbolMap[trade_data.Symbol] = struct{}{}
 		}
 

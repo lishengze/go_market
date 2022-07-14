@@ -167,6 +167,11 @@ type PubTradeJson struct {
 	ReqResponseTime int64   `json:"req_response_time"`
 }
 
+func (t *PubTradeJson) String() string {
+	return fmt.Sprintf("%s, p: %f, up: %f, v: %f, c: %f, cr: %f, h: %f, l:%f, t: %s",
+		t.Symbol, t.Price, t.USDPrice, t.Volume, t.Change, t.ChangeRate, t.High, t.Low, util.TimeStrFromInt(t.Time))
+}
+
 func NewTradeJsonMsg(trade *datastruct.RspTrade) []byte {
 
 	json_data := PubTradeJson{
