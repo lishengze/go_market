@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -288,10 +289,17 @@ func basic_func() {
 	}
 }
 
+func test_split() {
+	symbol := "BTC_USDT"
+	symbol_list := strings.Split(symbol, "_")
+
+	fmt.Println(symbol_list)
+}
+
 func main() {
 	InitLogx()
 
 	basic_func()
 
-	// TestGetJsonData()
+	// test_split()
 }

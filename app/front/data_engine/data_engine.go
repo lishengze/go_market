@@ -361,10 +361,7 @@ func (d *DataEngine) GetUsdPrice(symbol string) float64 {
 
 	if symbol_list[1] != "USD" {
 		trans_symbol := symbol_list[1] + "_USD"
-	}
-
-	if strings.Contains(symbol, "USDT") {
-		if trade, ok := d.trade_cache_map.Load("USDT_USD"); ok {
+		if trade, ok := d.trade_cache_map.Load(trans_symbol); ok {
 			tmp_trade := trade.(*datastruct.Trade)
 			usd_price = tmp_trade.Price
 		}
