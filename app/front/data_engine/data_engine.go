@@ -367,7 +367,7 @@ func (d *DataEngine) GetUsdPrice(symbol string) float64 {
 			usd_price = tmp_trade.Price
 		}
 
-		logx.Slowf("trans_symbol: %s, usd_price: %f", trans_symbol, usd_price)
+		// logx.Slowf("trans_symbol: %s, usd_price: %f", trans_symbol, usd_price)
 	}
 
 	return usd_price
