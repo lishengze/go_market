@@ -139,7 +139,7 @@ func (m *MonitorAtom) IsAlive() bool {
 	cur_time := util.UTCNanoTime()
 	delta_time := cur_time - m.last_update_time
 
-	logx.Slowf("%s,%s.%s delta_time: %d ns, TimeLimit: %d ns",
+	logx.Statf("%s,%s.%s delta_time: %d ns, TimeLimit: %d ns",
 		m.MetaInfo, m.DataType, m.Symbol, delta_time, m.TimeLimit())
 
 	m.InvalidInfo = fmt.Sprintf("%s.%s, f:%s, l:%s, max: %f s, ave: %f s;\ndelta: %f s, time_limit: %f s",
