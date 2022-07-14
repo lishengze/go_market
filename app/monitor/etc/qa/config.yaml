@@ -23,7 +23,7 @@ MonitorConfigInfo:
   CheckSecs: 30
   
 MonitorMetaInfo:
-  Symbols: ["BTC_USDT"]
+  Symbols: ["BTC_USDT", "BTC_USD", "ETH_USDT", "ETH_USD", "USDT_USD", "ETH_BTC"]
 
 DingConfigInfo:
   Secret: "SEC796dd580e97650ec757f979f62387a19bad5c8ddc93ef2db72fb9f422341f70c"

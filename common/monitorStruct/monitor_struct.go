@@ -99,7 +99,7 @@ func (m *MonitorMarketData) UpdateTrade(symbol string) {
 
 	m.trade_cache_map[symbol].Update()
 
-	logx.Slowf("%s,Trade update %s: %s", m.MetaInfo, symbol, m.trade_cache_map[symbol].String())
+	// logx.Slowf("%s,Trade update %s: %s", m.MetaInfo, symbol, m.trade_cache_map[symbol].String())
 }
 
 func (m *MonitorMarketData) UpdateKline(symbol string) {
