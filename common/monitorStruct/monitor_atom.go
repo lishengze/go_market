@@ -139,8 +139,8 @@ func (m *MonitorAtom) IsAlive() bool {
 	cur_time := util.UTCNanoTime()
 	delta_time := cur_time - m.last_update_time
 
-	logx.Statf("%s,%s.%s delta_time: %d ns, TimeLimit: %d ns",
-		m.MetaInfo, m.DataType, m.Symbol, delta_time, m.TimeLimit())
+	// logx.Statf("%s,%s.%s delta_time: %d ns, TimeLimit: %d ns",
+	// 	m.MetaInfo, m.DataType, m.Symbol, delta_time, m.TimeLimit())
 
 	m.InvalidInfo = fmt.Sprintf("%s.%s, f:%s, l:%s, max: %f s, ave: %f s;\ndelta: %f s, time_limit: %f s",
 		m.DataType, m.Symbol,
@@ -150,6 +150,8 @@ func (m *MonitorAtom) IsAlive() bool {
 		float64(m.ave_time)/datastruct.NANO_PER_SECS,
 		float64(delta_time)/datastruct.NANO_PER_SECS,
 		float64(m.TimeLimit())/datastruct.NANO_PER_SECS)
+
+	logx.Statf("Check %s", m.InvalidInfo)
 
 	if delta_time > m.TimeLimit() {
 
