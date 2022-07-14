@@ -15,7 +15,7 @@ Log:
   StackCooldownMillis: 100
 
 KafkaConf:
-  Address: "10.8.154.126:8117"
+  Address: "10.8.147.73:8117"
 
 NacosConf:
   DataId: "MPU"
