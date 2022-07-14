@@ -144,7 +144,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 	if ws != nil {
 		if ws.IsAlive() {
 			// logx.Infof("ws:%+v is not alive")
-			byte_data := NewTradeJsonMsg(trade.TradeData, trade.ChangeData, trade.UsdPrice)
+			byte_data := NewTradeJsonMsg(trade)
 			err := ws.SendMsg(websocket.TextMessage, byte_data)
 
 			if err != nil {
@@ -155,7 +155,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 			logx.Infof("ws:%+v is not alive", ws)
 		}
 	} else {
-		trade_pub_list := f.sub_data.GetTradePubInfoList(trade.TradeData, trade.ChangeData, trade.UsdPrice)
+		trade_pub_list := f.sub_data.GetTradePubInfoList(trade)
 		// logx.Info("After GetTradePubInfoList")
 
 		for _, info := range trade_pub_list {
@@ -272,12 +272,12 @@ func (f *FrontEngine) SubSymbol(ws *net.WSInfo) {
 	f.next_worker.SubSymbol(ws)
 }
 
-func (f *FrontEngine) SubTrade(symbol string, ws *net.WSInfo) (string, bool) {
-	f.sub_data.SubTrade(symbol, ws)
-	errMsg, ok := f.next_worker.SubTrade(symbol, ws)
+func (f *FrontEngine) SubTrade(req_trade *datastruct.ReqTrade, ws *net.WSInfo) (string, bool) {
+	f.sub_data.SubTrade(req_trade.Symbol, ws)
+	errMsg, ok := f.next_worker.SubTrade(req_trade, ws)
 
 	if !ok {
-		f.sub_data.UnSubTrade(symbol, ws)
+		f.sub_data.UnSubTrade(req_trade.Symbol, ws)
 
 		if ws.IsAlive() {
 			ws.SendErrorMsg(errMsg)
@@ -347,7 +347,10 @@ func (f *FrontEngine) TestSub(test_map map[string]struct{}) {
 
 	if _, ok := test_map[datastruct.TRADE_TYPE]; ok {
 		logx.Statf("Sub Trade: %s, ws_info: %+v\n", symbol, ws_info)
-		f.SubTrade(symbol, ws_info)
+		req_trade := &datastruct.ReqTrade{
+			Symbol: symbol,
+		}
+		f.SubTrade(req_trade, ws_info)
 	}
 
 	if _, ok := test_map[datastruct.KLINE_TYPE]; ok {

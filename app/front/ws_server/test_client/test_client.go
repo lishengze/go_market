@@ -34,7 +34,7 @@ func InitLogx() {
 }
 
 func GetTestTradeReqJson() []byte {
-	symbol_list := []string{"BTC_USDT"}
+	symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD", "BTC_USD", "ETH_USD", "ETH_BTC"}
 	sub_info := map[string]interface{}{
 		"type":   net.TRADE_SUB,
 		"symbol": symbol_list,
@@ -148,6 +148,10 @@ func read_func(c *websocket.Conn) {
 			process_kline(message)
 		}
 
+		if m["type"] == net.TRADE_UPATE {
+			process_trade(message)
+		}
+
 	}
 }
 
@@ -158,7 +162,18 @@ func process_kline(message []byte) {
 		return
 	} else {
 		delta_time := util.UTCNanoTime() - kline_data.ReqResponseTime
-		logx.Infof("req_process_time: %d us, ws_time: %dus, kline_data: %s", kline_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
+		logx.Infof("Kline: req_process_time: %d us, ws_time: %dus, kline_data: %s", kline_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
+	}
+}
+
+func process_trade(message []byte) {
+	var trade_data front_engine.PubTradeJson
+	if err := json.Unmarshal([]byte(message), &trade_data); err != nil {
+		logx.Errorf("Error = %+v", err)
+		return
+	} else {
+		delta_time := util.UTCNanoTime() - trade_data.ReqResponseTime
+		logx.Infof("Trade %s, req_process_time: %d us, ws_time: %dus, trade_data: %s", trade_data.Symbol, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
 	}
 }
 
@@ -179,9 +194,9 @@ func GetHeartbeatMsg() []byte {
 
 func write_func(c *websocket.Conn) {
 
-	// send_msg := GetTestTradeReqJson()
+	send_msg := GetTestTradeReqJson()
 	// send_msg := GetTestDepthReqJson()
-	send_msg := GetTestKlineReqJson(900)
+	// send_msg := GetTestKlineReqJson(900)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {

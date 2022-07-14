@@ -152,34 +152,38 @@ json_data["high"] = high_.get_str_value();
 json_data["low"] = low_.get_str_value();
 */
 type PubTradeJson struct {
-	TypeInfo   string  `json:"type"`
-	Symbol     string  `json:"symbol"`
-	Price      float64 `json:"price"`
-	Volume     float64 `json:"volume"`
-	Change     float64 `json:"change"`
-	ChangeRate float64 `json:"change_rate"`
-	High       float64 `json:"high"`
-	Low        float64 `json:"low"`
-	Time       int64   `json:"date"`
-	USDPrice   float64 `json:"usdPrice"`
+	TypeInfo        string  `json:"type"`
+	Symbol          string  `json:"symbol"`
+	Price           float64 `json:"price"`
+	Volume          float64 `json:"volume"`
+	Change          float64 `json:"change"`
+	ChangeRate      float64 `json:"change_rate"`
+	High            float64 `json:"high"`
+	Low             float64 `json:"low"`
+	Time            int64   `json:"date"`
+	USDPrice        float64 `json:"usdPrice"`
+	ReqProcessTime  int64   `json:"req_process_time"`
+	ReqResponseTime int64   `json:"req_response_time"`
 }
 
-func NewTradeJsonMsg(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, usdt_usd_price float64) []byte {
+func NewTradeJsonMsg(trade *datastruct.RspTrade) []byte {
 
 	json_data := PubTradeJson{
-		TypeInfo: net.TRADE_UPATE,
-		Symbol:   trade.Symbol,
-		Price:    trade.Price,
-		Volume:   trade.Volume,
-		Time:     trade.Time / datastruct.NANO_PER_SECS,
-		USDPrice: usdt_usd_price,
+		TypeInfo:        net.TRADE_UPATE,
+		Symbol:          trade.TradeData.Symbol,
+		Price:           trade.TradeData.Price,
+		Volume:          trade.TradeData.Volume,
+		Time:            trade.TradeData.Time / datastruct.NANO_PER_SECS,
+		USDPrice:        trade.UsdPrice,
+		ReqProcessTime:  util.UTCNanoTime() - trade.ReqArriveTime,
+		ReqResponseTime: util.UTCNanoTime(),
 	}
 
-	if change_info != nil {
-		json_data.Change = change_info.Change
-		json_data.ChangeRate = change_info.ChangeRate
-		json_data.High = change_info.High
-		json_data.Low = change_info.Low
+	if trade.ChangeData != nil {
+		json_data.Change = trade.ChangeData.Change
+		json_data.ChangeRate = trade.ChangeData.ChangeRate
+		json_data.High = trade.ChangeData.High
+		json_data.Low = trade.ChangeData.Low
 	}
 
 	var rst []byte
@@ -188,7 +192,7 @@ func NewTradeJsonMsg(trade *datastruct.Trade, change_info *datastruct.ChangeInfo
 
 	if err != nil {
 		logx.Errorf("NewTradeJsonMsg: trade: %s, change_info: %s, error: %s",
-			trade.String(), change_info.String(), err.Error())
+			trade.TradeData.String(), trade.ChangeData.String(), err.Error())
 	} else {
 		// logx.Slowf("Trade json_data: %+v ", json_data)
 	}

@@ -268,9 +268,10 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	usd_price := trade.Price * d.GetUsdtUsdPrice(trade.Symbol)
 
 	rsp_trade := datastruct.RspTrade{
-		TradeData:  trade,
-		ChangeData: d.cache_period_data[trade.Symbol].GetChangeInfo(),
-		UsdPrice:   usd_price,
+		TradeData:     trade,
+		ChangeData:    d.cache_period_data[trade.Symbol].GetChangeInfo(),
+		UsdPrice:      usd_price,
+		ReqArriveTime: util.UTCNanoTime(),
 	}
 
 	d.PublishTrade(&rsp_trade, nil)
@@ -362,7 +363,8 @@ func (d *DataEngine) GetUsdtUsdPrice(symbol string) float64 {
 	return usdt_usd_price
 }
 
-func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) (string, bool) {
+func (d *DataEngine) SubTrade(req_trade *datastruct.ReqTrade, ws *net.WSInfo) (string, bool) {
+	symbol := req_trade.Symbol
 	defer catch_sub_trade_exp(symbol, ws)
 
 	if trade, ok := d.trade_cache_map.Load(symbol); ok {
@@ -377,9 +379,21 @@ func (d *DataEngine) SubTrade(symbol string, ws *net.WSInfo) (string, bool) {
 
 				if err != nil {
 					logx.Errorf("SubTrade error: %+v", err)
-					d.PublishTrade(trade_value, nil, usd_price, ws)
+					rsp_trade := datastruct.RspTrade{
+						TradeData:     trade_value,
+						ChangeData:    nil,
+						UsdPrice:      usd_price,
+						ReqArriveTime: req_trade.ReqArriveTime,
+					}
+					d.PublishTrade(&rsp_trade, ws)
 				} else {
-					d.PublishTrade(trade_value, d.cache_period_data[symbol].GetChangeInfo(), usd_price, ws)
+					rsp_trade := datastruct.RspTrade{
+						TradeData:     trade_value,
+						ChangeData:    d.cache_period_data[symbol].GetChangeInfo(),
+						UsdPrice:      usd_price,
+						ReqArriveTime: req_trade.ReqArriveTime,
+					}
+					d.PublishTrade(&rsp_trade, ws)
 				}
 			}
 

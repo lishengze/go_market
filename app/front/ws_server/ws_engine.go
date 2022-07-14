@@ -365,7 +365,11 @@ func (w *WSEngine) ProcessSubTrade(m map[string]interface{}, ws *net.WSInfo) {
 		symbol_list := value.([]interface{})
 
 		for _, symbol := range symbol_list {
-			w.next_worker.SubTrade(symbol.(string), ws)
+			req_trade := &datastruct.ReqTrade{
+				Symbol:        symbol.(string),
+				ReqArriveTime: util.UTCNanoTime(),
+			}
+			w.next_worker.SubTrade(req_trade, ws)
 		}
 	} else {
 		logx.Error("ProcessSubTrade: No Symbol Data %+v", m)

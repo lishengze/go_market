@@ -15,7 +15,7 @@ type WorkerI interface {
 
 	SubSymbol(ws *net.WSInfo)
 
-	SubTrade(symbol string, ws *net.WSInfo) (string, bool)
+	SubTrade(trade *datastruct.ReqTrade, ws *net.WSInfo) (string, bool)
 	UnSubTrade(symbol string, ws *net.WSInfo)
 
 	SubDepth(symbol string, ws *net.WSInfo) (string, bool)

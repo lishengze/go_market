@@ -120,18 +120,18 @@ func TestPubTradeData() {
 
 	fmt.Printf("Original Data: %+v \n", trade)
 
-	rst := front_engine.NewTradeJsonMsg(trade, nil, 0.0)
+	// rst := front_engine.NewTradeJsonMsg(trade, nil, 0.0)
 
-	fmt.Printf("\nJson string: %s \n", string(rst))
+	// fmt.Printf("\nJson string: %s \n", string(rst))
 
-	var trans_trade front_engine.PubTradeJson
-	err := json.Unmarshal(rst, &trans_trade)
+	// var trans_trade front_engine.PubTradeJson
+	// err := json.Unmarshal(rst, &trans_trade)
 
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Printf("\ntransed Data: %+v \n", trans_trade)
-	}
+	// if err != nil {
+	// 	fmt.Println(err)
+	// } else {
+	// 	fmt.Printf("\ntransed Data: %+v \n", trans_trade)
+	// }
 
 }
 
