@@ -1,5 +1,5 @@
 Comm:
-  IP: "10.8.154.126:8117"
+  IP: "118.193.45.36:8117"
   NetServerType: "KAFKA"
   SerialType: "PROTOBUF"
 
