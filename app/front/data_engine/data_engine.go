@@ -267,7 +267,13 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
 	usd_price := trade.Price * d.GetUsdtUsdPrice(trade.Symbol)
 
-	d.PublishTrade(trade, d.cache_period_data[trade.Symbol].GetChangeInfo(), usd_price, nil)
+	rsp_trade := datastruct.RspTrade{
+		TradeData:  trade,
+		ChangeData: d.cache_period_data[trade.Symbol].GetChangeInfo(),
+		UsdPrice:   usd_price,
+	}
+
+	d.PublishTrade(&rsp_trade, nil)
 
 	return nil
 }
@@ -312,9 +318,9 @@ func (d *DataEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo) 
 	d.next_worker.PublishDepth(depth, ws)
 }
 
-func (d *DataEngine) PublishTrade(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, usdt_usd_price float64, ws *net.WSInfo) {
+func (d *DataEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 
-	d.next_worker.PublishTrade(trade, change_info, usdt_usd_price, ws)
+	d.next_worker.PublishTrade(trade, ws)
 }
 
 func (d *DataEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {

@@ -126,7 +126,7 @@ func (f *FrontEngine) PublishDepth(depth *datastruct.DepthQuote, ws *net.WSInfo)
 
 }
 
-func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, usdt_usd_price float64, ws *net.WSInfo) {
+func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 
 	defer func(trade *datastruct.Trade, change_info *datastruct.ChangeInfo, ws *net.WSInfo) {
 		errMsg := recover()
@@ -137,25 +137,25 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastr
 			logx.Errorf("errMsg: %+v \n", errMsg)
 			// fmt.Println(errMsg)
 		}
-	}(trade, change_info, ws)
+	}(trade.TradeData, trade.ChangeData, ws)
 
 	// logx.Slowf("PublishTrade:%+v, %+v\n", trade, change_info)
 
 	if ws != nil {
 		if ws.IsAlive() {
 			// logx.Infof("ws:%+v is not alive")
-			byte_data := NewTradeJsonMsg(trade, change_info, usdt_usd_price)
+			byte_data := NewTradeJsonMsg(trade.TradeData, trade.ChangeData, trade.UsdPrice)
 			err := ws.SendMsg(websocket.TextMessage, byte_data)
 
 			if err != nil {
 				logx.Errorf("PublishDepth err: %+v \n", err)
 			}
 		} else {
-			f.sub_data.UnSubTrade(trade.Symbol, ws)
+			f.sub_data.UnSubTrade(trade.TradeData.Symbol, ws)
 			logx.Infof("ws:%+v is not alive", ws)
 		}
 	} else {
-		trade_pub_list := f.sub_data.GetTradePubInfoList(trade, change_info, usdt_usd_price)
+		trade_pub_list := f.sub_data.GetTradePubInfoList(trade.TradeData, trade.ChangeData, trade.UsdPrice)
 		// logx.Info("After GetTradePubInfoList")
 
 		for _, info := range trade_pub_list {
@@ -167,7 +167,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.Trade, change_info *datastr
 				}
 			} else {
 				logx.Infof("ws:%+v is not alive", info.ws_info)
-				f.sub_data.UnSubTrade(trade.Symbol, info.ws_info)
+				f.sub_data.UnSubTrade(trade.TradeData.Symbol, info.ws_info)
 			}
 		}
 	}

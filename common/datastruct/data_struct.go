@@ -123,6 +123,26 @@ type Trade struct {
 	Volume   float64
 }
 
+type ReqTrade struct {
+	Symbol          string
+	ReqArriveTime   int64
+	ReqResponseTime int64
+}
+
+type RspTrade struct {
+	TradeData       *Trade
+	ChangeData      *ChangeInfo
+	UsdPrice        float64
+	ReqArriveTime   int64
+	ReqResponseTime int64
+}
+
+type ReqDepth struct {
+	Symbol          string
+	ReqArriveTime   int64
+	ReqResponseTime int64
+}
+
 type ReqHistKline struct {
 	Symbol    string
 	Exchange  string
