@@ -27,7 +27,7 @@ func NewSymbolListMsg(symbol_list []string) []byte {
 		logx.Errorf("NewSymbolListMsg: json_data: %+v, symbol_list: %+v, error: %s",
 			json_data, symbol_list, err.Error())
 	} else {
-		logx.Slowf("SymbolList json_data: %+v ", json_data)
+		// logx.Slowf("SymbolList json_data: %+v ", json_data)
 	}
 
 	return rst
@@ -241,13 +241,15 @@ type PubKlineDetail struct {
 }
 
 type PubKlineJson struct {
-	TypeInfo   string           `json:"type"`
-	Symbol     string           `json:"symbol"`
-	StartTime  int64            `json:"start_time"`
-	EndTime    int64            `json:"end_time"`
-	Resolution int              `json:"frequency"`
-	DataCount  int              `json:"data_count"`
-	Data       []PubKlineDetail `json:"data"`
+	TypeInfo        string           `json:"type"`
+	Symbol          string           `json:"symbol"`
+	StartTime       int64            `json:"start_time"`
+	EndTime         int64            `json:"end_time"`
+	Resolution      int              `json:"frequency"`
+	DataCount       int              `json:"data_count"`
+	Data            []PubKlineDetail `json:"data"`
+	ReqProcessTime  int64            `json:"req_process_time"`
+	ReqResponseTime int64            `json:"req_response_time"`
 }
 
 func (p *PubKlineJson) TimeList() string {
@@ -278,13 +280,15 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 	}
 
 	json_data := PubKlineJson{
-		TypeInfo:   net.KLINE_UPATE,
-		Symbol:     hist_kline.ReqInfo.Symbol,
-		StartTime:  int64(hist_kline.ReqInfo.StartTime),
-		EndTime:    int64(hist_kline.ReqInfo.EndTime),
-		Resolution: int(hist_kline.ReqInfo.Frequency),
-		DataCount:  hist_kline.Klines.Size(),
-		Data:       kline_data,
+		TypeInfo:        net.KLINE_UPATE,
+		Symbol:          hist_kline.ReqInfo.Symbol,
+		StartTime:       int64(hist_kline.ReqInfo.StartTime),
+		EndTime:         int64(hist_kline.ReqInfo.EndTime),
+		Resolution:      int(hist_kline.ReqInfo.Frequency),
+		DataCount:       hist_kline.Klines.Size(),
+		Data:            kline_data,
+		ReqProcessTime:  util.UTCNanoTime() - hist_kline.ReqInfo.ReqArriveTime,
+		ReqResponseTime: util.UTCNanoTime(),
 	}
 
 	var rst []byte
@@ -314,13 +318,14 @@ func NewKlineUpdateJsonMsg(kline *datastruct.Kline) []byte {
 	kline_data = append(kline_data, tmp_detail)
 
 	json_data := PubKlineJson{
-		TypeInfo:   net.KLINE_UPATE,
-		Symbol:     kline.Symbol,
-		StartTime:  kline.Time,
-		EndTime:    kline.Time,
-		Resolution: kline.Resolution,
-		DataCount:  1,
-		Data:       kline_data,
+		TypeInfo:        net.KLINE_UPATE,
+		Symbol:          kline.Symbol,
+		StartTime:       kline.Time,
+		EndTime:         kline.Time,
+		Resolution:      kline.Resolution,
+		DataCount:       1,
+		Data:            kline_data,
+		ReqResponseTime: util.UTCNanoTime(),
 	}
 
 	var rst []byte

@@ -123,10 +123,11 @@ func (w *WSClient) StartListenData() {
 	for {
 		_, message, err := w.Client.ReadMessage()
 		if err != nil {
-			logx.Infof("Read Err: %+v", err)
+			logx.Infof("WS Read Err: %+v", err)
+			logx.Errorf("WS Read Err: %+v", err)
 			return
 		}
-		// logx.Infof("WSClient Msg: %s", message)
+		logx.Infof("WSClient Msg: %s", message)
 
 		go w.ProcessMsg(message)
 	}
@@ -270,7 +271,7 @@ func (w *WSClient) ProcessDepth(m map[string]interface{}) {
 	if value, ok := m["symbol"]; ok {
 		symbol := value.(string)
 
-		msg := datastruct.BCTS_EXCHANGE + "_" + symbol
+		msg := "depth." + datastruct.BCTS_EXCHANGE + "_" + symbol
 		w.UpdateRecvInfo(msg)
 
 		// logx.Slowf("WS depth: %s", msg)
@@ -288,7 +289,7 @@ func (w *WSClient) ProcessTrade(m map[string]interface{}) {
 	if value, ok := m["symbol"]; ok {
 		symbol := value.(string)
 
-		msg := datastruct.BCTS_EXCHANGE + "_" + symbol
+		msg := "trade." + datastruct.BCTS_EXCHANGE + "_" + symbol
 		w.UpdateRecvInfo(msg)
 
 		// logx.Slowf("WS trade: %s", msg)
@@ -306,7 +307,7 @@ func (w *WSClient) ProcessKline(m map[string]interface{}) {
 	if value, ok := m["symbol"]; ok {
 		symbol := value.(string)
 
-		msg := datastruct.BCTS_EXCHANGE + "_" + symbol
+		msg := "kline." + datastruct.BCTS_EXCHANGE + "_" + symbol
 		w.UpdateRecvInfo(msg)
 
 		// logx.Slowf("WS kline: %s", msg)

@@ -130,6 +130,9 @@ type ReqHistKline struct {
 	EndTime   uint64
 	Count     uint32
 	Frequency uint32
+
+	ReqArriveTime   int64
+	ReqResponseTime int64
 }
 
 func (r *ReqHistKline) String() string {

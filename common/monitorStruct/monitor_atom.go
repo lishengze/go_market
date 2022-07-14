@@ -5,6 +5,8 @@ import (
 	"market_server/common/datastruct"
 	"market_server/common/util"
 	"sync"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type MonitorData struct {
@@ -42,12 +44,12 @@ type MonitorAtom struct {
 }
 
 func (m *MonitorAtom) String() string {
-	return fmt.Sprintf("f:%s, l:%s, lst: %dus, max: %dus, ave: %d us",
+	return fmt.Sprintf("f:%s, l:%s, lst: %f s, max: %f s, ave: %f s",
 		util.TimeStrFromInt(m.first_time),
 		util.TimeStrFromInt(m.last_update_time),
-		m.lst_time/datastruct.NANO_PER_MICR,
-		m.max_time/datastruct.NANO_PER_MICR,
-		m.ave_time/datastruct.NANO_PER_MICR)
+		float64(m.lst_time)/datastruct.NANO_PER_SECS,
+		float64(m.max_time)/datastruct.NANO_PER_SECS,
+		float64(m.ave_time)/datastruct.NANO_PER_SECS)
 }
 
 func NewMonitorAtom(symbol string, DataType string, meta_info string, rate_param float64, init_dead_line int64) *MonitorAtom {
@@ -113,6 +115,12 @@ func (m *MonitorAtom) TimeLimit() int64 {
 
 	static_time_limit := m.max_time * int64(m.RateParam)
 
+	if static_time_limit == 0.0 {
+		static_time_limit = util.UTCNanoTime()
+	}
+
+	return static_time_limit
+
 	if static_time_limit > m.InitDeadLine {
 		return static_time_limit
 	}
@@ -131,16 +139,24 @@ func (m *MonitorAtom) IsAlive() bool {
 	cur_time := util.UTCNanoTime()
 	delta_time := cur_time - m.last_update_time
 
-	m.InvalidInfo = fmt.Sprintf("%s.%s, f:%s, l:%s, max: %dms, ave: %d ms;\ndelta: %dms, time_limit: %dms",
-		m.DataType, m.Symbol,
+	// logx.Statf("%s,%s.%s delta_time: %d ns, TimeLimit: %d ns",
+	// 	m.MetaInfo, m.DataType, m.Symbol, delta_time, m.TimeLimit())
+
+	m.InvalidInfo = fmt.Sprintf("%s.%s, f:%s, l:%s, max: %f s, ave: %f s;de: %f s, tl: %f s",
+		m.MetaInfo, m.Symbol,
 		util.TimeStrFromInt(m.first_time),
 		util.TimeStrFromInt(m.last_update_time),
-		m.max_time/datastruct.NANO_PER_MILL,
-		m.ave_time/datastruct.NANO_PER_MILL,
-		delta_time/datastruct.NANO_PER_MILL,
-		m.TimeLimit()/datastruct.NANO_PER_MILL)
+		float64(m.max_time)/datastruct.NANO_PER_SECS,
+		float64(m.ave_time)/datastruct.NANO_PER_SECS,
+		float64(delta_time)/datastruct.NANO_PER_SECS,
+		float64(m.TimeLimit())/datastruct.NANO_PER_SECS)
+
+	logx.Slowf("[CK] %s", m.InvalidInfo)
 
 	if delta_time > m.TimeLimit() {
+
+		logx.Errorf("InvalidInfo %s", m.InvalidInfo)
+
 		return false
 	} else {
 		return true

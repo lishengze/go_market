@@ -7,6 +7,7 @@ import (
 	"log"
 	"market_server/app/front/front_engine"
 	"market_server/app/front/net"
+	"market_server/common/datastruct"
 	"market_server/common/util"
 	"net/url"
 	"os"
@@ -93,9 +94,9 @@ func TestGetJsonData() {
 	fmt.Println(string(rst3))
 }
 
-// var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
+var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
 
-var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
+// var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
 
 // var addr = flag.String("addr", "10.10.1.75:8114", "http service address")
 
@@ -144,20 +145,21 @@ func read_func(c *websocket.Conn) {
 		}
 
 		if m["type"] == net.KLINE_UPATE {
-			var kline_data front_engine.PubKlineJson
-			if err := json.Unmarshal([]byte(message), &kline_data); err != nil {
-				logx.Errorf("Error = %+v", err)
-				return
-			} else {
-				logx.Infof("kline_data: %s", kline_data.TimeList())
-			}
+			process_kline(message)
 		}
 
 	}
 }
 
-func process_kline(kline_list []front_engine.PubKlineDetail) {
-
+func process_kline(message []byte) {
+	var kline_data front_engine.PubKlineJson
+	if err := json.Unmarshal([]byte(message), &kline_data); err != nil {
+		logx.Errorf("Error = %+v", err)
+		return
+	} else {
+		delta_time := util.UTCNanoTime() - kline_data.ReqResponseTime
+		logx.Infof("req_process_time: %d us, ws_time: %dus, kline_data: %s", kline_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
+	}
 }
 
 func GetHeartbeatMsg() []byte {
@@ -179,7 +181,7 @@ func write_func(c *websocket.Conn) {
 
 	// send_msg := GetTestTradeReqJson()
 	// send_msg := GetTestDepthReqJson()
-	send_msg := GetTestKlineReqJson(60)
+	send_msg := GetTestKlineReqJson(900)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {

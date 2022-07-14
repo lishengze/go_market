@@ -67,6 +67,8 @@ func (k *MonitorEngine) Start() {
 	logx.Infof("MonitorEngine Start!")
 
 	k.StartListenRecvdata()
+	go k.MonitorMarketDataWorker.StartCheck()
+
 }
 
 func (k *MonitorEngine) StartListenRecvdata() {
