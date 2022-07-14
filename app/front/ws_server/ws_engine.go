@@ -385,6 +385,8 @@ func (w *WSEngine) ProcessSubTrade(m map[string]interface{}, ws *net.WSInfo) {
 				ReqWSTime:     util.UTCNanoTime() - req_start_time,
 				ReqArriveTime: util.UTCNanoTime(),
 			}
+
+			logx.Infof("[Trade] %s, ReqWSTime %d ns", req_trade.Symbol, req_trade.ReqWSTime)
 			go w.next_worker.SubTrade(req_trade, ws)
 		}
 	} else {

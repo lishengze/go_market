@@ -192,7 +192,7 @@ func (t *TestMain) process_trade(message []byte) {
 		delta_time := util.UTCNanoTime() - trade_data.ReqResponseTime
 		if _, ok := t.TradeUpdatedSymbolMap[trade_data.Symbol]; !ok {
 			logx.Infof("Trade %s, req_process_time: %d us, ws_time: %dus ", trade_data.Symbol, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
-			fmt.Printf("Trade %s, req_process_time: %d us, ws_time: %dus \n", trade_data.Symbol, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
+			fmt.Printf("Trade %s, req_ws:%d ns, req_process_time: %d us, ws_time: %dus \n", trade_data.Symbol, trade_data.ReqWSTime, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
 			t.TradeUpdatedSymbolMap[trade_data.Symbol] = struct{}{}
 		}
 
