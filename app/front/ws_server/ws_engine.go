@@ -10,6 +10,7 @@ import (
 	"market_server/common/util"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -193,6 +194,7 @@ func (w *WSEngine) InitWS(h http.ResponseWriter, r *http.Request) *net.WSInfo {
 
 func (w *WSEngine) ListenMessage(ws *net.WSInfo) {
 	defer func(ws *net.WSInfo) {
+		w.CloseWS(ws)
 		errMsg := recover()
 		if errMsg != nil {
 			fmt.Println("This is catch_exp func")
@@ -208,13 +210,14 @@ func (w *WSEngine) ListenMessage(ws *net.WSInfo) {
 			logx.Errorf("read, type: %d, err: %+v\n", mt, err)
 			logx.Infof("read, type: %d, err: %+v\n", mt, err)
 			time.Sleep(time.Millisecond * 100)
+			if strings.Contains(err.Error(), "close") {
+				ws.SetAlive(false)
+			}
 			break
 		} else {
 			w.ProcessMessage(message, ws)
 		}
 	}
-
-	defer w.CloseWS(ws)
 }
 
 /*

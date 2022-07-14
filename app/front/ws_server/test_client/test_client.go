@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"sync"
 
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -33,9 +34,20 @@ func InitLogx() {
 	logx.MustSetup(LogConfig)
 }
 
-func GetTestTradeReqJson() []byte {
-	// symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD", "BTC_USD", "ETH_USD", "ETH_BTC"}
-	symbol_list := []string{"BTC_USDT", "ETH_USDT"}
+type TestMain struct {
+	TradeUpdatedSymbolMap      map[string]struct{}
+	TradeUpdatedSymbolMapMutex sync.Mutex
+}
+
+func NewTestMain() *TestMain {
+	return &TestMain{
+		TradeUpdatedSymbolMap: make(map[string]struct{}),
+	}
+}
+
+func (t *TestMain) GetTestTradeReqJson() []byte {
+	symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD", "BTC_USD", "ETH_USD", "ETH_BTC"}
+	// symbol_list := []string{"BTC_USDT", "ETH_USDT"}
 	sub_info := map[string]interface{}{
 		"type":   net.TRADE_SUB,
 		"symbol": symbol_list,
@@ -51,7 +63,7 @@ func GetTestTradeReqJson() []byte {
 	}
 }
 
-func GetTestDepthReqJson() []byte {
+func (t *TestMain) GetTestDepthReqJson() []byte {
 	symbol_list := []string{"BTC_USDT"}
 	sub_info := map[string]interface{}{
 		"type":   net.SYMBOL_SUB,
@@ -68,7 +80,7 @@ func GetTestDepthReqJson() []byte {
 	}
 }
 
-func GetTestKlineReqJson(frequency int) []byte {
+func (t *TestMain) GetTestKlineReqJson(frequency int) []byte {
 	sub_info := map[string]interface{}{
 		"type":      net.KLINE_SUB,
 		"symbol":    "BTC_USDT",
@@ -85,10 +97,10 @@ func GetTestKlineReqJson(frequency int) []byte {
 	}
 }
 
-func TestGetJsonData() {
-	rst1 := GetTestTradeReqJson()
-	rst2 := GetTestDepthReqJson()
-	rst3 := GetTestKlineReqJson(600)
+func (t *TestMain) TestGetJsonData() {
+	rst1 := t.GetTestTradeReqJson()
+	rst2 := t.GetTestDepthReqJson()
+	rst3 := t.GetTestKlineReqJson(600)
 
 	fmt.Println(string(rst1))
 	fmt.Println(string(rst2))
@@ -101,7 +113,7 @@ var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
 
 // var addr = flag.String("addr", "10.10.1.75:8114", "http service address")
 
-func GetHeartbeat() []byte {
+func (t *TestMain) GetHeartbeat() []byte {
 	info := map[string]interface{}{
 		"type": "heartbeat",
 	}
@@ -116,7 +128,7 @@ func GetHeartbeat() []byte {
 	}
 }
 
-func read_func(c *websocket.Conn) {
+func (t *TestMain) read_func(c *websocket.Conn) {
 	logx.Info("Read_Func Start!")
 	for {
 		_, message, err := c.ReadMessage()
@@ -124,7 +136,7 @@ func read_func(c *websocket.Conn) {
 			logx.Info("read:", err)
 			return
 		}
-		log.Printf("recv: %s", message)
+		// log.Printf("recv: %s", message)
 
 		var m map[string]interface{}
 		if err := json.Unmarshal([]byte(message), &m); err != nil {
@@ -138,7 +150,7 @@ func read_func(c *websocket.Conn) {
 		}
 
 		if m["type"] == "heartbeat" {
-			err := c.WriteMessage(websocket.TextMessage, GetHeartbeatMsg())
+			err := c.WriteMessage(websocket.TextMessage, t.GetHeartbeatMsg())
 			if err != nil {
 				logx.Info("write:", err)
 				return
@@ -146,17 +158,17 @@ func read_func(c *websocket.Conn) {
 		}
 
 		if m["type"] == net.KLINE_UPATE {
-			process_kline(message)
+			t.process_kline(message)
 		}
 
 		if m["type"] == net.TRADE_UPATE {
-			process_trade(message)
+			t.process_trade(message)
 		}
 
 	}
 }
 
-func process_kline(message []byte) {
+func (t *TestMain) process_kline(message []byte) {
 	var kline_data front_engine.PubKlineJson
 	if err := json.Unmarshal([]byte(message), &kline_data); err != nil {
 		logx.Errorf("Error = %+v", err)
@@ -167,18 +179,25 @@ func process_kline(message []byte) {
 	}
 }
 
-func process_trade(message []byte) {
+func (t *TestMain) process_trade(message []byte) {
 	var trade_data front_engine.PubTradeJson
 	if err := json.Unmarshal([]byte(message), &trade_data); err != nil {
 		logx.Errorf("Error = %+v", err)
 		return
 	} else {
+		t.TradeUpdatedSymbolMapMutex.Lock()
 		delta_time := util.UTCNanoTime() - trade_data.ReqResponseTime
-		logx.Infof("Trade %s, req_process_time: %d us, ws_time: %dus ", trade_data.Symbol, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
+		if _, ok := t.TradeUpdatedSymbolMap[trade_data.Symbol]; !ok {
+			logx.Infof("Trade %s, req_process_time: %d us, ws_time: %dus ", trade_data.Symbol, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
+			fmt.Printf("Trade %s, req_process_time: %d us, ws_time: %dus \n", trade_data.Symbol, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
+			t.TradeUpdatedSymbolMap[trade_data.Symbol] = struct{}{}
+		}
+
+		t.TradeUpdatedSymbolMapMutex.Unlock()
 	}
 }
 
-func GetHeartbeatMsg() []byte {
+func (t *TestMain) GetHeartbeatMsg() []byte {
 
 	heartbeat_map := map[string]interface{}{
 		"time": util.UTCNanoTime(),
@@ -193,9 +212,9 @@ func GetHeartbeatMsg() []byte {
 	return rst
 }
 
-func write_func(c *websocket.Conn) {
+func (t *TestMain) write_func(c *websocket.Conn) {
 
-	send_msg := GetTestTradeReqJson()
+	send_msg := t.GetTestTradeReqJson()
 	// send_msg := GetTestDepthReqJson()
 	// send_msg := GetTestKlineReqJson(900)
 
@@ -248,11 +267,13 @@ func basic_func() {
 	}
 	defer c.Close()
 
+	t := NewTestMain()
+
 	// done := make(chan struct{})
 
-	go read_func(c)
+	go t.read_func(c)
 
-	go write_func(c)
+	go t.write_func(c)
 
 	for {
 		select {
