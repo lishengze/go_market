@@ -34,7 +34,8 @@ func InitLogx() {
 }
 
 func GetTestTradeReqJson() []byte {
-	symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD", "BTC_USD", "ETH_USD", "ETH_BTC"}
+	// symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD", "BTC_USD", "ETH_USD", "ETH_BTC"}
+	symbol_list := []string{"BTC_USDT", "ETH_USDT"}
 	sub_info := map[string]interface{}{
 		"type":   net.TRADE_SUB,
 		"symbol": symbol_list,
@@ -173,7 +174,7 @@ func process_trade(message []byte) {
 		return
 	} else {
 		delta_time := util.UTCNanoTime() - trade_data.ReqResponseTime
-		logx.Infof("Trade %s, req_process_time: %d us, ws_time: %dus, trade_data: %s", trade_data.Symbol, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
+		logx.Infof("Trade %s, req_process_time: %d us, ws_time: %dus ", trade_data.Symbol, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
 	}
 }
 
