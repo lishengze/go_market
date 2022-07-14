@@ -369,42 +369,43 @@ func (d *DataEngine) SubTrade(req_trade *datastruct.ReqTrade, ws *net.WSInfo) (s
 
 	if trade, ok := d.trade_cache_map.Load(symbol); ok {
 		d.cache_period_data_mutex.Lock()
+		var init_period_err error
 		if _, ok := d.cache_period_data[symbol]; !ok {
-			err := d.InitPeriodDara(symbol)
-
-			if d.GetUsdtUsdPrice(symbol) != 0.0 {
-				trade_value := trade.(*datastruct.Trade)
-
-				usd_price := trade_value.Price * d.GetUsdtUsdPrice(symbol)
-
-				if err != nil {
-					logx.Errorf("SubTrade error: %+v", err)
-					rsp_trade := datastruct.RspTrade{
-						TradeData:     trade_value,
-						ChangeData:    nil,
-						UsdPrice:      usd_price,
-						ReqWSTime:     req_trade.ReqWSTime,
-						ReqArriveTime: req_trade.ReqArriveTime,
-					}
-					logx.Slowf("[DE HeaderTrade] %s, ReqWSTime %d ns", req_trade.Symbol, rsp_trade.ReqWSTime)
-					go d.PublishTrade(&rsp_trade, ws)
-				} else {
-					rsp_trade := datastruct.RspTrade{
-						TradeData:     trade_value,
-						ChangeData:    d.cache_period_data[symbol].GetChangeInfo(),
-						UsdPrice:      usd_price,
-						ReqWSTime:     req_trade.ReqWSTime,
-						ReqArriveTime: req_trade.ReqArriveTime,
-					}
-
-					logx.Slowf("[DE HeaderTrade] %s, ReqWSTime %d ns", req_trade.Symbol, rsp_trade.ReqWSTime)
-					go d.PublishTrade(&rsp_trade, ws)
-				}
-			}
+			init_period_err = d.InitPeriodDara(symbol)
 
 			symbol_list := d.get_symbol_list()
 			d.PublishSymbol(symbol_list, nil)
 		}
+
+		if d.GetUsdtUsdPrice(symbol) != 0.0 {
+			trade_value := trade.(*datastruct.Trade)
+			usd_price := trade_value.Price * d.GetUsdtUsdPrice(symbol)
+
+			if init_period_err != nil {
+				logx.Errorf("SubTrade error: %+v", init_period_err)
+				rsp_trade := datastruct.RspTrade{
+					TradeData:     trade_value,
+					ChangeData:    nil,
+					UsdPrice:      usd_price,
+					ReqWSTime:     req_trade.ReqWSTime,
+					ReqArriveTime: req_trade.ReqArriveTime,
+				}
+				logx.Slowf("[DE Trade] %s, ReqWSTime %d ns", req_trade.Symbol, rsp_trade.ReqWSTime)
+				go d.PublishTrade(&rsp_trade, ws)
+			} else {
+				rsp_trade := datastruct.RspTrade{
+					TradeData:     trade_value,
+					ChangeData:    d.cache_period_data[symbol].GetChangeInfo(),
+					UsdPrice:      usd_price,
+					ReqWSTime:     req_trade.ReqWSTime,
+					ReqArriveTime: req_trade.ReqArriveTime,
+				}
+
+				logx.Slowf("[DE Trade] %s, ReqWSTime %d ns", req_trade.Symbol, rsp_trade.ReqWSTime)
+				go d.PublishTrade(&rsp_trade, ws)
+			}
+		}
+
 		d.cache_period_data_mutex.Unlock()
 		return "", true
 	} else {
