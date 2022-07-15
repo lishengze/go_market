@@ -74,6 +74,8 @@ func test_kafka() {
 	kafka_server.UpdateMetaData(GetInitMeta())
 	kafka_server.Start()
 
+	StartListenRecvdata(RecvDataChan)
+
 	// logx.Infof("CreateTopic: %+v", kafka_server.CreatedTopics())
 
 	// topic := "golang_test"
