@@ -25,6 +25,7 @@ type (
 	GetSymbolReq           = opupb.GetSymbolReq
 	GetSymbolRsp           = opupb.GetSymbolRsp
 	Order                  = opupb.Order
+	OrderInfo              = opupb.OrderInfo
 	OrderTradesUpdate      = opupb.OrderTradesUpdate
 	OrderUpdate            = opupb.OrderUpdate
 	PlaceOrderReq          = opupb.PlaceOrderReq

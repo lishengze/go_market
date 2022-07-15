@@ -301,33 +301,43 @@ func (o *opu) QueryOrder(req *opupb.QueryOrderReq) (*opupb.QueryOrderRsp, error)
 		return nil, err
 	}
 
-	order, err := o.svcCtx.OrderModel.FindOneByAccountIdClientOrderId(account.Account.Id, req.ClientOrderId)
+	orders, err := o.svcCtx.OrderModel.FindMany(modelext.NewQuery().WhereFunc(func(wheres *modelext.Wheres) {
+		wheres.Equal("account_id", account.Id)
+		if req.ClientOrderId != "" {
+			wheres.Equal("client_order_id", req.ClientOrderId)
+		} else {
+			if len(req.OrderStatuses) != 0 {
+				var statuses []interface{}
+				for _, status := range req.OrderStatuses {
+					statuses = append(statuses, status)
+				}
+				wheres.In("status", statuses)
+			}
+		}
+
+	}))
+
 	if err != nil {
 		logx.Error(err)
 		return nil, err
 	}
 
-	om, ok := o.unClosedOrdersMap.Load(order.Id)
-	if ok {
-		om.(*orderManager).syncOrder() // 主动向交易所同步一次订单
+	rsp := new(opupb.QueryOrderRsp)
+
+	for _, order := range orders {
+		trades, err := o.svcCtx.TradeModel.FindMany(modelext.NewQuery().Equal("order_id", order.Id))
+		if err != nil {
+			logx.Error(err)
+			return nil, err
+		}
+
+		rsp.Orders = append(rsp.Orders, &opupb.OrderInfo{
+			Order:  toPbOrder(order),
+			Trades: toPbTrades(trades),
+		})
 	}
 
-	order, err = o.svcCtx.OrderModel.FindOneByAccountIdClientOrderId(account.Account.Id, req.ClientOrderId)
-	if err != nil {
-		logx.Error(err)
-		return nil, err
-	}
-
-	trades, err := o.svcCtx.TradeModel.FindMany(modelext.NewQuery().Equal("order_id", order.Id))
-	if err != nil {
-		logx.Error(err)
-		return nil, err
-	}
-
-	return &opupb.QueryOrderRsp{
-		Order:  toPbOrder(order),
-		Trades: toPbTrades(trades),
-	}, nil
+	return rsp, nil
 }
 
 func (o *opu) PlaceOrder(req *opupb.PlaceOrderReq) (*opupb.EmptyRsp, error) {

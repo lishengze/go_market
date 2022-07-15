@@ -87,13 +87,11 @@ message QueryOrderReq {
   string account_id = 1; // account_id, account_alias 填一个参数即可, account_id 优先
   string account_alias = 2;
   string client_order_id = 3;
+  repeated string order_statuses = 4;
 }
 
 message QueryOrderRsp {
-  string account_id = 1; // account_id, account_alias 填一个参数即可, account_id 优先
-  string account_alias = 2;
-  Order order = 3;
-  repeated Trade trades = 4;
+  repeated OrderInfo Orders = 1;
 }
 
 message QueryTradeReq {
@@ -128,6 +126,12 @@ message EmptyReq {
 }
 
 message EmptyRsp {
+}
+
+
+message OrderInfo {
+  Order order = 1;
+  repeated Trade trades = 2;
 }
 
 message Order {
