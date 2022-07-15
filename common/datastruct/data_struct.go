@@ -205,7 +205,7 @@ func (t *Trade) String() string {
 // }
 
 func (k *Kline) String() string {
-	res := fmt.Sprintf("%s.%s, %s, v: %f\n",
+	res := fmt.Sprintf("%s.%s, %s, v: %f",
 		k.Exchange, k.Symbol, util.TimeStrFromInt(k.Time), k.Volume)
 	return res
 }

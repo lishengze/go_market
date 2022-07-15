@@ -120,31 +120,39 @@ func (s *SubData) UpdateKlineCacheData(kline *datastruct.Kline) {
 func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*KlinePubInfo {
 	defer util.CatchExp("GetKlinePubInfoListWithTrade")
 
+	logx.Slowf("0")
 	if trade == nil {
 		logx.Errorf("trade is nil")
 		return nil
 	}
+	logx.Slowf("1")
 
 	var rst []*KlinePubInfo
 
 	s.KlineInfo.mutex.Lock()
 	defer s.KlineInfo.mutex.Unlock()
 
+	logx.Slowf("2")
 	var kline *datastruct.Kline
 
 	if _, ok := s.KlineInfo.Info[kline.Symbol]; !ok {
 		return rst
 	}
 
+	logx.Slowf("3")
+
 	for resolution, sub_info := range s.KlineInfo.Info[kline.Symbol] {
+		logx.Slowf("4")
 		if sub_info.cache_data == nil {
 			logx.Errorf("Hisk Kline %s, %d , cache_data empty", kline.Symbol, resolution)
 			continue
 		}
 
+		logx.Slowf("5")
 		cache_kline := sub_info.cache_data
 		NextKlineTime := cache_kline.Time + int64(resolution)*datastruct.NANO_PER_SECS
 
+		logx.Slowf("6")
 		if trade.Time > NextKlineTime {
 			logx.Errorf("Trade.Time %s, later than NextKlineTime: %s", util.TimeStrFromInt(trade.Time), util.TimeStrFromInt(NextKlineTime))
 			continue
@@ -155,22 +163,22 @@ func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*Kline
 			continue
 		}
 
+		logx.Slowf("7")
 		pub_kline := datastruct.NewKlineWithKline(cache_kline)
 
 		pub_kline.Close = trade.Price
-
 		if pub_kline.Low > trade.Price {
 			pub_kline.Low = trade.Price
 		}
-
 		if pub_kline.High < trade.Price {
 			pub_kline.High = trade.Price
 		}
-
 		if pub_kline != nil {
 			cur_pub_list := s.GetKlinePubInfoListAtom(sub_info, pub_kline)
 			rst = append(rst, cur_pub_list...)
 		}
+
+		logx.Slowf("8")
 	}
 
 	return rst
