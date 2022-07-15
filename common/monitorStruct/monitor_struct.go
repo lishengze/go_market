@@ -88,7 +88,7 @@ func (m *MonitorMarketData) UpdateDepth(symbol string) {
 	}
 
 	m.depth_cache_map[symbol].Update()
-	logx.Slowf("%s,Depth update %s: %s", m.MetaInfo, symbol, m.depth_cache_map[symbol].String())
+	// logx.Slowf("%s,Depth update %s: %s", m.MetaInfo, symbol, m.depth_cache_map[symbol].String())
 }
 
 func (m *MonitorMarketData) UpdateTrade(symbol string) {
