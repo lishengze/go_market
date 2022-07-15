@@ -170,6 +170,10 @@ func (t *TestMain) read_func(c *websocket.Conn) {
 			t.process_trade(message)
 		}
 
+		if m["type"] == net.DEPTH_UPDATE {
+			t.process_depth(message)
+		}
+
 	}
 }
 
@@ -207,6 +211,10 @@ func (t *TestMain) process_trade(message []byte) {
 	}
 }
 
+func (t *TestMain) process_depth(message []byte) {
+	logx.Info(string(message))
+}
+
 func (t *TestMain) GetHeartbeatMsg() []byte {
 
 	heartbeat_map := map[string]interface{}{
@@ -225,8 +233,8 @@ func (t *TestMain) GetHeartbeatMsg() []byte {
 func (t *TestMain) write_func(c *websocket.Conn) {
 
 	// send_msg := t.GetTestTradeReqJson()
-	// send_msg := GetTestDepthReqJson()
-	send_msg := t.GetTestKlineReqJson(60)
+	send_msg := t.GetTestDepthReqJson()
+	// send_msg := t.GetTestKlineReqJson(60)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {

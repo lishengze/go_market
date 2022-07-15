@@ -162,6 +162,7 @@ func InitTestLogx() {
 
 	LogConfig := logx.LogConf{
 		Compress:            true,
+		Encoding:            "plain",
 		KeepDays:            0,
 		Level:               "info",
 		Mode:                "file",
