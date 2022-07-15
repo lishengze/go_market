@@ -88,8 +88,8 @@ func (t *TestMain) GetTestDepthReqJson() []byte {
 func (t *TestMain) GetTestKlineReqJson(frequency int) []byte {
 	sub_info := map[string]interface{}{
 		"type":      net.KLINE_SUB,
-		"symbol":    "ETH_BTC",
-		"count":     "100",
+		"symbol":    "BTC_USDT",
+		"count":     "5",
 		"frequency": fmt.Sprintf("%d", frequency),
 	}
 	rst, err := json.Marshal(sub_info)
@@ -226,7 +226,7 @@ func (t *TestMain) write_func(c *websocket.Conn) {
 
 	// send_msg := t.GetTestTradeReqJson()
 	// send_msg := GetTestDepthReqJson()
-	send_msg := t.GetTestKlineReqJson(900)
+	send_msg := t.GetTestKlineReqJson(60)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {

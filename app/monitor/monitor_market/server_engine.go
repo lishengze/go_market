@@ -51,6 +51,7 @@ func (s *ServerEngine) StartCommer() {
 
 	new_meta.TradeMeta = symbol_exchange_set
 	new_meta.KlineMeta = symbol_exchange_set
+	new_meta.DepthMeta = symbol_exchange_set
 
 	logx.Infof("[I] InitMeta: %v \n", new_meta)
 
