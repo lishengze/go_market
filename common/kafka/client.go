@@ -526,7 +526,7 @@ func (k *KafkaServer) PublishKline(local_kline *datastruct.Kline) error {
 }
 
 func (k *KafkaServer) PublishTrade(local_trade *datastruct.Trade) error {
-	logx.Slowf("Pub Trade %+v", local_trade)
+	// logx.Slowf("Pub Trade %+v", local_trade)
 
 	serialize_str, err := k.Serializer.EncodeTrade(local_trade)
 

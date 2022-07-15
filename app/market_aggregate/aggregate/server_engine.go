@@ -133,7 +133,7 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 	NewMeta.TradeMeta = symbol_exchange_set
 	NewMeta.KlineMeta = symbol_exchange_set
 
-	logx.Info(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%s \n", NewMeta.String()))
+	logx.Infof("HedgeParamsChanged: NewMeta:\n%s \n", NewMeta.String())
 
 	s.Commer.UpdateMetaData(&NewMeta)
 
@@ -141,7 +141,7 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 }
 
 func (s *ServerEngine) MarketRiskChanged(namespace, group, dataId, data string) {
-	logx.Slow(fmt.Sprintf("MarketRiskContent: %s\n", data))
+	logx.Infof(fmt.Sprintf("MarketRiskContent: %s\n", data))
 	s.ProcessMarketriskConfigStr(data)
 }
 

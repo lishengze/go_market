@@ -401,18 +401,18 @@ func (a *Aggregator) publish_trade(trade *datastruct.Trade) {
 
 func (k *Aggregator) process_invalid_depth(montior_atom *monitorStruct.MonitorAtom) error {
 	logx.Info(montior_atom.InvalidInfo)
-	k.DingClient.SendMessage(k.MetaInfo + "\n" + montior_atom.InvalidInfo)
+	k.DingClient.SendMessage("Depth: \n" + montior_atom.InvalidInfo)
 	return nil
 }
 
 func (k *Aggregator) process_invalid_trade(montior_atom *monitorStruct.MonitorAtom) error {
 	logx.Info(montior_atom.InvalidInfo)
-	k.DingClient.SendMessage(k.MetaInfo + "\n" + montior_atom.InvalidInfo)
+	k.DingClient.SendMessage("Trade: \n" + montior_atom.InvalidInfo)
 	return nil
 }
 
 func (k *Aggregator) process_invalid_kline(montior_atom *monitorStruct.MonitorAtom) error {
 	logx.Info(montior_atom.InvalidInfo)
-	k.DingClient.SendMessage(k.MetaInfo + "\n" + montior_atom.InvalidInfo)
+	k.DingClient.SendMessage("kline: \n" + montior_atom.InvalidInfo)
 	return nil
 }

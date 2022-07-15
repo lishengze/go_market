@@ -49,7 +49,7 @@ func NewMonitorMarketData(meta_info string, config *MonitorConfig, monitor_chann
 }
 
 func (m *MonitorMarketData) StartCheck() {
-	logx.Infof("%S StartCheck", m.MetaInfo)
+	logx.Infof("%s StartCheck", m.MetaInfo)
 	timer := time.Tick(time.Duration(m.CheckSecs) * time.Second)
 
 	for {
