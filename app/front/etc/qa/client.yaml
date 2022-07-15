@@ -14,6 +14,7 @@ Comm:
 
 LogConfig: 
   Compress: true
+  Encoding: "plain"
   KeepDays: 0
   Level: "info"
   Mode: "file"

@@ -24,6 +24,7 @@ func InitLogx() {
 
 	LogConfig := logx.LogConf{
 		Compress:            true,
+		Encoding:            "plain",
 		KeepDays:            0,
 		Level:               "info",
 		Mode:                "file",
@@ -179,7 +180,8 @@ func (t *TestMain) process_kline(message []byte) {
 		return
 	} else {
 		delta_time := util.UTCNanoTime() - kline_data.ReqResponseTime
-		logx.Infof("Kline: req_process_time: %d us, ws_time: %dus, kline_data: %s", kline_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
+		// logx.Infof("Kline: req_process_time: %d us, ws_time: %dus, \nkline_data: %s", kline_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
+		fmt.Printf("Kline: req_process_time: %d us, ws_time: %dus, \nkline_data: %s", kline_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
 	}
 }
 
