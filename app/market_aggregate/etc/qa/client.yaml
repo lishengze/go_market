@@ -31,3 +31,12 @@ LogConfig:
   ServiceName: "client"
   StackCooldownMillis: 100
   TimeFormat:  "2006-01-02 15:04:05"
+
+MonitorConfigInfo:
+  RateParam: 1.1
+  InitDeadLine: 900
+  CheckSecs: 30
+  
+DingConfigInfo:
+  Secret: "SEC98b24164c09ee148e284b774d2a9b9efe4b11a6d805906ac06eadb930c9c4389"
+  Token: "b8c22aa6b0cd8924b59e94adaca7eebd809f7d81bf0b759fd45d743ec551b4d2"

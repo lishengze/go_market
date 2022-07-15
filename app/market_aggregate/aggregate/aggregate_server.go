@@ -6,6 +6,8 @@ import (
 	"market_server/app/market_aggregate/config"
 	mkconfig "market_server/app/market_aggregate/config"
 	"market_server/common/datastruct"
+	"market_server/common/dingtalk"
+	"market_server/common/monitorStruct"
 	"market_server/common/util"
 	"sync"
 	"time"
@@ -34,11 +36,19 @@ type Aggregator struct {
 
 	RiskWorker *RiskWorkerManager
 
+	MonitorMarketDataWorker *monitorStruct.MonitorMarketData
+	MonitorChan             *monitorStruct.MonitorChannel
+	DingClient              *dingtalk.Client
+	MetaInfo                string
+
 	cfg *config.Config
 }
 
 func NewAggregator(RecvDataChan *datastruct.DataChannel, PubDataChan *datastruct.DataChannel,
 	RiskWorker *RiskWorkerManager, cfg *config.Config) (a *Aggregator) {
+
+	monitor_chan := monitorStruct.NewMonitorChannel()
+	dingtalk := dingtalk.NewClient(cfg.DingConfigInfo.Token, cfg.DingConfigInfo.Secret)
 
 	return &Aggregator{
 		RiskWorker:       RiskWorker,
@@ -49,6 +59,11 @@ func NewAggregator(RecvDataChan *datastruct.DataChannel, PubDataChan *datastruct
 		kline_cache:      make(map[string]map[string]*datastruct.Kline),
 		trade_cache:      make(map[string]map[string]*datastruct.Trade),
 		kline_aggregated: make(map[string]*datastruct.Kline),
+
+		MetaInfo:                "Aggragte",
+		MonitorChan:             monitor_chan,
+		MonitorMarketDataWorker: monitorStruct.NewMonitorMarketData("Aggragte", &cfg.MonitorConfigInfo, monitor_chan),
+		DingClient:              dingtalk,
 
 		AggConfig: mkconfig.AggregateConfig{
 			DepthAggregatorConfigMap: make(map[string]mkconfig.AggregateConfigAtom),
@@ -95,6 +110,26 @@ func (a *Aggregator) Start() {
 	a.start_listen_recvdata()
 	a.start_aggregate_depth()
 	a.start_aggregate_kline()
+
+	go a.MonitorMarketDataWorker.StartCheck()
+	go a.StartListenInvalidData()
+}
+
+func (k *Aggregator) StartListenInvalidData() {
+	logx.Info("[S] Aggregator StartListenInvalidData Start!")
+	go func() {
+		for {
+			select {
+			case invalid_depth := <-k.MonitorChan.DepthChan:
+				go k.process_invalid_depth(invalid_depth)
+			case invalid_trade := <-k.MonitorChan.TradeChan:
+				go k.process_invalid_trade(invalid_trade)
+			case invalid_kline := <-k.MonitorChan.KlineChan:
+				go k.process_invalid_kline(invalid_kline)
+			}
+		}
+	}()
+	logx.Info("[S] Aggregator StartListenInvalidData Over!")
 }
 
 func (a *Aggregator) get_wait_millsecs(curr_time int, fre int) int {
@@ -308,10 +343,11 @@ func (a *Aggregator) update_kline(trade *datastruct.Trade) {
 
 func (a *Aggregator) cache_depth(depth *datastruct.DepthQuote) {
 
+	a.MonitorMarketDataWorker.UpdateDepth(depth.Exchange + "_" + depth.Symbol)
+
 	a.depth_mutex.Lock()
 
 	new_depth := datastruct.NewDepth(depth)
-	//
 
 	if _, ok := a.depth_cache[new_depth.Symbol]; !ok {
 		a.depth_cache[new_depth.Symbol] = make(map[string]*datastruct.DepthQuote)
@@ -322,11 +358,9 @@ func (a *Aggregator) cache_depth(depth *datastruct.DepthQuote) {
 	defer a.depth_mutex.Unlock()
 }
 
-func (a *Aggregator) cache_kline(kline *datastruct.Kline) {
-
-}
-
 func (a *Aggregator) cache_trade(trade *datastruct.Trade) {
+	a.MonitorMarketDataWorker.UpdateTrade(trade.Exchange + "_" + trade.Symbol)
+
 	new_trade := datastruct.NewTrade(trade)
 	new_trade.Exchange = datastruct.BCTS_EXCHANGE
 
@@ -334,6 +368,10 @@ func (a *Aggregator) cache_trade(trade *datastruct.Trade) {
 
 	a.update_kline(trade)
 	a.publish_trade(new_trade)
+}
+
+func (a *Aggregator) cache_kline(kline *datastruct.Kline) {
+
 }
 
 func (a *Aggregator) publish_depth(depth *datastruct.DepthQuote) {
@@ -359,4 +397,22 @@ func (a *Aggregator) publish_trade(trade *datastruct.Trade) {
 	// fmt.Printf("Pub datastruct.Trade: %s\n", trade.String())
 
 	a.PubDataChan.TradeChannel <- trade
+}
+
+func (k *Aggregator) process_invalid_depth(montior_atom *monitorStruct.MonitorAtom) error {
+	logx.Info(montior_atom.InvalidInfo)
+	k.DingClient.SendMessage(k.MetaInfo + "\n" + montior_atom.InvalidInfo)
+	return nil
+}
+
+func (k *Aggregator) process_invalid_trade(montior_atom *monitorStruct.MonitorAtom) error {
+	logx.Info(montior_atom.InvalidInfo)
+	k.DingClient.SendMessage(k.MetaInfo + "\n" + montior_atom.InvalidInfo)
+	return nil
+}
+
+func (k *Aggregator) process_invalid_kline(montior_atom *monitorStruct.MonitorAtom) error {
+	logx.Info(montior_atom.InvalidInfo)
+	k.DingClient.SendMessage(k.MetaInfo + "\n" + montior_atom.InvalidInfo)
+	return nil
 }

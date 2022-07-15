@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	config "market_server/common/config"
+	"market_server/common/monitorStruct"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/conf"
@@ -32,6 +33,9 @@ type Config struct {
 	Nacos          config.NacosConfig
 	RiskTestConfig RiskCtlTestConfig
 	LogConfig      logx.LogConf
+
+	MonitorConfigInfo monitorStruct.MonitorConfig
+	DingConfigInfo    config.DingConfig
 }
 
 func (c *Config) String() string {

@@ -22,6 +22,11 @@ type MysqlConfig struct {
 	// conn_max_life_time int
 }
 
+type DingConfig struct {
+	Secret string
+	Token  string
+}
+
 type KafkaConfig struct {
 	IP string `json:",optional"`
 }

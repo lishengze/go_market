@@ -68,6 +68,7 @@ func (k *MonitorEngine) Start() {
 
 	k.StartListenRecvdata()
 	go k.MonitorMarketDataWorker.StartCheck()
+	go k.StartListenInvalidData()
 
 }
 

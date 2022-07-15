@@ -49,6 +49,7 @@ func NewMonitorMarketData(meta_info string, config *MonitorConfig, monitor_chann
 }
 
 func (m *MonitorMarketData) StartCheck() {
+	logx.Infof("%S StartCheck", m.MetaInfo)
 	timer := time.Tick(time.Duration(m.CheckSecs) * time.Second)
 
 	for {
@@ -87,7 +88,7 @@ func (m *MonitorMarketData) UpdateDepth(symbol string) {
 	}
 
 	m.depth_cache_map[symbol].Update()
-	logx.Slowf("%s,Depth update %s: %s", m.MetaInfo, symbol, m.depth_cache_map[symbol].String())
+	// logx.Slowf("%s,Depth update %s: %s", m.MetaInfo, symbol, m.depth_cache_map[symbol].String())
 }
 
 func (m *MonitorMarketData) UpdateTrade(symbol string) {
@@ -111,5 +112,5 @@ func (m *MonitorMarketData) UpdateKline(symbol string) {
 
 	m.kline_cache_map[symbol].Update()
 
-	logx.Slowf("%s,Kline update %s: %s", m.MetaInfo, symbol, m.kline_cache_map[symbol].String())
+	// logx.Slowf("%s,Kline update %s: %s", m.MetaInfo, symbol, m.kline_cache_map[symbol].String())
 }
