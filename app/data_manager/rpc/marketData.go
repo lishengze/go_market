@@ -50,6 +50,7 @@ func main() {
 	conf.MustLoad(*configFile, &c)
 
 	logx.MustSetup(c.LogConfig)
+	logx.Infof("Log: %+v \n", c)
 
 	fmt.Printf("Log: %+v \n", c)
 

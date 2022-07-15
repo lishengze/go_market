@@ -93,14 +93,14 @@ func (s *MarketServiceServer) StartNacosClient() {
 	if err != nil {
 		logx.Error(err.Error())
 	}
-	logx.Info("Requested SymbolConfigStr: " + SymbolConfigStr)
+	// logx.Info("Requested SymbolConfigStr: " + SymbolConfigStr)
 	s.ProcessSymbolConfigStr(SymbolConfigStr)
 
 	s.NacosClientWorker.ListenConfig("SymbolParams", datastruct.BCTS_GROUP, s.SymbolParamsChanged)
 }
 
 func (s *MarketServiceServer) SymbolParamsChanged(namespace, group, dataId, data string) {
-	logx.Infof("SymbolContent: %s\n", data)
+	// logx.Infof("SymbolContent: %s\n", data)
 	s.ProcessSymbolConfigStr(data)
 }
 

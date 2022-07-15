@@ -79,21 +79,21 @@ func (s *ServerEngine) StartNacosClient() {
 	if err != nil {
 		logx.Error(err.Error())
 	}
-	logx.Slow("Requested MarketRisk: " + MarketRiskConfigStr)
+	// logx.Slow("Requested MarketRisk: " + MarketRiskConfigStr)
 	s.ProcessMarketriskConfigStr(MarketRiskConfigStr)
 
 	HedgeConfigStr, err := s.NacosClientWorker.GetConfigContent("HedgeParams", datastruct.BCTS_GROUP)
 	if err != nil {
 		logx.Error(err.Error())
 	}
-	logx.Slow("Requested HedgeConfigStr: " + HedgeConfigStr)
+	// logx.Slow("Requested HedgeConfigStr: " + HedgeConfigStr)
 	s.ProcsssHedgeConfigStr(HedgeConfigStr)
 
 	SymbolConfigStr, err := s.NacosClientWorker.GetConfigContent("SymbolParams", datastruct.BCTS_GROUP)
 	if err != nil {
 		logx.Error(err.Error())
 	}
-	logx.Slow("Requested SymbolConfigStr: " + SymbolConfigStr)
+	// logx.Slow("Requested SymbolConfigStr: " + SymbolConfigStr)
 	s.ProcessSymbolConfigStr(SymbolConfigStr)
 
 	s.NacosClientWorker.ListenConfig("MarketRisk", datastruct.BCTS_GROUP, s.MarketRiskChanged)
