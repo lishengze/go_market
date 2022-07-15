@@ -1,7 +1,7 @@
 package aggregate
 
 import (
-	"fmt"
+
 	// config "market_aggregate/app/conf"
 	"market_server/app/market_aggregate/config"
 	mkconfig "market_server/app/market_aggregate/config"
@@ -306,7 +306,7 @@ func (a *Aggregator) aggregate_kline() {
 	defer a.kline_mutex.Unlock()
 	a.kline_mutex.Lock()
 
-	logx.Info(fmt.Sprintf("------ Start aggregate_kline time: %v", time.Now().UTC()))
+	// logx.Info(fmt.Sprintf("------ Start aggregate_kline time: %v", time.Now().UTC()))
 
 	for _, kline := range a.kline_aggregated {
 		new_kline := datastruct.NewKline(kline)
