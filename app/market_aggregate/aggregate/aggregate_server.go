@@ -381,8 +381,9 @@ func (a *Aggregator) publish_depth(depth *datastruct.DepthQuote) {
 	a.PubDataChan.DepthChannel <- aggregate_depth
 
 	if a.RiskWorker != nil {
+		a.RiskWorker.Execute(depth)
 		new_depth := datastruct.NewDepth(depth)
-		a.RiskWorker.Execute(new_depth)
+
 		a.PubDataChan.DepthChannel <- new_depth
 	}
 
