@@ -344,6 +344,7 @@ func IsOldKlineEnd(kline *Kline, resolution int64) bool {
 func GetDepthString(m *treemap.Map, numb int) string {
 	str := "TreeMap\nmap["
 	it := m.Iterator()
+	it.Begin()
 	count := 0
 	for it.Next() {
 		str += fmt.Sprintf("%v:%v ", it.Key(), it.Value())
