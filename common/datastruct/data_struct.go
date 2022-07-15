@@ -366,6 +366,21 @@ func (d *DepthQuote) String(len int) string {
 	return string(res)
 }
 
+func DepthListString(m *treemap.Map, numb int) string {
+	str := ""
+	it := m.Iterator()
+	it.Begin()
+	count := 0
+	for it.Next() {
+		str += fmt.Sprintf("%v:%v \n", it.Key(), it.Value())
+		count += 1
+		if count > numb {
+			break
+		}
+	}
+	return str
+}
+
 func NewTrade(src *Trade) *Trade {
 	if src != nil {
 		rst := &Trade{
