@@ -6,7 +6,6 @@ RpcConfig:
     - 127.0.0.1:2379
     Key: marketdata.rpc
 
-
 Comm:
   IP: "10.10.1.45:9092"
   NetServerType: "KAFKA"

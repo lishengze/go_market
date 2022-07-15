@@ -1,10 +1,29 @@
+RpcConfig:
+  Name: marketdata.rpc
+  ListenOn: 127.0.0.1:8181
+  Etcd:
+    Hosts:
+    - 127.0.0.1:2379
+    Key: marketdata.rpc
+
 Comm:
-  IP: "152.32.254.76:9117"
+  IP: "10.8.147.73:8117"
   NetServerType: "KAFKA"
   SerialType: "PROTOBUF"
 
+LogConfig: 
+  Compress: true
+  Encoding: "plain"
+  KeepDays: 0
+  Level: "info"
+  Mode: "file"
+  Path: "./log"
+  ServiceName: "client"
+  StackCooldownMillis: 100
+  TimeFormat:  "2006-01-02 15:04:05"
+
 Nacos:
-  IpAddr: "36.255.220.139"
+  IpAddr: "10.8.78.83"
   Port: 8848
   NamespaceId: "bcts"
   TimeoutMs: 5000
@@ -15,24 +34,8 @@ Nacos:
   MaxAge: 3
   LogLevel: "debug"
 
-
-
-RiskTestConfig:
-  FeeRiskctrlOpen: true
-  BiasRiskctrlOpen: true
-  WatermarkRiskctrlOpen: true
-  PricesionRiskctrlOpen: true
-  TestSymbol: "BTC_USDT"
-
-LogConfig: 
-  Compress: true
-  KeepDays: 0
-  Level: "info"
-  Mode: "file"
-  Path: "./log"
-  ServiceName: "client"
-  StackCooldownMillis: 100
-  TimeFormat:  "2006-01-02 15:04:05"
+Cache:
+  CacheDataCount: 1440
 
 WS:
   Address: "localhost:8114"
