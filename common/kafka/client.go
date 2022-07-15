@@ -241,7 +241,7 @@ func (k *KafkaServer) AddConsumeTopic(topic string) {
 	if _, ok := k.consume_topics[topic]; !ok {
 		k.consume_topics[topic] = struct{}{}
 
-		logx.Infof("Add Consume Topic: %s", topic)
+		// logx.Infof("Add Consume Topic: %s", topic)
 	}
 	k.consume_topics_mutex.Unlock()
 }
