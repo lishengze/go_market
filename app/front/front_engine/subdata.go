@@ -151,14 +151,18 @@ func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*Kline
 		cache_kline := sub_info.cache_data
 		NextKlineTime := cache_kline.Time + int64(resolution)*datastruct.NANO_PER_SECS
 
-		// logx.Slowf("6")
-		if trade.Time > NextKlineTime {
-			logx.Errorf("Trade.Time %s, later than NextKlineTime: %s", util.TimeStrFromInt(trade.Time), util.TimeStrFromInt(NextKlineTime))
-			continue
+		if resolution == 60 {
+			NextKlineTime = NextKlineTime + int64(resolution)*datastruct.NANO_PER_SECS
 		}
 
 		if trade.Time <= cache_kline.Time {
 			logx.Errorf("Trade.Time %s, earlier than CachedKlineTime: %s", util.TimeStrFromInt(trade.Time), util.TimeStrFromInt(cache_kline.Time))
+			continue
+		}
+
+		// logx.Slowf("6")
+		if trade.Time > NextKlineTime {
+			logx.Errorf("Trade.Time %s, later than NextKlineTime: %s", util.TimeStrFromInt(trade.Time), util.TimeStrFromInt(NextKlineTime))
 			continue
 		}
 
