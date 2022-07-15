@@ -84,18 +84,18 @@ func (m *MonitorMarketData) UpdateDepth(symbol string) {
 
 	defer util.CatchExp("MonitorMarketData::UpdateDepth")
 	if _, ok := m.depth_cache_map[symbol]; !ok {
-		m.depth_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.DEPTH_TYPE, m.MetaInfo, m.RateParam, int64(m.InitDeadLine))
+		m.depth_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.DEPTH_TYPE, m.MetaInfo+" Depth", m.RateParam, int64(m.InitDeadLine))
 	}
 
 	m.depth_cache_map[symbol].Update()
-	// logx.Slowf("%s,Depth update %s: %s", m.MetaInfo, symbol, m.depth_cache_map[symbol].String())
+	logx.Slowf("%s,Depth update %s: %s", m.MetaInfo, symbol, m.depth_cache_map[symbol].String())
 }
 
 func (m *MonitorMarketData) UpdateTrade(symbol string) {
 	defer util.CatchExp("MonitorMarketData::UpdateTrade")
 
 	if _, ok := m.trade_cache_map[symbol]; !ok {
-		m.trade_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.TRADE_TYPE, m.MetaInfo, m.RateParam, int64(m.InitDeadLine))
+		m.trade_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.TRADE_TYPE, m.MetaInfo+" Trade", m.RateParam, int64(m.InitDeadLine))
 	}
 
 	m.trade_cache_map[symbol].Update()
@@ -107,7 +107,7 @@ func (m *MonitorMarketData) UpdateKline(symbol string) {
 	defer util.CatchExp("MonitorMarketData::UpdateKline")
 
 	if _, ok := m.kline_cache_map[symbol]; !ok {
-		m.kline_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.KLINE_TYPE, m.MetaInfo, m.RateParam, int64(m.InitDeadLine))
+		m.kline_cache_map[symbol] = NewMonitorAtom(symbol, datastruct.KLINE_TYPE, m.MetaInfo+" Kline", m.RateParam, int64(m.InitDeadLine))
 	}
 
 	m.kline_cache_map[symbol].Update()
