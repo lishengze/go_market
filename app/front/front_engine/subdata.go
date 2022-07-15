@@ -117,6 +117,85 @@ func (s *SubData) UpdateKlineCacheData(kline *datastruct.Kline) {
 	}
 }
 
+func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*KlinePubInfo {
+	defer util.CatchExp("GetKlinePubInfoListWithTrade")
+
+	if trade == nil {
+		logx.Errorf("trade is nil")
+		return nil
+	}
+
+	var rst []*KlinePubInfo
+
+	s.KlineInfo.mutex.Lock()
+	defer s.KlineInfo.mutex.Unlock()
+
+	var kline *datastruct.Kline
+
+	if _, ok := s.KlineInfo.Info[kline.Symbol]; !ok {
+		return rst
+	}
+
+	for resolution, sub_info := range s.KlineInfo.Info[kline.Symbol] {
+		if sub_info.cache_data == nil {
+			logx.Errorf("Hisk Kline %s, %d , cache_data empty", kline.Symbol, resolution)
+			continue
+		}
+
+		cache_kline := sub_info.cache_data
+		NextKlineTime := cache_kline.Time + int64(resolution)*datastruct.NANO_PER_SECS
+
+		if trade.Time > NextKlineTime {
+			logx.Errorf("Trade.Time %s, later than NextKlineTime: %s", util.TimeStrFromInt(trade.Time), util.TimeStrFromInt(NextKlineTime))
+			continue
+		}
+
+		if trade.Time <= cache_kline.Time {
+			logx.Errorf("Trade.Time %s, earlier than CachedKlineTime: %s", util.TimeStrFromInt(trade.Time), util.TimeStrFromInt(cache_kline.Time))
+			continue
+		}
+
+		pub_kline := datastruct.NewKlineWithKline(cache_kline)
+
+		pub_kline.Close = trade.Price
+
+		if pub_kline.Low > trade.Price {
+			pub_kline.Low = trade.Price
+		}
+
+		if pub_kline.High < trade.Price {
+			pub_kline.High = trade.Price
+		}
+
+		if pub_kline != nil {
+			cur_pub_list := s.GetKlinePubInfoListAtom(sub_info, pub_kline)
+			rst = append(rst, cur_pub_list...)
+		}
+	}
+
+	return rst
+}
+
+func (s *SubData) GetKlinePubInfoListAtom(sub_info *KlineSubItem, pub_kline *datastruct.Kline) []*KlinePubInfo {
+	defer util.CatchExp("GetKlinePubInfoListAtom")
+	var rst []*KlinePubInfo
+
+	byte_data := NewKlineUpdateJsonMsg(pub_kline)
+	sub_tree := sub_info.ws_info
+	sub_tree_iter := sub_tree.Iterator()
+
+	for sub_tree_iter.Begin(); sub_tree_iter.Next(); {
+		rst = append(rst, &KlinePubInfo{
+			ws_info:    sub_tree_iter.Value().(*net.WSInfo),
+			data:       byte_data,
+			Symbol:     pub_kline.Symbol,
+			Resolution: pub_kline.Resolution,
+		})
+	}
+
+	return rst
+}
+
 /*
 判断是否是之前的 k 线数据结束;
 逻辑描述:
@@ -132,8 +211,9 @@ func (s *SubData) UpdateKlineCacheData(kline *datastruct.Kline) {
 	6. 旧的聚合区间的中间的数据
 		根据规则更新 cache 的 高低收;
 */
-
 func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
+	defer util.CatchExp("GetKlinePubInfoList")
+
 	var rst []*KlinePubInfo
 
 	s.KlineInfo.mutex.Lock()
@@ -152,14 +232,16 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 		cache_kline := sub_info.cache_data
 
 		if kline.Time <= cache_kline.Time {
-			logx.Errorf("NewKLineTime: %d, CachedKlineTime: %d")
+			logx.Errorf("NewKLineTime: %d, CachedKlineTime: %d", kline.Time, cache_kline.Time)
 			continue
 		}
+
+		var pub_kline *datastruct.Kline
+		pub_kline = nil
 
 		if datastruct.IsOldKlineEnd(kline, int64(resolution)) {
 			logx.Slowf("Old Kline End: rsl:%d, %s", resolution, kline.String())
 
-			var pub_kline *datastruct.Kline
 			if kline.Resolution != resolution {
 				cache_kline.Close = kline.Close
 				cache_kline.Low = util.MinFloat64(cache_kline.Low, kline.Low)
@@ -172,17 +254,18 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 			}
 
 			// logx.Statf("CurKlineInfo %s", s.KlineInfo.String())
-			byte_data := NewKlineUpdateJsonMsg(pub_kline)
-			sub_tree := sub_info.ws_info
-			sub_tree_iter := sub_tree.Iterator()
-			for sub_tree_iter.Begin(); sub_tree_iter.Next(); {
-				rst = append(rst, &KlinePubInfo{
-					ws_info:    sub_tree_iter.Value().(*net.WSInfo),
-					data:       byte_data,
-					Symbol:     pub_kline.Symbol,
-					Resolution: pub_kline.Resolution,
-				})
-			}
+			// byte_data := NewKlineUpdateJsonMsg(pub_kline)
+			// sub_tree := sub_info.ws_info
+			// sub_tree_iter := sub_tree.Iterator()
+
+			// for sub_tree_iter.Begin(); sub_tree_iter.Next(); {
+			// 	rst = append(rst, &KlinePubInfo{
+			// 		ws_info:    sub_tree_iter.Value().(*net.WSInfo),
+			// 		data:       byte_data,
+			// 		Symbol:     pub_kline.Symbol,
+			// 		Resolution: pub_kline.Resolution,
+			// 	})
+			// }
 
 			s.KlineInfo.Info[kline.Symbol][resolution].cache_data = datastruct.NewKlineWithKline(pub_kline)
 
@@ -191,6 +274,9 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 
 			s.KlineInfo.Info[kline.Symbol][resolution].cache_data = datastruct.NewKlineWithKline(kline)
 			s.KlineInfo.Info[kline.Symbol][resolution].cache_data.Resolution = resolution
+
+			pub_kline = datastruct.NewKlineWithKline(kline)
+
 		} else {
 			cache_kline.Close = kline.Close
 			cache_kline.Low = util.MinFloat64(cache_kline.Low, kline.Low)
@@ -198,6 +284,13 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 			cache_kline.Volume = cache_kline.Volume + kline.Volume
 
 			logx.Slowf("Cached Kline:%d, %s", resolution, kline.String())
+
+			pub_kline = datastruct.NewKlineWithKline(cache_kline)
+		}
+
+		if pub_kline != nil {
+			cur_pub_list := s.GetKlinePubInfoListAtom(sub_info, pub_kline)
+			rst = append(rst, cur_pub_list...)
 		}
 	}
 
@@ -205,6 +298,7 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 }
 
 func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
+	defer util.CatchExp("GetKlinePubInfoList")
 
 	logx.Slowf("[SD] HistK, rsl: %d, %s", hist_kline.ReqInfo.Frequency, datastruct.HistKlineSimpleTime(hist_kline.Klines))
 
@@ -226,15 +320,23 @@ func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 		logx.Slowf("[Store] %s ", last_kline.String())
 	}
 
-	if !hist_kline.IsLastComplete {
-		logx.Infof("hist_kline.Klines.Size: %d, hist_kline.ReqInfo.Count: %d, last kline %+v, is not complete kline data, leave it in cache, wait for next round!",
-			hist_kline.Klines.Size(), int(hist_kline.ReqInfo.Count), last_kline)
-		hist_kline.Klines.Remove(last_kline.Time)
+	if hist_kline.Klines.Size() == int(hist_kline.ReqInfo.Count)+1 {
+		iter.First()
+		first_kline := iter.Value().(*datastruct.Kline)
+		hist_kline.Klines.Remove(first_kline.Time)
 	}
+
+	// if !hist_kline.IsLastComplete {
+	// logx.Infof("hist_kline.Klines.Size: %d, hist_kline.ReqInfo.Count: %d, last kline %+v, is not complete kline data, leave it in cache, wait for next round!",
+	// 	hist_kline.Klines.Size(), int(hist_kline.ReqInfo.Count), last_kline)
+	// hist_kline.Klines.Remove(last_kline.Time)
+	// }
 
 }
 
 func (s *SubData) SubSymbol(ws *net.WSInfo) {
+	defer util.CatchExp("SubSymbol")
+
 	s.SymbolInfo.mutex.Lock()
 	defer s.SymbolInfo.mutex.Unlock()
 
@@ -261,6 +363,8 @@ func (s *SubData) SubSymbol(ws *net.WSInfo) {
 }
 
 func (s *SubData) UnSubSymbol(ws *net.WSInfo) {
+	defer util.CatchExp("UnSubSymbol")
+
 	s.SymbolInfo.mutex.Lock()
 	defer s.SymbolInfo.mutex.Unlock()
 
@@ -274,6 +378,8 @@ func (s *SubData) UnSubSymbol(ws *net.WSInfo) {
 }
 
 func (s *SubData) SubDepth(symbol string, ws *net.WSInfo) *datastruct.DepthQuote {
+	defer util.CatchExp("SubDepth")
+
 	s.DepthInfo.mutex.Lock()
 	defer s.DepthInfo.mutex.Unlock()
 
@@ -289,6 +395,8 @@ func (s *SubData) SubDepth(symbol string, ws *net.WSInfo) *datastruct.DepthQuote
 }
 
 func (s *SubData) UnSubDepth(symbol string, ws *net.WSInfo) {
+	defer util.CatchExp("UnSubDepth")
+
 	s.DepthInfo.mutex.Lock()
 	defer s.DepthInfo.mutex.Unlock()
 	if _, ok := s.DepthInfo.Info[symbol]; !ok {
@@ -301,6 +409,8 @@ func (s *SubData) UnSubDepth(symbol string, ws *net.WSInfo) {
 }
 
 func (s *SubData) SubTrade(symbol string, ws *net.WSInfo) {
+	defer util.CatchExp("SubTrade")
+
 	s.TradeInfo.mutex.Lock()
 	defer s.TradeInfo.mutex.Unlock()
 
@@ -314,6 +424,8 @@ func (s *SubData) SubTrade(symbol string, ws *net.WSInfo) {
 }
 
 func (s *SubData) UnSubTrade(symbol string, ws *net.WSInfo) {
+	defer util.CatchExp("UnSubTrade")
+
 	s.TradeInfo.mutex.Lock()
 	defer s.TradeInfo.mutex.Unlock()
 
@@ -326,6 +438,8 @@ func (s *SubData) UnSubTrade(symbol string, ws *net.WSInfo) {
 }
 
 func (s *SubData) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
+	defer util.CatchExp("SubKline")
+
 	s.KlineInfo.mutex.Lock()
 	defer s.KlineInfo.mutex.Unlock()
 
@@ -352,6 +466,8 @@ func (s *SubData) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSIn
 }
 
 func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
+	defer util.CatchExp("UnSubKline")
+
 	s.KlineInfo.mutex.Lock()
 	defer s.KlineInfo.mutex.Unlock()
 

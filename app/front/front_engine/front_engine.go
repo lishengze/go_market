@@ -180,6 +180,29 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 				f.sub_data.UnSubTrade(trade.TradeData.Symbol, info.ws_info)
 			}
 		}
+
+		kline_pub_list := f.sub_data.GetKlinePubInfoListWithTrade(trade.TradeData)
+		if nil != kline_pub_list {
+			for _, info := range kline_pub_list {
+				cur_req := &datastruct.ReqHistKline{
+					Symbol:    info.Symbol,
+					Frequency: uint32(info.Resolution),
+				}
+
+				logx.Slowf("kline_pub_info: %s \n", info.String())
+				if info.ws_info.IsAlive() {
+					err := info.ws_info.SendMsg(1, info.data)
+					if err != nil {
+						logx.Errorf("PublishKline err: %+v \n", err)
+					}
+				} else {
+					logx.Infof("ws:%d is not alive", info.ws_info.ID)
+					f.sub_data.UnSubKline(cur_req, info.ws_info)
+				}
+			}
+		} else {
+			// logx.Errorf("kline_pub_list is nil")
+		}
 	}
 
 }

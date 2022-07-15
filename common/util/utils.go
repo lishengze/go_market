@@ -49,6 +49,10 @@ func TimeToSecString(t time.Time) string {
 	return t.Format("2006-01-02 15:04:05")
 }
 
+func GetNextResolutionNanoTime(resolution int) int64 {
+	return time.Now().UTC().UnixNano()
+}
+
 func UTCNanoTime() int64 {
 
 	return time.Now().UTC().UnixNano()
