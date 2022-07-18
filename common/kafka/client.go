@@ -107,7 +107,7 @@ func (k *KafkaServer) OutputPubInfo(key, value interface{}) bool {
 
 func (k *KafkaServer) UpdateStatisticInfo() {
 
-	logx.Statf("kafka Statistic Start: %s \n", util.TimeToSecString(k.statistic_start))
+	logx.Statf("kafka Statistic Start: %s", util.TimeToSecString(k.statistic_start))
 
 	k.rcv_statistic_info.Range(k.OutputRcvInfo)
 

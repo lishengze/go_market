@@ -18,22 +18,28 @@ type ServerEngine struct {
 }
 
 func NewServerEngine(config_info *Config) *ServerEngine {
-	MonitorDataChan := make(chan *monitorStruct.MonitorData)
-	WSClientWorker := NewWSClient(&config_info.WS, config_info.MonitorMetaInfo.Symbols, MonitorDataChan)
-
-	OriginalDataChan := datastruct.NewDataChannel()
-	Commer := comm.NewComm(OriginalDataChan, nil, config_info.Comm)
-
-	KafkaMonitor := NewMonitorEngineWithOrignalDataChannel(OriginalDataChan, &config_info.MonitorConfigInfo, &config_info.DingConfigInfo, "Kafka ")
-	WSMonotr := NewMonitorEngineWithMonitorDataChannel(MonitorDataChan, &config_info.MonitorConfigInfo, &config_info.DingConfigInfo, "WS ")
-	return &ServerEngine{
+	rst := &ServerEngine{
 		ConfigInfo:     config_info,
-		Commer:         Commer,
-		WSClientWorker: WSClientWorker,
+		Commer:         nil,
+		WSClientWorker: nil,
 
-		KafkaMonitor: KafkaMonitor,
-		WSMonotr:     WSMonotr,
+		KafkaMonitor: nil,
+		WSMonotr:     nil,
 	}
+
+	if config_info.MonitorObjectConfig.WSMonitor {
+		MonitorDataChan := make(chan *monitorStruct.MonitorData)
+		rst.WSClientWorker = NewWSClient(&config_info.WS, config_info.MonitorMetaInfo.Symbols, MonitorDataChan)
+		rst.WSMonotr = NewMonitorEngineWithMonitorDataChannel(MonitorDataChan, &config_info.MonitorConfigInfo, &config_info.DingConfigInfo, "WS ")
+	}
+
+	if config_info.MonitorObjectConfig.KafkaMonitor {
+		OriginalDataChan := datastruct.NewDataChannel()
+		rst.Commer = comm.NewComm(OriginalDataChan, nil, config_info.Comm)
+		rst.KafkaMonitor = NewMonitorEngineWithOrignalDataChannel(OriginalDataChan, &config_info.MonitorConfigInfo, &config_info.DingConfigInfo, "Kafka ")
+	}
+
+	return rst
 }
 
 func (s *ServerEngine) StartCommer() {
@@ -61,8 +67,13 @@ func (s *ServerEngine) StartCommer() {
 }
 
 func (s *ServerEngine) Start() {
-	go s.StartCommer()
-	go s.WSClientWorker.Start()
-	go s.KafkaMonitor.Start()
-	go s.WSMonotr.Start()
+	if s.ConfigInfo.MonitorObjectConfig.KafkaMonitor {
+		go s.StartCommer()
+		go s.KafkaMonitor.Start()
+	}
+
+	if s.ConfigInfo.MonitorObjectConfig.WSMonitor {
+		go s.WSClientWorker.Start()
+		go s.WSMonotr.Start()
+	}
 }

@@ -21,14 +21,20 @@ type MonitorMeta struct {
 	Symbols []string
 }
 
+type MonitorObject struct {
+	WSMonitor    bool
+	KafkaMonitor bool
+}
+
 type Config struct {
 	WS   WSConfig
 	Comm comm_config.CommConfig
 
 	LogConfig logx.LogConf
 
-	MonitorConfigInfo monitorStruct.MonitorConfig
-	MonitorMetaInfo   MonitorMeta
+	MonitorObjectConfig MonitorObject
+	MonitorConfigInfo   monitorStruct.MonitorConfig
+	MonitorMetaInfo     MonitorMeta
 
 	DingConfigInfo DingConfig
 }
