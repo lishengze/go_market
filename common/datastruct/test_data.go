@@ -249,3 +249,15 @@ func TestGetHistKlineData() {
 		fmt.Printf("Last Kline: %s ", iter.Value().(*Kline).String())
 	}
 }
+
+func TestIsTargetTime() {
+	// time_obj := time.Date(2022, 7, 18, 0, 0, 0, 0, time.Local)
+	time_obj := time.Date(1970, 1, 5, 0, 0, 0, 0, time.UTC)
+
+	nano_secs := time_obj.UTC().UnixNano()
+	fmt.Printf("nano_secs: %d, CurTime: %s, IsTarget: %+v \n",
+		nano_secs,
+		util.TimeStrFromInt(nano_secs),
+		IsTargetTime(nano_secs/NANO_PER_SECS, SECS_PER_DAY*7))
+
+}

@@ -197,12 +197,12 @@ func (t *Trade) String() string {
 	return res
 }
 
-// func (k *Kline) String() string {
-// 	res := fmt.Sprintf("%s.%s, %s, v: %f, o: %f, h: %f, l: %f, c: %f, \n",
-// 		k.Exchange, k.Symbol, util.TimeStrFromInt(k.Time), k.Volume,
-// 		k.Open, k.High, k.Low, k.Close)
-// 	return res
-// }
+func (k *Kline) FullString() string {
+	res := fmt.Sprintf("%s.%s, %s, v: %f, \no: %f, h: %f, l: %f, c: %f, \n",
+		k.Exchange, k.Symbol, util.TimeStrFromInt(k.Time), k.Volume,
+		k.Open, k.High, k.Low, k.Close)
+	return res
+}
 
 func (k *Kline) String() string {
 	res := fmt.Sprintf("%s.%s, %s, v: %f",
@@ -298,26 +298,45 @@ func NewKlineWithKline(kline *Kline) *Kline {
 }
 
 func IsNewKlineStart(kline *Kline, resolution int64) bool {
-	tmp_time := kline.Time
+	return IsNewKlineStartTime(kline.Time, resolution)
 
-	if resolution > NANO_PER_SECS {
-		resolution = resolution / NANO_PER_SECS
+	// tmp_time := kline.Time
+
+	// if resolution > NANO_PER_SECS {
+	// 	resolution = resolution / NANO_PER_SECS
+	// }
+
+	// if tmp_time > NANO_PER_SECS {
+	// 	tmp_time = tmp_time / NANO_PER_SECS
+	// }
+
+	// if tmp_time%resolution == 0 {
+	// 	return true
+	// } else {
+	// 	return false
+	// }
+}
+
+func IsTargetTime(time_secs int64, resolution_secs int64) bool {
+
+	if resolution_secs == SECS_PER_DAY*7 {
+		// fmt.Printf("Ori Days: %d\n", time_secs/SECS_PER_DAY)
+
+		time_secs = time_secs + SECS_PER_DAY*3
+
+		// fmt.Printf("Tras Days: %d\n", time_secs/SECS_PER_DAY)
 	}
 
-	if tmp_time > NANO_PER_SECS {
-		tmp_time = tmp_time / NANO_PER_SECS
-	}
+	// fmt.Printf("time_secs: %d \n", time_secs)
 
-	if tmp_time%resolution == 0 {
+	if time_secs%resolution_secs == 0 {
 		return true
 	} else {
 		return false
 	}
 }
 
-func IsOldKlineEnd(kline *Kline, resolution int64) bool {
-	tmp_time := kline.Time
-	tmp_resolution := kline.Resolution
+func IsNewKlineStartTime(tmp_time int64, resolution int64) bool {
 
 	if resolution > NANO_PER_SECS {
 		resolution = resolution / NANO_PER_SECS
@@ -327,18 +346,67 @@ func IsOldKlineEnd(kline *Kline, resolution int64) bool {
 		tmp_time = tmp_time / NANO_PER_SECS
 	}
 
-	if tmp_resolution > NANO_PER_SECS {
-		tmp_resolution = tmp_resolution / NANO_PER_SECS
+	return IsTargetTime(tmp_time, resolution)
+
+	// if tmp_time%resolution == 0 {
+	// 	return true
+	// } else {
+	// 	return false
+	// }
+}
+
+func IsOldKlineEnd(kline *Kline, resolution int64) bool {
+
+	return IsOldKlineEndTime(kline.Time, kline.Resolution, resolution)
+
+	// tmp_time := kline.Time
+	// src_resolution := kline.Resolution
+
+	// if resolution > NANO_PER_SECS {
+	// 	resolution = resolution / NANO_PER_SECS
+	// }
+
+	// if tmp_time > NANO_PER_SECS {
+	// 	tmp_time = tmp_time / NANO_PER_SECS
+	// }
+
+	// if src_resolution > NANO_PER_SECS {
+	// 	src_resolution = src_resolution / NANO_PER_SECS
+	// }
+
+	// tmp_time = tmp_time + int64(src_resolution)
+
+	// if tmp_time%resolution == 0 {
+	// 	// logx.Slowf("OldKlineEnd: kline: %s, resolution: %d, tmp_time: %d, ", kline.String(), resolution, tmp_time)
+	// 	return true
+	// } else {
+	// 	return false
+	// }
+}
+
+func IsOldKlineEndTime(tmp_time int64, src_resolution int, dst_resolution int64) bool {
+
+	if dst_resolution > NANO_PER_SECS {
+		dst_resolution = dst_resolution / NANO_PER_SECS
 	}
 
-	tmp_time = tmp_time + int64(tmp_resolution)
-
-	if tmp_time%resolution == 0 {
-		// logx.Slowf("OldKlineEnd: kline: %s, resolution: %d, tmp_time: %d, ", kline.String(), resolution, tmp_time)
-		return true
-	} else {
-		return false
+	if tmp_time > NANO_PER_SECS {
+		tmp_time = tmp_time / NANO_PER_SECS
 	}
+
+	if src_resolution > NANO_PER_SECS {
+		src_resolution = src_resolution / NANO_PER_SECS
+	}
+
+	tmp_time = tmp_time + int64(src_resolution)
+
+	return IsTargetTime(tmp_time, dst_resolution)
+
+	// if tmp_time%dst_resolution == 0 {
+	// 	return true
+	// } else {
+	// 	return false
+	// }
 }
 
 func GetDepthString(m *treemap.Map, numb int) string {

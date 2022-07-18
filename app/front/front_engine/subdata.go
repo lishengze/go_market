@@ -147,41 +147,62 @@ func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*Kline
 			continue
 		}
 
-		// logx.Slowf("5")
-		cache_kline := sub_info.cache_data
-		NextKlineTime := cache_kline.Time + int64(resolution)*datastruct.NANO_PER_SECS
+		var pub_kline *datastruct.Kline
 
-		if resolution == 60 {
-			NextKlineTime = NextKlineTime + int64(resolution)*datastruct.NANO_PER_SECS
+		if datastruct.IsNewKlineStartTime(trade.Time, int64(resolution)) {
+
+			tmp_kline := &datastruct.Kline{
+				Exchange:   trade.Exchange,
+				Symbol:     trade.Symbol,
+				Time:       trade.Time,
+				Open:       trade.Price,
+				High:       trade.Price,
+				Low:        trade.Price,
+				Close:      trade.Price,
+				Volume:     trade.Volume,
+				Resolution: resolution,
+			}
+
+			logx.Slowf("New Kline With: \nTrade %s;\nkline: %s \n", trade.String(), tmp_kline.FullString())
+
+			s.KlineInfo.Info[trade.Symbol][resolution].cache_data = datastruct.NewKlineWithKline(tmp_kline)
+			s.KlineInfo.Info[trade.Symbol][resolution].cache_data.Resolution = resolution
+
+			pub_kline = datastruct.NewKlineWithKline(tmp_kline)
+		} else {
+			cache_kline := sub_info.cache_data
+
+			NextKlineTime := cache_kline.Time + int64(resolution)*datastruct.NANO_PER_SECS
+
+			if resolution == 60 {
+				NextKlineTime = NextKlineTime + int64(resolution)*datastruct.NANO_PER_SECS
+			}
+
+			if trade.Time <= cache_kline.Time {
+				logx.Errorf("Trade.Time %s, earlier than CachedKlineTime: %s", util.TimeStrFromInt(trade.Time), util.TimeStrFromInt(cache_kline.Time))
+				continue
+			}
+
+			if trade.Time > NextKlineTime {
+				logx.Errorf("Trade.Time %s, later than NextKlineTime: %s", util.TimeStrFromInt(trade.Time), util.TimeStrFromInt(NextKlineTime))
+				continue
+			}
+
+			pub_kline = datastruct.NewKlineWithKline(cache_kline)
+
+			pub_kline.Close = trade.Price
+			if pub_kline.Low > trade.Price {
+				pub_kline.Low = trade.Price
+			}
+			if pub_kline.High < trade.Price {
+				pub_kline.High = trade.Price
+			}
 		}
 
-		if trade.Time <= cache_kline.Time {
-			logx.Errorf("Trade.Time %s, earlier than CachedKlineTime: %s", util.TimeStrFromInt(trade.Time), util.TimeStrFromInt(cache_kline.Time))
-			continue
-		}
-
-		// logx.Slowf("6")
-		if trade.Time > NextKlineTime {
-			logx.Errorf("Trade.Time %s, later than NextKlineTime: %s", util.TimeStrFromInt(trade.Time), util.TimeStrFromInt(NextKlineTime))
-			continue
-		}
-
-		// logx.Slowf("7")
-		pub_kline := datastruct.NewKlineWithKline(cache_kline)
-
-		pub_kline.Close = trade.Price
-		if pub_kline.Low > trade.Price {
-			pub_kline.Low = trade.Price
-		}
-		if pub_kline.High < trade.Price {
-			pub_kline.High = trade.Price
-		}
 		if pub_kline != nil {
 			cur_pub_list := s.GetKlinePubInfoListAtom(sub_info, pub_kline)
 			rst = append(rst, cur_pub_list...)
 		}
-
-		// logx.Slowf("8")
 	}
 
 	return rst
