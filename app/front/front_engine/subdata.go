@@ -188,15 +188,18 @@ func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*Kline
 				continue
 			}
 
-			pub_kline = datastruct.NewKlineWithKline(cache_kline)
+			cache_kline.Close = trade.Price
+			if cache_kline.Low > trade.Price {
+				cache_kline.Low = trade.Price
 
-			pub_kline.Close = trade.Price
-			if pub_kline.Low > trade.Price {
-				pub_kline.Low = trade.Price
 			}
-			if pub_kline.High < trade.Price {
-				pub_kline.High = trade.Price
+			if cache_kline.High < trade.Price {
+				cache_kline.High = trade.Price
 			}
+
+			cache_kline.Volume = cache_kline.Volume + trade.Volume
+
+			pub_kline = datastruct.NewKlineWithKline(cache_kline)
 		}
 
 		if pub_kline != nil {
