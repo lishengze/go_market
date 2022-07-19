@@ -151,7 +151,7 @@ func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*Kline
 		cache_kline := sub_info.cache_data
 		NextKlineTime := cache_kline.Time + int64(resolution)*datastruct.NANO_PER_SECS
 
-		logx.Slowf("Trade: %s, \n\t\t\t\t\t trade_secs: %s, nextkline_secs: %s",
+		logx.Slowf("Trade: %s, \n\t\t\t\ttrade_secs: %s, nextkline_secs: %s",
 			trade.String(),
 			time.Unix(trade.Time/datastruct.NANO_PER_SECS, 0),
 			time.Unix(NextKlineTime/datastruct.NANO_PER_SECS, 0))
@@ -446,6 +446,10 @@ func (s *SubData) UnSubDepth(symbol string, ws *net.WSInfo) {
 
 	s.DepthInfo.Info[symbol].Remove(ws.ID)
 
+	if s.DepthInfo.Info[symbol].Size() == 0 {
+		delete(s.DepthInfo.Info, symbol)
+	}
+
 	logx.Infof("UnSubDepth %s : %+v", symbol, ws)
 }
 
@@ -475,6 +479,11 @@ func (s *SubData) UnSubTrade(symbol string, ws *net.WSInfo) {
 	}
 
 	s.TradeInfo.Info[symbol].Remove(ws.ID)
+
+	if s.TradeInfo.Info[symbol].Size() == 0 {
+		delete(s.TradeInfo.Info, symbol)
+	}
+
 	logx.Infof("UnSubTrade Remove %s : %+v", symbol, ws)
 }
 
@@ -520,6 +529,18 @@ func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WS
 
 	if s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].ws_info != nil {
 		s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].ws_info.Remove(ws.ID)
+
+		if s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].ws_info.Size() == 0 {
+
+			s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].cache_data = nil
+
+			delete(s.KlineInfo.Info[req_kline_info.Symbol], int(req_kline_info.Frequency))
+
+			if len(s.KlineInfo.Info[req_kline_info.Symbol]) == 0 {
+				delete(s.KlineInfo.Info, req_kline_info.Symbol)
+			}
+		}
+
 		logx.Infof("UnSubKline Remove %s, %d : %+v", req_kline_info.Symbol, int(req_kline_info.Frequency), ws)
 	} else {
 		logx.Infof("KlineInfo, %s.%d is already nil!", req_kline_info.Symbol, req_kline_info.Frequency)

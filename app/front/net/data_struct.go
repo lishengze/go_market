@@ -38,6 +38,9 @@ const (
 	TRADE_UPATE   = "trade_update"
 	KLINE_UPATE   = "kline_update"
 
+	KLINE_HIST = "History"
+	KLINE_REAL = "RealTime"
+
 	HEARTBEAT = "heartbeat"
 	ERROR     = "error"
 )

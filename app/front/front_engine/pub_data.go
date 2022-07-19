@@ -254,6 +254,7 @@ type PubKlineDetail struct {
 
 type PubKlineJson struct {
 	TypeInfo        string           `json:"type"`
+	DataType        string           `json:"data_type"`
 	Symbol          string           `json:"symbol"`
 	StartTime       int64            `json:"start_time"`
 	EndTime         int64            `json:"end_time"`
@@ -293,6 +294,7 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 
 	json_data := PubKlineJson{
 		TypeInfo:        net.KLINE_UPATE,
+		DataType:        net.KLINE_HIST,
 		Symbol:          hist_kline.ReqInfo.Symbol,
 		StartTime:       int64(hist_kline.ReqInfo.StartTime),
 		EndTime:         int64(hist_kline.ReqInfo.EndTime),
@@ -331,6 +333,7 @@ func NewKlineUpdateJsonMsg(kline *datastruct.Kline) []byte {
 
 	json_data := PubKlineJson{
 		TypeInfo:        net.KLINE_UPATE,
+		DataType:        net.KLINE_REAL,
 		Symbol:          kline.Symbol,
 		StartTime:       kline.Time,
 		EndTime:         kline.Time,

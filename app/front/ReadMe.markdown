@@ -120,6 +120,8 @@
         "frequency":0,      // 请求的时间频率  
         "type":"kline_update"     // type 类型   
         "data_count": ;     // 实际返回的k 线数目;  
+        "data_type": ;      // "RealTime", "History"，返回的是实时还是历史数据;
+        
     }    
 
 5. 心跳数据
