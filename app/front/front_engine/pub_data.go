@@ -268,7 +268,10 @@ type PubKlineJson struct {
 func (p *PubKlineJson) TimeList() string {
 	rst := " "
 	for _, kline_detail := range p.Data {
-		rst = rst + fmt.Sprintf("%s, v: %f;\n", util.TimeStrFromInt(kline_detail.Tick*datastruct.NANO_PER_SECS), kline_detail.Volume)
+		rst = rst + fmt.Sprintf("%s, v: %f;o: %f, h: %f, l: %f, c: %f\n",
+			util.TimeStrFromInt(kline_detail.Tick*datastruct.NANO_PER_SECS),
+			kline_detail.Volume, kline_detail.Open, kline_detail.High,
+			kline_detail.Low, kline_detail.Close)
 	}
 	return rst
 }

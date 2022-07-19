@@ -40,7 +40,7 @@ func NewServerEngine(svcCtx *svc.ServiceContext) *ServerEngine {
 	s.PubDataChan = datastruct.NewDataChannel()
 
 	s.FrontEngineWorker = front_engine.NewFrontEngine(&svcCtx.Config)
-	s.DataEngineWorker = data_engine.NewDataEngine(s.RecvDataChan, &svcCtx.Config)
+	s.DataEngineWorker = data_engine.NewDataEngine(s.RecvDataChan, svcCtx)
 	s.WSEngineWorker = ws_server.NewWSEngine(&svcCtx.Config.WS)
 
 	s.FrontEngineWorker.SetNextWorker(s.DataEngineWorker)
@@ -74,6 +74,15 @@ func (s *ServerEngine) StartNacosClient() {
 	s.ProcsssHedgeConfigStr(HedgeConfigStr)
 
 	s.NacosClientWorker.ListenConfig("HedgeParams", datastruct.BCTS_GROUP, s.HedgeParamsChanged)
+
+	SymbolConfigStr, err := s.NacosClientWorker.GetConfigContent("SymbolParams", datastruct.BCTS_GROUP)
+	if err != nil {
+		logx.Error(err.Error())
+	}
+	// logx.Info("Requested SymbolConfigStr: " + SymbolConfigStr)
+	s.ProcessSymbolConfigStr(SymbolConfigStr)
+
+	s.NacosClientWorker.ListenConfig("SymbolParams", datastruct.BCTS_GROUP, s.SymbolParamsChanged)
 }
 
 func (s *ServerEngine) HedgeParamsChanged(namespace, group, dataId, hedgingContent string) {
@@ -111,6 +120,22 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 	logx.Info(fmt.Sprintf("HedgeParamsChanged: NewMeta:\n%s \n", NewMeta.String()))
 
 	s.Commer.UpdateMetaData(&NewMeta)
+}
+
+func (s *ServerEngine) SymbolParamsChanged(namespace, group, dataId, data string) {
+	// logx.Infof("SymbolContent: %s\n", data)
+	s.ProcessSymbolConfigStr(data)
+}
+
+func (s *ServerEngine) ProcessSymbolConfigStr(data string) {
+	symbol_configs, err := mkconfig.ParseJsonSymbolConfig(data)
+
+	if err != nil {
+		logx.Error(err.Error())
+		return
+	}
+
+	s.ctx.SymbolConfigs = symbol_configs
 }
 
 func (s *ServerEngine) SetTestConfig() {

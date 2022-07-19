@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"market_server/app/data_manager/rpc/marketservice"
-	"market_server/app/front/config"
 	"market_server/app/front/net"
+	"market_server/app/front/svc"
 	"market_server/app/front/worker"
 	"market_server/common/datastruct"
 	"market_server/common/util"
@@ -20,7 +20,8 @@ import (
 
 type DataEngine struct {
 	RecvDataChan *datastruct.DataChannel
-	config       *config.Config
+	// config       *config.Config
+	ctx *svc.ServiceContext
 
 	msclient marketservice.MarketService
 
@@ -37,21 +38,21 @@ type DataEngine struct {
 	IsTest bool
 }
 
-func NewDataEngine(recvDataChan *datastruct.DataChannel, config *config.Config) *DataEngine {
+func NewDataEngine(recvDataChan *datastruct.DataChannel, ctx *svc.ServiceContext) *DataEngine {
 
-	if config != nil {
+	if ctx != nil {
 		return &DataEngine{
 			RecvDataChan:      recvDataChan,
-			config:            config,
+			ctx:               ctx,
 			cache_period_data: make(map[string]*PeriodData),
 			cache_kline_data:  make(map[string]map[int]*treemap.Map),
 			IsTest:            false,
-			msclient:          marketservice.NewMarketService(zrpc.MustNewClient(config.RpcConfig)),
+			msclient:          marketservice.NewMarketService(zrpc.MustNewClient(ctx.Config.RpcConfig)),
 		}
 	} else {
 		return &DataEngine{
 			RecvDataChan:      recvDataChan,
-			config:            config,
+			ctx:               ctx,
 			cache_period_data: make(map[string]*PeriodData),
 			cache_kline_data:  make(map[string]map[int]*treemap.Map),
 			IsTest:            false,
