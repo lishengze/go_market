@@ -147,9 +147,12 @@ func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*Kline
 			continue
 		}
 
+		cache_kline := sub_info.cache_data
+		NextKlineTime := cache_kline.Time + int64(resolution)*datastruct.NANO_PER_SECS
+
 		var pub_kline *datastruct.Kline
 
-		if datastruct.IsNewKlineStartTime(trade.Time, int64(resolution)) {
+		if trade.Time/datastruct.NANO_PER_SECS == NextKlineTime/datastruct.NANO_PER_SECS {
 
 			tmp_kline := &datastruct.Kline{
 				Exchange:   trade.Exchange,
@@ -163,16 +166,13 @@ func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*Kline
 				Resolution: resolution,
 			}
 
-			logx.Slowf("New Kline With: \nTrade %s;\nkline: %s \n", trade.String(), tmp_kline.FullString())
+			logx.Slowf("New Kline With: \nTrade %s\nkline: %s \n", trade.String(), tmp_kline.FullString())
 
 			s.KlineInfo.Info[trade.Symbol][resolution].cache_data = datastruct.NewKlineWithKline(tmp_kline)
 			s.KlineInfo.Info[trade.Symbol][resolution].cache_data.Resolution = resolution
 
 			pub_kline = datastruct.NewKlineWithKline(tmp_kline)
 		} else {
-			cache_kline := sub_info.cache_data
-
-			NextKlineTime := cache_kline.Time + int64(resolution)*datastruct.NANO_PER_SECS
 
 			if resolution == 60 {
 				NextKlineTime = NextKlineTime + int64(resolution)*datastruct.NANO_PER_SECS
