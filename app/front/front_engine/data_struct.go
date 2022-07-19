@@ -57,7 +57,7 @@ func (d *KlinePubInfo) String() string {
 		return fmt.Sprintf("ws_info: %s, kline: nil", d.ws_info.String())
 	} else {
 		// logx.Infof("Rsp Update New Kline Time: %s", kline_data.TimeList())
-		return fmt.Sprintf("ws_info: %s, kline: %s", d.ws_info.String(), kline_data.TimeList())
+		return fmt.Sprintf("[ws]:%s, [k]:%s %s", d.ws_info.String(), kline_data.Symbol, kline_data.TimeList())
 	}
 }
 

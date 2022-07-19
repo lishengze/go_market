@@ -185,7 +185,7 @@ func (t *TestMain) process_kline(message []byte) {
 	} else {
 		// delta_time := util.UTCNanoTime() - kline_data.ReqResponseTime
 		// logx.Infof("\nKline: req_process_time: %d us, ws_time: %dus, \nkline_data: %s", kline_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
-		logx.Infof("\nkline_data: %s", kline_data.TimeList())
+		logx.Infof("[k]:%s.%d, %s", kline_data.Symbol, kline_data.Resolution, kline_data.TimeList())
 
 		// fmt.Printf("Kline: req_process_time: %d us, ws_time: %dus, \nkline_data: %s", kline_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
 	}
@@ -238,7 +238,7 @@ func (t *TestMain) write_func(c *websocket.Conn) {
 	// send_msg := t.GetTestDepthReqJson()
 	// send_msg := t.GetTestKlineReqJson(datastruct.SECS_PER_DAY * 7)
 
-	send_msg := t.GetTestKlineReqJson(datastruct.SECS_PER_DAY)
+	send_msg := t.GetTestKlineReqJson(300)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {
