@@ -151,7 +151,7 @@ func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*Kline
 		cache_kline := sub_info.cache_data
 		NextKlineTime := cache_kline.Time + int64(resolution)*datastruct.NANO_PER_SECS
 
-		logx.Slowf("Trade: %s, \n\ttrade_secs: %s, nextkline_secs: %s",
+		logx.Slowf("Trade: %s, \n\t\t\ttrade_secs: %s, nextkline_secs: %s",
 			trade.String(),
 			time.Unix(trade.Time/datastruct.NANO_PER_SECS, 0),
 			time.Unix(NextKlineTime/datastruct.NANO_PER_SECS, 0))
@@ -163,7 +163,7 @@ func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*Kline
 			tmp_kline := &datastruct.Kline{
 				Exchange:   trade.Exchange,
 				Symbol:     trade.Symbol,
-				Time:       trade.Time,
+				Time:       trade.Time - trade.Time%datastruct.NANO_PER_MIN,
 				Open:       trade.Price,
 				High:       trade.Price,
 				Low:        trade.Price,
