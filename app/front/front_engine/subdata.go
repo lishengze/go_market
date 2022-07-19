@@ -151,7 +151,7 @@ func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*Kline
 		cache_kline := sub_info.cache_data
 		NextKlineTime := cache_kline.Time + int64(resolution)*datastruct.NANO_PER_SECS
 
-		logx.Slowf("Trade: %s, \n\t\t\ttrade_secs: %s, nextkline_secs: %s",
+		logx.Slowf("Trade: %s, \n\t\t\t\t\t trade_secs: %s, nextkline_secs: %s",
 			trade.String(),
 			time.Unix(trade.Time/datastruct.NANO_PER_SECS, 0),
 			time.Unix(NextKlineTime/datastruct.NANO_PER_SECS, 0))
