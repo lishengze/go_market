@@ -345,10 +345,12 @@ func (p *PeriodData) UpdateWithKlines(klines *treemap.Map) {
 	p.UpdateMeta()
 }
 
-func (p *PeriodData) GetChangeInfo() *datastruct.ChangeInfo {
+func (p *PeriodData) GetChangeInfo(precision int) *datastruct.ChangeInfo {
 	p.mutex.Lock()
 
 	defer p.mutex.Unlock()
+
+	precision = 2
 
 	return &datastruct.ChangeInfo{
 		Symbol:     p.Symbol,

@@ -268,9 +268,16 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
 	usd_price := trade.Price * d.GetUsdPrice(trade.Symbol)
 
+	symbol_config := d.ctx.GetSymbolConfig(trade.Symbol)
+	precision := 4
+
+	if symbol_config != nil {
+		precision = symbol_config.PricePrecision
+	}
+
 	rsp_trade := datastruct.RspTrade{
 		TradeData:     trade,
-		ChangeData:    d.cache_period_data[trade.Symbol].GetChangeInfo(),
+		ChangeData:    d.cache_period_data[trade.Symbol].GetChangeInfo(precision),
 		UsdPrice:      usd_price,
 		ReqArriveTime: util.UTCNanoTime(),
 	}
@@ -404,9 +411,16 @@ func (d *DataEngine) SubTrade(req_trade *datastruct.ReqTrade, ws *net.WSInfo) (s
 				// logx.Slowf("[DE Trade] %s, ReqWSTime %d ns", req_trade.Symbol, rsp_trade.ReqWSTime)
 				go d.PublishTrade(&rsp_trade, ws)
 			} else {
+				symbol_config := d.ctx.GetSymbolConfig(req_trade.Symbol)
+				precision := 4
+
+				if symbol_config != nil {
+					precision = symbol_config.PricePrecision
+				}
+
 				rsp_trade := datastruct.RspTrade{
 					TradeData:     trade_value,
-					ChangeData:    d.cache_period_data[symbol].GetChangeInfo(),
+					ChangeData:    d.cache_period_data[symbol].GetChangeInfo(precision),
 					UsdPrice:      usd_price,
 					ReqWSTime:     req_trade.ReqWSTime,
 					ReqArriveTime: req_trade.ReqArriveTime,
