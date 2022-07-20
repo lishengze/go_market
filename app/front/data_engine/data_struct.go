@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
+	"github.com/shopspring/decimal"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -95,8 +96,8 @@ type PeriodData struct {
 	Last     float64
 	LastTime int64
 
-	Change     float64
-	ChangeRate float64
+	Change     decimal.Decimal
+	ChangeRate decimal.Decimal
 
 	TimeNanos int64
 	Count     int
@@ -314,19 +315,14 @@ func (p *PeriodData) UpdateMeta() {
 	}
 
 	if p.CurTrade != nil && p.CurTrade.Time > p.LastTime {
-		p.Change = p.CurTrade.Price - p.Start
-		p.ChangeRate = p.Change / p.Start
+		p.Change = decimal.NewFromFloat(p.CurTrade.Price).Sub(decimal.NewFromFloat(p.Start))
 	} else {
-		p.Change = p.Last - p.Start
-		p.ChangeRate = p.Change / p.Start
+		p.Change = decimal.NewFromFloat(p.Last).Sub(decimal.NewFromFloat(p.Start))
+
 	}
 
+	p.ChangeRate = p.Change.Div(decimal.NewFromFloat(p.Start))
 	p.Count = p.time_cache_data.Size()
-
-	// if p.Symbol == "BTC_USDT" {
-	// 	logx.Slowf("[Meta] Period %s", p.String())
-	// }
-
 }
 
 func (p *PeriodData) UpdateWithPbKlines(klines *marketservice.HistKlineData) {
@@ -350,13 +346,25 @@ func (p *PeriodData) GetChangeInfo(precision int) *datastruct.ChangeInfo {
 
 	defer p.mutex.Unlock()
 
-	precision = 2
+	change := p.Change
+
+	if precision > 0 {
+		change = p.Change.Truncate(int32(precision))
+	}
+
+	Change, ok := change.Float64()
+
+	if !ok {
+		logx.Errorf("change.Float64() change: %+v!", change)
+	}
+
+	ChangeRate, ok := p.ChangeRate.Float64()
 
 	return &datastruct.ChangeInfo{
 		Symbol:     p.Symbol,
 		High:       p.Max,
 		Low:        p.Min,
-		Change:     p.Change,
-		ChangeRate: p.ChangeRate,
+		Change:     Change,
+		ChangeRate: ChangeRate,
 	}
 }

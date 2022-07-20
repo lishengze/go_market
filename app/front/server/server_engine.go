@@ -135,7 +135,7 @@ func (s *ServerEngine) ProcessSymbolConfigStr(data string) {
 		return
 	}
 
-	s.ctx.SymbolConfigs = symbol_configs
+	s.ctx.UpdateSymbolConfigWithSlice(symbol_configs)
 }
 
 func (s *ServerEngine) SetTestConfig() {
