@@ -202,14 +202,7 @@ func (p *PeriodData) EraseOuttimeData() {
 	var outtime_datalist []*datastruct.Kline
 
 	begin_iter := p.time_cache_data.Iterator()
-	if ok := begin_iter.First(); !ok {
-		return
-	}
-
-	last_iter := p.time_cache_data.Iterator()
-	if ok := last_iter.Last(); !ok {
-		return
-	}
+	begin_iter.Begin()
 
 	for begin_iter.Next() {
 		first_time_secs := begin_iter.Key().(int64) / datastruct.NANO_PER_SECS
