@@ -156,7 +156,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 			}
 
 			logx.Slowf("trade_pub_info: ws:%s, %s", ws.String(), string(byte_data))
-			err := ws.SendMsg(websocket.TextMessage, byte_data)
+			err := ws.SendMsg(1, byte_data)
 
 			if err != nil {
 				logx.Errorf("PublishDepth err: %+v \n", err)
