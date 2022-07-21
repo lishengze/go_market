@@ -323,13 +323,14 @@ func (p *PeriodData) UpdateMeta() {
 	if p.CurTrade != nil && p.CurTrade.Time > p.LastTime {
 		p.Change = decimal.NewFromFloat(p.CurTrade.Price).Sub(decimal.NewFromFloat(p.Start))
 
-		logx.Slowf("Trade: %s;\nLastK: t %s,p %f;\nStartL: t %s, p %f", p.CurTrade.String(),
+		logx.Slowf("\nTrade: %s;\nLastK: t %s,p %f;\nStartL: t %s, p %f", p.CurTrade.String(),
 			util.TimeStrFromInt(p.LastTime), p.Last,
 			util.TimeStrFromInt(p.StartTime), p.Start)
+
 	} else {
 		p.Change = decimal.NewFromFloat(p.Last).Sub(decimal.NewFromFloat(p.Start))
 
-		logx.Slowf("Trade: %s;\nLastK: t %s,p %f;\nStartL: t %s, p %f", p.CurTrade.String(),
+		logx.Slowf("LastK: t %s,p %f;\nStartL: t %s, p %f",
 			util.TimeStrFromInt(p.LastTime), p.Last,
 			util.TimeStrFromInt(p.StartTime), p.Start)
 	}
