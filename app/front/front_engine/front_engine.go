@@ -169,7 +169,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 		// logx.Info("After GetTradePubInfoList")
 
 		for _, info := range trade_pub_list {
-			logx.Slowf("trade_pub_info: %s \n", info.String())
+			// logx.Slowf("trade_pub_info: %s \n", info.String())
 			if info.ws_info.IsAlive() {
 				err := info.ws_info.SendMsg(websocket.TextMessage, info.data)
 				if err != nil {
