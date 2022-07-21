@@ -149,12 +149,13 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 
 			var trade_data PubTradeJson
 			if err := json.Unmarshal([]byte(byte_data), &trade_data); err != nil {
-				// logx.Errorf("Error = %+v", err)
+				logx.Errorf("Error = %+v", err)
 				// return
 			} else {
 				// logx.Slowf("Trade %s, req_ws_time: %d us, req_process_time: %dus ", trade_data.Symbol, trade_data.ReqWSTime/datastruct.NANO_PER_MICR, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR)
 			}
 
+			logx.Slowf("trade_pub_info: ws:%s, %s", ws.String(), string(byte_data))
 			err := ws.SendMsg(websocket.TextMessage, byte_data)
 
 			if err != nil {
