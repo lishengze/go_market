@@ -123,7 +123,7 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 }
 
 func (s *ServerEngine) SymbolParamsChanged(namespace, group, dataId, data string) {
-	// logx.Infof("SymbolContent: %s\n", data)
+	logx.Slowf("SymbolContent: %s\n", data)
 	s.ProcessSymbolConfigStr(data)
 }
 
