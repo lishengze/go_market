@@ -255,14 +255,14 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
 	logx.Info("0.1")
 	if _, ok := d.cache_period_data[trade.Symbol]; !ok {
-		err := d.InitPeriodDara(trade.Symbol)
+		// err := d.InitPeriodDara(trade.Symbol)
 
-		// logx.Info("0.2")
+		// // logx.Info("0.2")
 
-		if err != nil {
-			logx.Errorf("process_trade error: %+v", err)
-			return err
-		}
+		// if err != nil {
+		// 	logx.Errorf("process_trade error: %+v", err)
+		// 	return err
+		// }
 
 		// logx.Info("0.3")
 		// symbol_list := d.get_symbol_list()
