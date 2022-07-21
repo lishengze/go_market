@@ -419,10 +419,11 @@ func GetLastStartTime(tmp_time int64, resolution int64) int64 {
 	}
 
 	if resolution == SECS_PER_DAY*7 {
+		tmp_time = tmp_time - tmp_time%SECS_PER_DAY
 		tmp_time = tmp_time + SECS_PER_DAY*3
 	}
 
-	tmp_time = tmp_time - tmp_time%(SECS_PER_DAY*7)
+	tmp_time = tmp_time - tmp_time%(resolution)
 
 	tmp_time = tmp_time * NANO_PER_SECS
 
