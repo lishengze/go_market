@@ -141,7 +141,7 @@ func (t *TestMain) read_func(c *websocket.Conn) {
 			logx.Info("read:", err)
 			return
 		}
-		// log.Printf("recv: %s", message)
+		// logx.Infof("recv: %s", message)
 
 		var m map[string]interface{}
 		if err := json.Unmarshal([]byte(message), &m); err != nil {
@@ -198,22 +198,25 @@ func (t *TestMain) process_trade(message []byte) {
 		logx.Errorf("Error = %+v", err)
 		return
 	} else {
-		t.TradeUpdatedSymbolMapMutex.Lock()
-		// delta_time := util.UTCNanoTime() - trade_data.ReqResponseTime
-		if _, ok := t.TradeUpdatedSymbolMap[trade_data.Symbol]; !ok {
-			// logx.Infof("Trade %s, req_process_time: %d us, ws_time: %dus ", trade_data.Symbol, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
-			// fmt.Printf("Trade %s, req_ws:%d us, req_process_time: %d us, ws_time: %dus, %s \n",
-			// 	trade_data.Symbol, trade_data.ReqWSTime/datastruct.NANO_PER_MICR,
-			// 	trade_data.ReqProcessTime/datastruct.NANO_PER_MICR,
-			// 	delta_time/datastruct.NANO_PER_MICR, trade_data.String())
+		trade_data.Time = trade_data.Time * datastruct.NANO_PER_SECS
+		logx.Infof("%s", trade_data.String())
 
-			trade_data.Time = trade_data.Time * datastruct.NANO_PER_SECS
-			logx.Infof("%s", trade_data.String())
+		// t.TradeUpdatedSymbolMapMutex.Lock()
+		// // delta_time := util.UTCNanoTime() - trade_data.ReqResponseTime
+		// if _, ok := t.TradeUpdatedSymbolMap[trade_data.Symbol]; !ok {
+		// 	// logx.Infof("Trade %s, req_process_time: %d us, ws_time: %dus ", trade_data.Symbol, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
+		// 	// fmt.Printf("Trade %s, req_ws:%d us, req_process_time: %d us, ws_time: %dus, %s \n",
+		// 	// 	trade_data.Symbol, trade_data.ReqWSTime/datastruct.NANO_PER_MICR,
+		// 	// 	trade_data.ReqProcessTime/datastruct.NANO_PER_MICR,
+		// 	// 	delta_time/datastruct.NANO_PER_MICR, trade_data.String())
 
-			t.TradeUpdatedSymbolMap[trade_data.Symbol] = struct{}{}
-		}
+		// 	trade_data.Time = trade_data.Time * datastruct.NANO_PER_SECS
+		// 	logx.Infof("%s", trade_data.String())
 
-		t.TradeUpdatedSymbolMapMutex.Unlock()
+		// 	t.TradeUpdatedSymbolMap[trade_data.Symbol] = struct{}{}
+		// }
+
+		// t.TradeUpdatedSymbolMapMutex.Unlock()
 	}
 }
 

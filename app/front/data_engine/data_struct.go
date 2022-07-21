@@ -342,16 +342,16 @@ func (p *PeriodData) UpdateMeta() {
 	if p.CurTrade != nil && p.CurTrade.Time > p.KLineLastTime {
 		p.Change = decimal.NewFromFloat(p.CurTrade.Price).Sub(decimal.NewFromFloat(p.Start))
 
-		// logx.Slowf("\nTrade: %s;\nLastK: t %s,p %f;\nStartL: t %s, p %f", p.CurTrade.String(),
-		// 	util.TimeStrFromInt(p.KLineLastTime), p.Last,
-		// 	util.TimeStrFromInt(p.StartTime), p.Start)
+		logx.Slowf("\nTrade: %s;\nLastK: t %s,p %f;\nStartL: t %s, p %f", p.CurTrade.String(),
+			util.TimeStrFromInt(p.KLineLastTime), p.Last,
+			util.TimeStrFromInt(p.StartTime), p.Start)
 
 	} else {
 		p.Change = decimal.NewFromFloat(p.Last).Sub(decimal.NewFromFloat(p.Start))
 
-		// logx.Slowf("LastK: t %s,p %f;\nStartL: t %s, p %f",
-		// 	util.TimeStrFromInt(p.KLineLastTime), p.Last,
-		// 	util.TimeStrFromInt(p.StartTime), p.Start)
+		logx.Slowf("LastK: t %s,p %f;\nStartL: t %s, p %f",
+			util.TimeStrFromInt(p.KLineLastTime), p.Last,
+			util.TimeStrFromInt(p.StartTime), p.Start)
 	}
 
 	p.ChangeRate = p.Change.Div(decimal.NewFromFloat(p.Start))

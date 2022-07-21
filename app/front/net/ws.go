@@ -52,7 +52,7 @@ func (w *WSInfo) SendMsg(messageType int, data []byte) error {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
 
-	logx.Slowf("Send %s", string(data))
+	// logx.Slowf("Send %s", string(data))
 	return w.Conn.WriteMessage(messageType, data)
 }
 
