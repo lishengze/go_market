@@ -251,6 +251,7 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	logx.Info("0")
 
 	d.trade_cache_map.Store(trade.Symbol, trade)
+
 	d.cache_period_data_mutex.Lock()
 
 	logx.Info("0.1")
@@ -272,31 +273,29 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	}
 	d.cache_period_data_mutex.Unlock()
 
-	logx.Info(1)
+	// logx.Info(1)
 
-	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
+	// d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
 
-	usd_price := trade.Price * d.GetUsdPrice(trade.Symbol)
+	// usd_price := trade.Price * d.GetUsdPrice(trade.Symbol)
 
-	symbol_config := d.ctx.GetSymbolConfig(trade.Symbol)
-	precision := 4
+	// symbol_config := d.ctx.GetSymbolConfig(trade.Symbol)
+	// precision := 4
 
-	// logx.Info(2)
+	// // logx.Info(2)
 
-	if symbol_config != nil {
-		precision = symbol_config.PricePrecision
-	}
+	// if symbol_config != nil {
+	// 	precision = symbol_config.PricePrecision
+	// }
 
-	rsp_trade := datastruct.RspTrade{
-		TradeData:     trade,
-		ChangeData:    d.cache_period_data[trade.Symbol].GetChangeInfo(precision),
-		UsdPrice:      usd_price,
-		ReqArriveTime: util.UTCNanoTime(),
-	}
+	// rsp_trade := datastruct.RspTrade{
+	// 	TradeData:     trade,
+	// 	ChangeData:    d.cache_period_data[trade.Symbol].GetChangeInfo(precision),
+	// 	UsdPrice:      usd_price,
+	// 	ReqArriveTime: util.UTCNanoTime(),
+	// }
 
-	// logx.Info(3)
-
-	d.PublishTrade(&rsp_trade, nil)
+	// d.PublishTrade(&rsp_trade, nil)
 
 	return nil
 }
