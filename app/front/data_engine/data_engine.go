@@ -88,6 +88,7 @@ func (d *DataEngine) UpdateMeta(symbols []string) {
 func (a *DataEngine) InitPeriodDara(symbol string) error {
 	util.CatchExp("InitPeriodDara " + symbol)
 	logx.Infof("Init PeriodData: %s", symbol)
+
 	a.cache_period_data[symbol] = &PeriodData{
 		Symbol:                symbol,
 		TimeNanos:             datastruct.NANO_PER_DAY,
@@ -135,8 +136,6 @@ func (a *DataEngine) InitPeriodDara(symbol string) error {
 	}
 
 	logx.Infof("Init Period HistKline: %s", marketservice.HistKlineString(hist_klines))
-
-	// fmt.Printf("Rst: %+v \n", hist_klines)
 
 	a.cache_period_data[symbol].UpdateWithPbKlines(hist_klines)
 
@@ -254,23 +253,23 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
 	d.cache_period_data_mutex.Lock()
 
-	logx.Info("0.1")
-	if _, ok := d.cache_period_data[trade.Symbol]; !ok {
-		err := d.InitPeriodDara(trade.Symbol)
+	// logx.Info("0.1")
+	// if _, ok := d.cache_period_data[trade.Symbol]; !ok {
+	// 	err := d.InitPeriodDara(trade.Symbol)
 
-		logx.Info("0.2")
+	// 	logx.Info("0.2")
 
-		if err != nil {
-			logx.Errorf("process_trade error: %+v", err)
-			return err
-		}
+	// 	if err != nil {
+	// 		logx.Errorf("process_trade error: %+v", err)
+	// 		return err
+	// 	}
 
-		logx.Info("0.3")
-		symbol_list := d.get_symbol_list()
-		d.PublishSymbol(symbol_list, nil)
+	// 	logx.Info("0.3")
+	// 	symbol_list := d.get_symbol_list()
+	// 	d.PublishSymbol(symbol_list, nil)
 
-		logx.Info("0.4")
-	}
+	// 	logx.Info("0.4")
+	// }
 	d.cache_period_data_mutex.Unlock()
 
 	// logx.Info(1)
