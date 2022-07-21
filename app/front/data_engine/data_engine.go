@@ -284,8 +284,6 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 		logx.Slowf("%s, has no config ", trade.Symbol)
 	}
 
-	logx.Slowf("%s, precision: %d", trade.Symbol, precision)
-
 	rsp_trade := datastruct.RspTrade{
 		TradeData:     trade,
 		ChangeData:    d.cache_period_data[trade.Symbol].GetChangeInfo(precision),

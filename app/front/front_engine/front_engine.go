@@ -155,7 +155,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 				// logx.Slowf("Trade %s, req_ws_time: %d us, req_process_time: %dus ", trade_data.Symbol, trade_data.ReqWSTime/datastruct.NANO_PER_MICR, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR)
 			}
 
-			logx.Slowf("trade_pub_info: ws:%s, %s", ws.String(), string(byte_data))
+			// logx.Slowf("trade_pub_info: ws:%s, %s", ws.String(), string(byte_data))
 			err := ws.SendMsg(1, byte_data)
 
 			if err != nil {
@@ -171,7 +171,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 
 		for _, info := range trade_pub_list {
 			if info.ws_info.IsAlive() {
-				logx.Slowf("trade_pub_info: %s \n", info.String())
+				// logx.Slowf("trade_pub_info: %s \n", info.String())
 				err := info.ws_info.SendMsg(1, info.data)
 				if err != nil {
 					logx.Errorf("PublishTrade err: %+v \n", err)
