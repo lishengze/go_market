@@ -131,7 +131,7 @@ func (p *PeriodData) UpdateWithTrade(trade *datastruct.Trade) {
 }
 
 func (p *PeriodData) UpdateWithKline(kline *datastruct.Kline) {
-	p.AddCacheData(kline)
+	p.AddKlineData(kline)
 
 	p.EraseOuttimeData()
 
@@ -161,7 +161,7 @@ func (p *PeriodData) AddTradeData(trade *datastruct.Trade) {
 	defer p.mutex.Unlock()
 }
 
-func (p *PeriodData) AddCacheData(kline *datastruct.Kline) {
+func (p *PeriodData) AddKlineData(kline *datastruct.Kline) {
 	p.mutex.Lock()
 
 	logx.Slowf("[Add] Kline: %s", kline.String())
