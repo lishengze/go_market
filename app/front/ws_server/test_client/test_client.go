@@ -50,7 +50,7 @@ func NewTestMain() *TestMain {
 
 func (t *TestMain) GetTestTradeReqJson() []byte {
 	// symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD", "BTC_USD", "ETH_USD", "ETH_BTC"}
-	symbol_list := []string{"ETH_BTC"}
+	symbol_list := []string{"BTC_USDT"}
 	req_start_time := strconv.FormatInt(util.UTCNanoTime(), 10)
 	sub_info := map[string]interface{}{
 		"type":           net.TRADE_SUB,
@@ -234,11 +234,11 @@ func (t *TestMain) GetHeartbeatMsg() []byte {
 
 func (t *TestMain) write_func(c *websocket.Conn) {
 
-	// send_msg := t.GetTestTradeReqJson()
+	send_msg := t.GetTestTradeReqJson()
 	// send_msg := t.GetTestDepthReqJson()
 	// send_msg := t.GetTestKlineReqJson(datastruct.SECS_PER_DAY * 7)
 
-	send_msg := t.GetTestKlineReqJson(300)
+	// send_msg := t.GetTestKlineReqJson(300)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {
