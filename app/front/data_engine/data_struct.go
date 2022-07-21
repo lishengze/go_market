@@ -349,6 +349,8 @@ func (p *PeriodData) UpdateWithKlines(klines *treemap.Map) {
 }
 
 func (p *PeriodData) GetChangeInfo(precision int) *datastruct.ChangeInfo {
+	util.CatchExp("GetChangeInfo")
+
 	p.mutex.Lock()
 
 	defer p.mutex.Unlock()
@@ -359,13 +361,17 @@ func (p *PeriodData) GetChangeInfo(precision int) *datastruct.ChangeInfo {
 		change = p.Change.Truncate(int32(precision))
 	}
 
-	Change, ok := change.Float64()
+	Change, _ := change.Float64()
 
-	if !ok {
-		logx.Errorf("change.Float64() change: %+v!", change)
-	}
+	// if !ok {
+	// 	logx.Errorf("change.Float64() change: %+v!", change)
+	// }
 
-	ChangeRate, ok := p.ChangeRate.Float64()
+	ChangeRate, _ := p.ChangeRate.Float64()
+
+	// if !ok {
+	// 	logx.Errorf("ChangeRate.Float64() ChangeRate: %+v!", ChangeRate)
+	// }
 
 	return &datastruct.ChangeInfo{
 		Symbol:     p.Symbol,
