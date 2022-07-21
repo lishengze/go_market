@@ -191,7 +191,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 					Frequency: uint32(info.Resolution),
 				}
 
-				// logx.Slowf("KP:%s", info.String())
+				logx.Slowf("KP:%s", info.String())
 				if info.ws_info.IsAlive() {
 					err := info.ws_info.SendMsg(1, info.data)
 					if err != nil {
