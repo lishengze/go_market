@@ -248,6 +248,8 @@ func catch_trade_exp(trade *datastruct.Trade) {
 func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	defer catch_trade_exp(trade)
 
+	logx.Info(0)
+
 	d.trade_cache_map.Store(trade.Symbol, trade)
 
 	d.cache_period_data_mutex.Lock()
@@ -264,12 +266,16 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	}
 	d.cache_period_data_mutex.Unlock()
 
+	logx.Info(1)
+
 	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
 
 	usd_price := trade.Price * d.GetUsdPrice(trade.Symbol)
 
 	symbol_config := d.ctx.GetSymbolConfig(trade.Symbol)
 	precision := 4
+
+	logx.Info(2)
 
 	if symbol_config != nil {
 		precision = symbol_config.PricePrecision
@@ -281,6 +287,8 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 		UsdPrice:      usd_price,
 		ReqArriveTime: util.UTCNanoTime(),
 	}
+
+	logx.Info(3)
 
 	d.PublishTrade(&rsp_trade, nil)
 
