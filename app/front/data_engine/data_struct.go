@@ -277,7 +277,7 @@ func (p *PeriodData) InitCacheDataWithTreeMap(klines *treemap.Map) {
 }
 
 func (p *PeriodData) UpdateMeta() {
-	util.CatchExp("UpdateMeta")
+	defer util.CatchExp("UpdateMeta")
 	p.mutex.Lock()
 
 	defer p.mutex.Unlock()
@@ -338,6 +338,7 @@ func (p *PeriodData) UpdateMeta() {
 }
 
 func (p *PeriodData) UpdateWithPbKlines(klines *marketservice.HistKlineData) {
+	defer util.CatchExp("UpdateWithPbKlines")
 	p.InitCacheData(klines)
 
 	p.EraseOuttimeData()
@@ -346,6 +347,8 @@ func (p *PeriodData) UpdateWithPbKlines(klines *marketservice.HistKlineData) {
 }
 
 func (p *PeriodData) UpdateWithKlines(klines *treemap.Map) {
+	defer util.CatchExp("UpdateWithKlines")
+
 	p.InitCacheDataWithTreeMap(klines)
 
 	p.EraseOuttimeData()
@@ -354,7 +357,7 @@ func (p *PeriodData) UpdateWithKlines(klines *treemap.Map) {
 }
 
 func (p *PeriodData) GetChangeInfo(precision int) *datastruct.ChangeInfo {
-	util.CatchExp("GetChangeInfo")
+	defer util.CatchExp("GetChangeInfo")
 
 	p.mutex.Lock()
 

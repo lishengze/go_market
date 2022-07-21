@@ -27,6 +27,7 @@ func ExceptionFunc() {
 }
 
 func CatchExp(func_name string) {
+	logx.Errorf("CatchExp")
 	errMsg := recover()
 	if errMsg != nil {
 		logx.Errorf("%s errMsg: %+v \n", func_name, errMsg)
