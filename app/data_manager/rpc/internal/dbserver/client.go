@@ -330,7 +330,6 @@ func (d *DBServer) GetAllTime(table_name string) []uint64 {
 }
 
 func (d *DBServer) RequestTradeData(ctx context.Context, in *pb.ReqTradeInfo) (*pb.Trade, error) {
-
 	rst := pb.Trade{}
 	table_name := d.get_table_name(datastruct.TRADE_TYPE, in.GetSymbol(), in.GetExchange())
 
