@@ -418,12 +418,21 @@ func GetLastStartTime(tmp_time int64, resolution int64) int64 {
 		resolution = resolution / NANO_PER_SECS
 	}
 
+	// fmt.Printf("tmp_time days : %d \n", tmp_time/SECS_PER_DAY)
+
+	original_time := tmp_time
+
 	if resolution == SECS_PER_DAY*7 {
+
 		tmp_time = tmp_time - tmp_time%SECS_PER_DAY
+		original_time = tmp_time
 		tmp_time = tmp_time + SECS_PER_DAY*3
 	}
 
-	tmp_time = tmp_time - tmp_time%(resolution)
+	// fmt.Printf("trans_time days : %d , res: %d\n", tmp_time/SECS_PER_DAY, resolution/SECS_PER_DAY)
+	// fmt.Printf("trans_time: %s, left_days: %d \n", util.TimeStrFromInt(tmp_time*NANO_PER_SECS), tmp_time%(resolution)/SECS_PER_DAY)
+
+	tmp_time = original_time - tmp_time%(resolution)
 
 	tmp_time = tmp_time * NANO_PER_SECS
 

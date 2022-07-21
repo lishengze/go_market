@@ -261,3 +261,15 @@ func TestIsTargetTime() {
 		IsTargetTime(nano_secs/NANO_PER_SECS, SECS_PER_DAY*7))
 
 }
+
+func TestGetLastStartTime() {
+	time_obj := time.Date(1970, 1, 6, 10, 20, 0, 0, time.UTC)
+	original_time := time_obj.UTC().UnixNano()
+
+	// original_time := time.Now().UnixNano()
+
+	last_start_time := GetLastStartTime(original_time, SECS_PER_DAY*7)
+
+	fmt.Printf("original_time: %s, last_start_time: %s\n", util.TimeStrFromInt(original_time), util.TimeStrFromInt(last_start_time))
+
+}

@@ -7,5 +7,7 @@ func main() {
 
 	// datastruct.TestKlineTime()
 
-	datastruct.TestIsTargetTime()
+	// datastruct.TestIsTargetTime()
+
+	datastruct.TestGetLastStartTime()
 }
