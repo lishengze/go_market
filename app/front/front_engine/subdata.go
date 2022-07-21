@@ -4,7 +4,6 @@ import (
 	"market_server/app/front/net"
 	"market_server/common/datastruct"
 	"market_server/common/util"
-	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
@@ -151,10 +150,10 @@ func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*Kline
 		cache_kline := sub_info.cache_data
 		NextKlineTime := cache_kline.Time + int64(resolution)*datastruct.NANO_PER_SECS
 
-		logx.Slowf("Trade: %s, \n\t\t\t\ttrade_secs: %s, nextkline_secs: %s",
-			trade.String(),
-			time.Unix(trade.Time/datastruct.NANO_PER_SECS, 0),
-			time.Unix(NextKlineTime/datastruct.NANO_PER_SECS, 0))
+		// logx.Slowf("Trade: %s, \n\t\t\t\ttrade_secs: %s, nextkline_secs: %s",
+		// 	trade.String(),
+		// 	time.Unix(trade.Time/datastruct.NANO_PER_SECS, 0),
+		// 	time.Unix(NextKlineTime/datastruct.NANO_PER_SECS, 0))
 
 		var pub_kline *datastruct.Kline
 
