@@ -396,7 +396,7 @@ func (p *PeriodData) GetChangeInfo(precision int) *datastruct.ChangeInfo {
 
 	Change, _ := change.Float64()
 
-	logx.Slowf("%s, precision: %d, p.Change: %f", p.Symbol, precision, Change)
+	logx.Infof("%s, precision: %d, p.Change: %f", p.Symbol, precision, Change)
 
 	// if !ok {
 	// 	logx.Errorf("change.Float64() change: %+v!", change)
