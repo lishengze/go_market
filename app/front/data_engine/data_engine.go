@@ -563,7 +563,7 @@ func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, o
 	cache_kline := iter.Value().(*datastruct.Kline)
 
 	if !datastruct.IsNewKlineStart(cache_kline, int64(resolution)) {
-		cache_kline.Time = cache_kline.Time - cache_kline.Time%(int64(resolution)*datastruct.NANO_PER_SECS)
+		cache_kline.Time = datastruct.GetLastStartTime(cache_kline.Time, int64(resolution))
 	}
 
 	iter.Begin()

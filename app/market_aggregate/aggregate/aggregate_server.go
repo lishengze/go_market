@@ -9,6 +9,7 @@ import (
 	"market_server/common/dingtalk"
 	"market_server/common/monitorStruct"
 	"market_server/common/util"
+	"strings"
 	"sync"
 	"time"
 
@@ -314,6 +315,12 @@ func (a *Aggregator) aggregate_kline() {
 		new_kline.Time = util.UTCNanoTime() - datastruct.NANO_PER_MIN
 		a.publish_kline(new_kline)
 	}
+
+	for k, _ := range a.kline_aggregated {
+		delete(a.kline_aggregated, k)
+	}
+
+	// a.kline_aggregated.clear()
 }
 
 func (a *Aggregator) update_kline(trade *datastruct.Trade) {
@@ -400,20 +407,44 @@ func (a *Aggregator) publish_trade(trade *datastruct.Trade) {
 	a.PubDataChan.TradeChannel <- trade
 }
 
-func (k *Aggregator) process_invalid_depth(montior_atom *monitorStruct.MonitorAtom) error {
+func (a *Aggregator) process_invalid_depth(montior_atom *monitorStruct.MonitorAtom) error {
 	logx.Info(montior_atom.InvalidInfo)
-	k.DingClient.SendMessage("Depth: \n" + montior_atom.InvalidInfo)
+	a.DingClient.SendMessage("Depth: \n" + montior_atom.InvalidInfo)
+	info_list := strings.Split(montior_atom.Symbol, "_")
+	exchange := info_list[0]
+	symbol := info_list[1]
+
+	a.depth_mutex.Lock()
+
+	delete(a.depth_cache[symbol], exchange)
+
+	if len(a.depth_cache[symbol]) == 0 {
+		delete(a.depth_cache, symbol)
+	}
+
+	defer a.depth_mutex.Unlock()
+
 	return nil
 }
 
 func (k *Aggregator) process_invalid_trade(montior_atom *monitorStruct.MonitorAtom) error {
 	logx.Info(montior_atom.InvalidInfo)
 	k.DingClient.SendMessage("Trade: \n" + montior_atom.InvalidInfo)
+
+	// info_list := strings.Split(montior_atom.Symbol, "_")
+	// exchange := info_list[0]
+	// symbol := info_list[1]
+
 	return nil
 }
 
 func (k *Aggregator) process_invalid_kline(montior_atom *monitorStruct.MonitorAtom) error {
 	logx.Info(montior_atom.InvalidInfo)
 	k.DingClient.SendMessage("kline: \n" + montior_atom.InvalidInfo)
+
+	// info_list := strings.Split(montior_atom.Symbol, "_")
+	// exchange := info_list[0]
+	// symbol := info_list[1]
+
 	return nil
 }

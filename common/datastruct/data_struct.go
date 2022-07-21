@@ -409,6 +409,26 @@ func IsOldKlineEndTime(tmp_time int64, src_resolution int, dst_resolution int64)
 	// }
 }
 
+func GetLastStartTime(tmp_time int64, resolution int64) int64 {
+	if tmp_time > NANO_PER_SECS {
+		tmp_time = tmp_time / NANO_PER_SECS
+	}
+
+	if resolution > NANO_PER_SECS {
+		resolution = resolution / NANO_PER_SECS
+	}
+
+	if resolution == SECS_PER_DAY*7 {
+		tmp_time = tmp_time + SECS_PER_DAY*3
+	}
+
+	tmp_time = tmp_time - tmp_time%(SECS_PER_DAY*7)
+
+	tmp_time = tmp_time * NANO_PER_SECS
+
+	return tmp_time
+}
+
 func GetDepthString(m *treemap.Map, numb int) string {
 	str := "TreeMap\nmap["
 	it := m.Iterator()

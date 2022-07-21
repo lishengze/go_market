@@ -89,7 +89,7 @@ func (t *TestMain) GetTestKlineReqJson(frequency int) []byte {
 	sub_info := map[string]interface{}{
 		"type":      net.KLINE_SUB,
 		"symbol":    "BTC_USDT",
-		"count":     "10",
+		"count":     "5",
 		"frequency": fmt.Sprintf("%d", frequency),
 	}
 	rst, err := json.Marshal(sub_info)
@@ -155,7 +155,7 @@ func (t *TestMain) read_func(c *websocket.Conn) {
 		}
 
 		if m["type"] == "heartbeat" {
-			logx.Infof("heartbeat")
+			// logx.Infof("heartbeat")
 			err := c.WriteMessage(websocket.TextMessage, t.GetHeartbeatMsg())
 			if err != nil {
 				logx.Info("write:", err)
@@ -186,7 +186,7 @@ func (t *TestMain) process_kline(message []byte) {
 	} else {
 		// delta_time := util.UTCNanoTime() - kline_data.ReqResponseTime
 		// logx.Infof("\nKline: req_process_time: %d us, ws_time: %dus, \nkline_data: %s", kline_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
-		logx.Infof("[k]:%s.%d, %s", kline_data.Symbol, kline_data.Resolution, kline_data.TimeList())
+		logx.Infof("[k]:%s.%d, \n%s", kline_data.Symbol, kline_data.Resolution, kline_data.TimeList())
 
 		// fmt.Printf("Kline: req_process_time: %d us, ws_time: %dus, \nkline_data: %s", kline_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
 	}
@@ -199,7 +199,7 @@ func (t *TestMain) process_trade(message []byte) {
 		return
 	} else {
 		trade_data.Time = trade_data.Time * datastruct.NANO_PER_SECS
-		logx.Infof("%s", trade_data.String())
+		logx.Infof("[Trade] %s", trade_data.String())
 
 		// t.TradeUpdatedSymbolMapMutex.Lock()
 		// // delta_time := util.UTCNanoTime() - trade_data.ReqResponseTime
@@ -245,7 +245,7 @@ func (t *TestMain) write_func(c *websocket.Conn) {
 	// send_msg := t.GetTestDepthReqJson()
 	// send_msg := t.GetTestKlineReqJson(datastruct.SECS_PER_DAY * 7)
 
-	send_msg := t.GetTestKlineReqJson(300)
+	send_msg := t.GetTestKlineReqJson(datastruct.SECS_PER_DAY * 7)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {
@@ -255,7 +255,7 @@ func (t *TestMain) write_func(c *websocket.Conn) {
 
 	// time.Sleep(time.Second * 5)
 
-	// send_msg2 := GetTestKlineReqJson(300)
+	// send_msg2 := t.GetTestKlineReqJson(300)
 
 	// err = c.WriteMessage(websocket.TextMessage, send_msg2)
 	// if err != nil {

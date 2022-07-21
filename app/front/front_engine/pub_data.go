@@ -168,8 +168,8 @@ type PubTradeJson struct {
 }
 
 func (t *PubTradeJson) String() string {
-	return fmt.Sprintf("%s, p: %f, up: %f, v: %f, c: %f, cr: %f, h: %f, l:%f, t: %s",
-		t.Symbol, t.Price, t.USDPrice, t.Volume, t.Change, t.ChangeRate, t.High, t.Low, util.TimeStrFromInt(t.Time))
+	return fmt.Sprintf("%s, %s p: %f, up: %f, v: %f, c: %f, cr: %f, h: %f, l:%f",
+		t.Symbol, util.TimeStrFromInt(t.Time), t.Price, t.USDPrice, t.Volume, t.Change, t.ChangeRate, t.High, t.Low)
 }
 
 func NewTradeJsonMsg(trade *datastruct.RspTrade) []byte {
@@ -266,7 +266,7 @@ type PubKlineJson struct {
 }
 
 func (p *PubKlineJson) TimeList() string {
-	rst := " "
+	rst := ""
 	for _, kline_detail := range p.Data {
 		rst = rst + fmt.Sprintf("%s, v: %f;o: %f, h: %f, l: %f, c: %f\n",
 			util.TimeStrFromInt(kline_detail.Tick*datastruct.NANO_PER_SECS),
