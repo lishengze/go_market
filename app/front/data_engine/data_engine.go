@@ -249,7 +249,7 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
 	logx.Info("0")
 
-	d.trade_cache_map.Store(trade.Symbol, trade)
+	// d.trade_cache_map.Store(trade.Symbol, trade)
 
 	d.cache_period_data_mutex.Lock()
 
