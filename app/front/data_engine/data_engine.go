@@ -91,7 +91,7 @@ func (a *DataEngine) InitPeriodDara(symbol string) error {
 
 	a.cache_period_data[symbol] = &PeriodData{
 		Symbol:                symbol,
-		TimeNanos:             datastruct.SECS_PER_DAY,
+		TimeSecs:              datastruct.SECS_PER_DAY,
 		Count:                 0,
 		MaxTime:               0,
 		MinTime:               0,

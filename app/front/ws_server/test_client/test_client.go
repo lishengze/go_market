@@ -7,7 +7,6 @@ import (
 	"log"
 	"market_server/app/front/front_engine"
 	"market_server/app/front/net"
-	"market_server/common/datastruct"
 	"market_server/common/util"
 	"net/url"
 	"os"
@@ -198,13 +197,15 @@ func (t *TestMain) process_trade(message []byte) {
 		return
 	} else {
 		t.TradeUpdatedSymbolMapMutex.Lock()
-		delta_time := util.UTCNanoTime() - trade_data.ReqResponseTime
+		// delta_time := util.UTCNanoTime() - trade_data.ReqResponseTime
 		if _, ok := t.TradeUpdatedSymbolMap[trade_data.Symbol]; !ok {
-			logx.Infof("Trade %s, req_process_time: %d us, ws_time: %dus ", trade_data.Symbol, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
-			fmt.Printf("Trade %s, req_ws:%d us, req_process_time: %d us, ws_time: %dus, %s \n",
-				trade_data.Symbol, trade_data.ReqWSTime/datastruct.NANO_PER_MICR,
-				trade_data.ReqProcessTime/datastruct.NANO_PER_MICR,
-				delta_time/datastruct.NANO_PER_MICR, trade_data.String())
+			// logx.Infof("Trade %s, req_process_time: %d us, ws_time: %dus ", trade_data.Symbol, trade_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR)
+			// fmt.Printf("Trade %s, req_ws:%d us, req_process_time: %d us, ws_time: %dus, %s \n",
+			// 	trade_data.Symbol, trade_data.ReqWSTime/datastruct.NANO_PER_MICR,
+			// 	trade_data.ReqProcessTime/datastruct.NANO_PER_MICR,
+			// 	delta_time/datastruct.NANO_PER_MICR, trade_data.String())
+
+			logx.Infof("%s", trade_data.String())
 
 			t.TradeUpdatedSymbolMap[trade_data.Symbol] = struct{}{}
 		}

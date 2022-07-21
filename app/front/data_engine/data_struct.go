@@ -101,8 +101,8 @@ type PeriodData struct {
 	Change     decimal.Decimal
 	ChangeRate decimal.Decimal
 
-	TimeNanos int64
-	Count     int
+	TimeSecs int64
+	Count    int
 
 	CurTrade *datastruct.Trade
 
@@ -208,7 +208,7 @@ func (p *PeriodData) EraseOuttimeData() {
 		first_time_secs := begin_iter.Key().(int64) / datastruct.NANO_PER_SECS
 		last_time_secs := p.LastTime / datastruct.NANO_PER_SECS
 
-		if last_time_secs-first_time_secs > p.TimeNanos {
+		if last_time_secs-first_time_secs > p.TimeSecs+datastruct.SECS_PER_MIN {
 			outtime_datalist = append(outtime_datalist, begin_iter.Value().(*datastruct.Kline))
 		} else {
 			break
