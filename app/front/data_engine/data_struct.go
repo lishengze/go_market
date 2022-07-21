@@ -342,16 +342,20 @@ func (p *PeriodData) UpdateMeta() {
 	if p.CurTrade != nil && p.CurTrade.Time > p.KLineLastTime {
 		p.Change = decimal.NewFromFloat(p.CurTrade.Price).Sub(decimal.NewFromFloat(p.Start))
 
-		logx.Infof("\nTrade: %s;\nLastK: t %s,p %f;\nStartL: t %s, p %f", p.CurTrade.String(),
-			util.TimeStrFromInt(p.KLineLastTime), p.Last,
-			util.TimeStrFromInt(p.StartTime), p.Start)
+		if p.Symbol == "BTC_USDT" {
+			logx.Infof("\nTrade: %s;\nLastK: t %s,p %f;\nStartL: t %s, p %f", p.CurTrade.String(),
+				util.TimeStrFromInt(p.KLineLastTime), p.Last,
+				util.TimeStrFromInt(p.StartTime), p.Start)
+		}
 
 	} else {
 		p.Change = decimal.NewFromFloat(p.Last).Sub(decimal.NewFromFloat(p.Start))
 
-		logx.Infof("LastK: t %s,p %f;\nStartL: t %s, p %f",
-			util.TimeStrFromInt(p.KLineLastTime), p.Last,
-			util.TimeStrFromInt(p.StartTime), p.Start)
+		if p.Symbol == "BTC_USDT" {
+			logx.Infof("LastK: t %s,p %f;\nStartL: t %s, p %f",
+				util.TimeStrFromInt(p.KLineLastTime), p.Last,
+				util.TimeStrFromInt(p.StartTime), p.Start)
+		}
 	}
 
 	p.ChangeRate = p.Change.Div(decimal.NewFromFloat(p.Start))

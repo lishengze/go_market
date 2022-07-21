@@ -276,6 +276,17 @@ func (p *PubKlineJson) TimeList() string {
 	return rst
 }
 
+func (p *PubKlineJson) UTCTimeList() string {
+	rst := ""
+	for _, kline_detail := range p.Data {
+		rst = rst + fmt.Sprintf("%s, v: %f;o: %f, h: %f, l: %f, c: %f\n",
+			util.TimeStrFromInt(kline_detail.Tick*datastruct.NANO_PER_SECS-8*datastruct.NANO_PER_HOUR),
+			kline_detail.Volume, kline_detail.Open, kline_detail.High,
+			kline_detail.Low, kline_detail.Close)
+	}
+	return rst
+}
+
 func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 
 	var kline_data []PubKlineDetail
