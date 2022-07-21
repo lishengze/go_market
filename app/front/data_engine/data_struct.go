@@ -120,6 +120,8 @@ func NewPeriodData() *PeriodData {
 }
 
 func (p *PeriodData) UpdateWithTrade(trade *datastruct.Trade) {
+	util.CatchExp("UpdateWithTrade")
+
 	p.AddTradeData(trade)
 	p.UpdateMeta()
 }
@@ -133,6 +135,8 @@ func (p *PeriodData) UpdateWithKline(kline *datastruct.Kline) {
 }
 
 func (p *PeriodData) AddTradeData(trade *datastruct.Trade) {
+	util.CatchExp("AddTradeData")
+
 	p.mutex.Lock()
 
 	p.CurTrade = trade
@@ -273,6 +277,7 @@ func (p *PeriodData) InitCacheDataWithTreeMap(klines *treemap.Map) {
 }
 
 func (p *PeriodData) UpdateMeta() {
+	util.CatchExp("UpdateMeta")
 	p.mutex.Lock()
 
 	defer p.mutex.Unlock()

@@ -236,8 +236,8 @@ func catch_trade_exp(trade *datastruct.Trade) {
 	errMsg := recover()
 	if errMsg != nil {
 		// fmt.Println("This is catch_exp func")
-		logx.Errorf("catch_exp trade:  %+v\n", trade.String())
-		logx.Errorf("errMsg: %+v \n", errMsg)
+		logx.Errorf("catch_exp trade:  %+v", trade.String())
+		logx.Errorf("errMsg: %+v", errMsg)
 
 		logx.Infof("catch_exp trade:  %+v\n", trade.String())
 		logx.Infof("errMsg: %+v \n", errMsg)
