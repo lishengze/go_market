@@ -223,7 +223,7 @@ func (p *PeriodData) EraseOuttimeData() {
 	}
 
 	for _, outtime := range outtime_datalist {
-		logx.Slowf("[Erase] %s ", outtime.String())
+		logx.Infof("[Erase] %s ", outtime.String())
 		p.time_cache_data.Remove(outtime.Time)
 
 		p.high_price_cache_data.Del(&AtomData{
@@ -315,7 +315,7 @@ func (p *PeriodData) UpdateMeta() {
 		p.StartTime = first.Key().(int64)
 
 		first.Last()
-		p.Last = first.Value().(*datastruct.Kline).Open
+		p.Last = first.Value().(*datastruct.Kline).Close
 		p.KLineLastTime = first.Key().(int64)
 
 	} else {
@@ -350,14 +350,14 @@ func (p *PeriodData) UpdateMeta() {
 		p.Change = decimal.NewFromFloat(p.CurTrade.Price).Sub(decimal.NewFromFloat(p.Start))
 
 		logx.Slowf("\nTrade: %s;\nLastK: t %s,p %f;\nStartL: t %s, p %f", p.CurTrade.String(),
-			util.TimeStrFromInt(p.LastTime), p.Last,
+			util.TimeStrFromInt(p.KLineLastTime), p.Last,
 			util.TimeStrFromInt(p.StartTime), p.Start)
 
 	} else {
 		p.Change = decimal.NewFromFloat(p.Last).Sub(decimal.NewFromFloat(p.Start))
 
 		logx.Slowf("LastK: t %s,p %f;\nStartL: t %s, p %f",
-			util.TimeStrFromInt(p.LastTime), p.Last,
+			util.TimeStrFromInt(p.KLineLastTime), p.Last,
 			util.TimeStrFromInt(p.StartTime), p.Start)
 	}
 
