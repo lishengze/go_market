@@ -94,8 +94,9 @@ type PeriodData struct {
 	Start     float64
 	StartTime int64
 
-	Last     float64
-	LastTime int64
+	Last          float64
+	KLineLastTime int64
+	LastTime      int64
 
 	Change     decimal.Decimal
 	ChangeRate decimal.Decimal
@@ -123,6 +124,9 @@ func (p *PeriodData) UpdateWithTrade(trade *datastruct.Trade) {
 	util.CatchExp("UpdateWithTrade")
 
 	p.AddTradeData(trade)
+
+	p.EraseOuttimeData()
+
 	p.UpdateMeta()
 }
 
@@ -141,13 +145,26 @@ func (p *PeriodData) AddTradeData(trade *datastruct.Trade) {
 
 	p.CurTrade = trade
 
+	trade_is_later := true
+
+	last_iter := p.time_cache_data.Iterator()
+	if ok := last_iter.Last(); ok {
+		if p.CurTrade.Time < last_iter.Key().(int64) {
+			trade_is_later = false
+		}
+	}
+
+	if trade_is_later {
+		p.LastTime = p.CurTrade.Time
+	}
+
 	defer p.mutex.Unlock()
 }
 
 func (p *PeriodData) AddCacheData(kline *datastruct.Kline) {
 	p.mutex.Lock()
 
-	logx.Statf("[Add] Kline: %s", kline.String())
+	logx.Slowf("[Add] Kline: %s", kline.String())
 
 	p.time_cache_data.Put(kline.Time, kline)
 
@@ -161,6 +178,18 @@ func (p *PeriodData) AddCacheData(kline *datastruct.Kline) {
 		price: kline.Low,
 	})
 
+	kline_is_later := false
+	last_iter := p.time_cache_data.Iterator()
+	if ok := last_iter.Last(); ok {
+		if p.CurTrade.Time < last_iter.Key().(int64) {
+			kline_is_later = true
+		}
+	}
+
+	if kline_is_later {
+		p.LastTime = last_iter.Key().(int64)
+	}
+
 	defer p.mutex.Unlock()
 }
 
@@ -169,12 +198,6 @@ func (p *PeriodData) EraseOuttimeData() {
 	p.mutex.Lock()
 
 	defer p.mutex.Unlock()
-
-	// type outtime_data struct {
-	// 	time int64
-	// 	high float64
-	// 	low  float64
-	// }
 
 	var outtime_datalist []*datastruct.Kline
 
@@ -189,7 +212,10 @@ func (p *PeriodData) EraseOuttimeData() {
 	}
 
 	for begin_iter.Next() {
-		if last_iter.Key().(int64)-begin_iter.Key().(int64) > p.TimeNanos {
+		first_time_secs := begin_iter.Key().(int64) / datastruct.NANO_PER_SECS
+		last_time_secs := p.LastTime / datastruct.NANO_PER_SECS
+
+		if last_time_secs-first_time_secs > p.TimeNanos {
 			outtime_datalist = append(outtime_datalist, begin_iter.Value().(*datastruct.Kline))
 		} else {
 			break
@@ -197,7 +223,7 @@ func (p *PeriodData) EraseOuttimeData() {
 	}
 
 	for _, outtime := range outtime_datalist {
-		logx.Statf("[Erase] %s ", outtime.String())
+		logx.Slowf("[Erase] %s ", outtime.String())
 		p.time_cache_data.Remove(outtime.Time)
 
 		p.high_price_cache_data.Del(&AtomData{
@@ -290,7 +316,7 @@ func (p *PeriodData) UpdateMeta() {
 
 		first.Last()
 		p.Last = first.Value().(*datastruct.Kline).Open
-		p.LastTime = first.Key().(int64)
+		p.KLineLastTime = first.Key().(int64)
 
 	} else {
 		return
@@ -320,19 +346,19 @@ func (p *PeriodData) UpdateMeta() {
 		return
 	}
 
-	if p.CurTrade != nil && p.CurTrade.Time > p.LastTime {
+	if p.CurTrade != nil && p.CurTrade.Time > p.KLineLastTime {
 		p.Change = decimal.NewFromFloat(p.CurTrade.Price).Sub(decimal.NewFromFloat(p.Start))
 
-		logx.Slowf("\nTrade: %s;\nLastK: t %s,p %f;\nStartL: t %s, p %f", p.CurTrade.String(),
-			util.TimeStrFromInt(p.LastTime), p.Last,
-			util.TimeStrFromInt(p.StartTime), p.Start)
+		// logx.Slowf("\nTrade: %s;\nLastK: t %s,p %f;\nStartL: t %s, p %f", p.CurTrade.String(),
+		// 	util.TimeStrFromInt(p.LastTime), p.Last,
+		// 	util.TimeStrFromInt(p.StartTime), p.Start)
 
 	} else {
 		p.Change = decimal.NewFromFloat(p.Last).Sub(decimal.NewFromFloat(p.Start))
 
-		logx.Slowf("LastK: t %s,p %f;\nStartL: t %s, p %f",
-			util.TimeStrFromInt(p.LastTime), p.Last,
-			util.TimeStrFromInt(p.StartTime), p.Start)
+		// logx.Slowf("LastK: t %s,p %f;\nStartL: t %s, p %f",
+		// 	util.TimeStrFromInt(p.LastTime), p.Last,
+		// 	util.TimeStrFromInt(p.StartTime), p.Start)
 	}
 
 	p.ChangeRate = p.Change.Div(decimal.NewFromFloat(p.Start))

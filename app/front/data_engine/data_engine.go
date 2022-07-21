@@ -91,7 +91,7 @@ func (a *DataEngine) InitPeriodDara(symbol string) error {
 
 	a.cache_period_data[symbol] = &PeriodData{
 		Symbol:                symbol,
-		TimeNanos:             datastruct.NANO_PER_DAY,
+		TimeNanos:             datastruct.SECS_PER_DAY,
 		Count:                 0,
 		MaxTime:               0,
 		MinTime:               0,
@@ -247,7 +247,7 @@ func catch_trade_exp(msg string, trade *datastruct.Trade) {
 func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	defer catch_trade_exp("process_trade", trade)
 
-	logx.Slowf("trade: %s", trade.String())
+	// logx.Slowf("trade: %s", trade.String())
 
 	d.trade_cache_map.Store(trade.Symbol, trade)
 
