@@ -7,6 +7,7 @@ import (
 	"log"
 	"market_server/app/front/front_engine"
 	"market_server/app/front/net"
+	"market_server/common/datastruct"
 	"market_server/common/util"
 	"net/url"
 	"os"
@@ -154,6 +155,7 @@ func (t *TestMain) read_func(c *websocket.Conn) {
 		}
 
 		if m["type"] == "heartbeat" {
+			logx.Infof("heartbeat")
 			err := c.WriteMessage(websocket.TextMessage, t.GetHeartbeatMsg())
 			if err != nil {
 				logx.Info("write:", err)
@@ -205,6 +207,7 @@ func (t *TestMain) process_trade(message []byte) {
 			// 	trade_data.ReqProcessTime/datastruct.NANO_PER_MICR,
 			// 	delta_time/datastruct.NANO_PER_MICR, trade_data.String())
 
+			trade_data.Time = trade_data.Time * datastruct.NANO_PER_SECS
 			logx.Infof("%s", trade_data.String())
 
 			t.TradeUpdatedSymbolMap[trade_data.Symbol] = struct{}{}

@@ -176,7 +176,8 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 					logx.Errorf("PublishTrade err: %+v \n", err)
 				}
 			} else {
-				logx.Infof("ws:%+v is not alive", info.ws_info)
+				logx.Errorf("ws:%+v is not alive", info.ws_info)
+				logx.Slowf("ws:%+v is not alive", info.ws_info)
 				f.sub_data.UnSubTrade(trade.TradeData.Symbol, info.ws_info)
 			}
 		}
@@ -196,7 +197,8 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 						logx.Errorf("PublishKline err: %+v \n", err)
 					}
 				} else {
-					logx.Infof("ws:%d is not alive", info.ws_info.ID)
+					logx.Errorf("ws:%+v is not alive", info.ws_info)
+					logx.Slowf("ws:%+v is not alive", info.ws_info)
 					f.sub_data.UnSubKline(cur_req, info.ws_info)
 				}
 			}
