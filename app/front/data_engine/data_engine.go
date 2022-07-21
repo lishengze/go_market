@@ -236,11 +236,11 @@ func catch_trade_exp(msg string, trade *datastruct.Trade) {
 	errMsg := recover()
 	if errMsg != nil {
 		// fmt.Println("This is catch_exp func")
-		logx.Errorf("catch_exp trade:  %+v", trade.String())
-		logx.Errorf("errMsg: %+v", errMsg)
+		logx.Errorf("%s catch_exp trade:  %+v", msg, trade.String())
+		logx.Errorf("%s errMsg: %+v", msg, errMsg)
 
-		logx.Infof("catch_exp trade:  %+v\n", trade.String())
-		logx.Infof("errMsg: %+v \n", errMsg)
+		logx.Infof("%s catch_exp trade:  %+v\n", msg, trade.String())
+		logx.Infof("%s errMsg: %+v \n", msg, errMsg)
 		// fmt.Println(errMsg)
 	}
 }
@@ -248,28 +248,27 @@ func catch_trade_exp(msg string, trade *datastruct.Trade) {
 func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	defer catch_trade_exp("process_trade", trade)
 
-	logx.Info(0)
+	logx.Info("0")
 
 	d.trade_cache_map.Store(trade.Symbol, trade)
-
 	d.cache_period_data_mutex.Lock()
 
-	logx.Info(0.1)
+	logx.Info("0.1")
 	if _, ok := d.cache_period_data[trade.Symbol]; !ok {
 		err := d.InitPeriodDara(trade.Symbol)
 
-		logx.Info(0.2)
+		logx.Info("0.2")
 
 		if err != nil {
 			logx.Errorf("process_trade error: %+v", err)
 			return err
 		}
 
-		logx.Info(0.3)
+		logx.Info("0.3")
 		symbol_list := d.get_symbol_list()
 		d.PublishSymbol(symbol_list, nil)
 
-		logx.Info(0.4)
+		logx.Info("0.4")
 	}
 	d.cache_period_data_mutex.Unlock()
 
