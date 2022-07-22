@@ -315,6 +315,7 @@ func (f *FrontEngine) SubSymbol(ws *net.WSInfo) {
 
 func (f *FrontEngine) SubTrade(req_trade *datastruct.ReqTrade, ws *net.WSInfo) (string, bool) {
 	f.sub_data.SubTrade(req_trade.Symbol, ws)
+
 	errMsg, ok := f.next_worker.SubTrade(req_trade, ws)
 
 	if !ok {

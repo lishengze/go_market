@@ -204,29 +204,12 @@ func catch_kline_exp(kline *datastruct.Kline) {
 
 func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 	defer catch_kline_exp(kline)
-	// kline.Time = kline.Time / datastruct.NANO_PER_SECS
 
-	// logx.Statf("Rcv kline: %s", kline.String())
-
-	d.cache_period_data_mutex.Lock()
-	if _, ok := d.cache_period_data[kline.Symbol]; !ok {
-		err := d.InitPeriodDara(kline.Symbol)
-
-		if err != nil {
-			logx.Errorf("process_kline error: %+v", err)
-			return err
-		}
-
-		symbol_list := d.get_symbol_list()
-		d.PublishSymbol(symbol_list, nil)
-	}
-	d.cache_period_data_mutex.Unlock()
+	d.InitPeriodDaraMain(kline.Symbol)
 
 	d.cache_period_data[kline.Symbol].UpdateWithKline(kline)
 
 	d.PublishKline(kline, nil)
-
-	// d.PublishChangeinfo(d.cache_period_data[kline.Symbol].GetChangeInfo(), nil)
 
 	return nil
 }
@@ -244,32 +227,30 @@ func catch_trade_exp(msg string, trade *datastruct.Trade) {
 	}
 }
 
-func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
-	defer catch_trade_exp("process_trade", trade)
-
-	// logx.Slowf("trade: %s", trade.String())
-
-	d.trade_cache_map.Store(trade.Symbol, trade)
+func (d *DataEngine) InitPeriodDaraMain(symbol string) {
+	defer util.CatchExp("InitPeriodDaraMain " + symbol)
 
 	d.cache_period_data_mutex.Lock()
+	defer d.cache_period_data_mutex.Unlock()
 
-	if _, ok := d.cache_period_data[trade.Symbol]; !ok {
-		err := d.InitPeriodDara(trade.Symbol)
+	if _, ok := d.cache_period_data[symbol]; !ok {
+		err := d.InitPeriodDara(symbol)
 
 		if err != nil {
 			logx.Errorf("process_trade error: %+v", err)
-			return err
 		}
-
-		// logx.Info("0.3")
-
 		symbol_list := d.get_symbol_list()
 		d.PublishSymbol(symbol_list, nil)
-
-		// logx.Info("0.4")
 	}
 
-	d.cache_period_data_mutex.Unlock()
+}
+
+func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
+	defer catch_trade_exp("process_trade", trade)
+
+	d.trade_cache_map.Store(trade.Symbol, trade)
+
+	d.InitPeriodDaraMain(trade.Symbol)
 
 	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
 
@@ -277,16 +258,22 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
 	symbol_config := d.ctx.GetSymbolConfig(trade.Symbol)
 	precision := 4
-
 	if symbol_config != nil {
 		precision = symbol_config.PricePrecision
 	} else {
 		logx.Slowf("%s, has no config ", trade.Symbol)
 	}
 
+	var change_data *datastruct.ChangeInfo
+	if _, ok := d.cache_period_data[trade.Symbol]; !ok {
+		change_data = nil
+	} else {
+		change_data = d.cache_period_data[trade.Symbol].GetChangeInfo(precision)
+	}
+
 	rsp_trade := datastruct.RspTrade{
 		TradeData:     trade,
-		ChangeData:    d.cache_period_data[trade.Symbol].GetChangeInfo(precision),
+		ChangeData:    change_data,
 		UsdPrice:      usd_price,
 		ReqArriveTime: util.UTCNanoTime(),
 	}
@@ -297,9 +284,6 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 }
 
 func (d *DataEngine) get_symbol_list() []string {
-	// d.cache_period_data_mutex.Lock()
-	// defer d.cache_period_data_mutex.Unlock()
-
 	var rst []string
 	for key := range d.cache_period_data {
 		rst = append(rst, key)
@@ -394,53 +378,36 @@ func (d *DataEngine) SubTrade(req_trade *datastruct.ReqTrade, ws *net.WSInfo) (s
 	symbol := req_trade.Symbol
 	defer catch_sub_trade_exp(symbol, ws)
 
-	if trade, ok := d.trade_cache_map.Load(symbol); ok {
-		d.cache_period_data_mutex.Lock()
-		var init_period_err error
+	if trade_iter, ok := d.trade_cache_map.Load(symbol); ok {
+
+		d.InitPeriodDaraMain(symbol)
+
+		trade := trade_iter.(*datastruct.Trade)
+		usd_price := trade.Price * d.GetUsdPrice(symbol)
+
+		symbol_config := d.ctx.GetSymbolConfig(req_trade.Symbol)
+		precision := 4
+		if symbol_config != nil {
+			precision = symbol_config.PricePrecision
+		}
+
+		var change_data *datastruct.ChangeInfo
 		if _, ok := d.cache_period_data[symbol]; !ok {
-			init_period_err = d.InitPeriodDara(symbol)
-
-			symbol_list := d.get_symbol_list()
-			d.PublishSymbol(symbol_list, nil)
+			change_data = nil
+		} else {
+			change_data = d.cache_period_data[symbol].GetChangeInfo(precision)
 		}
 
-		if d.GetUsdPrice(symbol) != 0.0 {
-			trade_value := trade.(*datastruct.Trade)
-			usd_price := trade_value.Price * d.GetUsdPrice(symbol)
-
-			if init_period_err != nil {
-				logx.Errorf("SubTrade error: %+v", init_period_err)
-				rsp_trade := datastruct.RspTrade{
-					TradeData:     trade_value,
-					ChangeData:    nil,
-					UsdPrice:      usd_price,
-					ReqWSTime:     req_trade.ReqWSTime,
-					ReqArriveTime: req_trade.ReqArriveTime,
-				}
-				// logx.Slowf("[DE Trade] %s, ReqWSTime %d ns", req_trade.Symbol, rsp_trade.ReqWSTime)
-				go d.PublishTrade(&rsp_trade, ws)
-			} else {
-				symbol_config := d.ctx.GetSymbolConfig(req_trade.Symbol)
-				precision := 4
-
-				if symbol_config != nil {
-					precision = symbol_config.PricePrecision
-				}
-
-				rsp_trade := datastruct.RspTrade{
-					TradeData:     trade_value,
-					ChangeData:    d.cache_period_data[symbol].GetChangeInfo(precision),
-					UsdPrice:      usd_price,
-					ReqWSTime:     req_trade.ReqWSTime,
-					ReqArriveTime: req_trade.ReqArriveTime,
-				}
-
-				// logx.Slowf("[DE Trade] %s, ReqWSTime %d ns", req_trade.Symbol, rsp_trade.ReqWSTime)
-				go d.PublishTrade(&rsp_trade, ws)
-			}
+		rsp_trade := datastruct.RspTrade{
+			TradeData:     trade,
+			ChangeData:    change_data,
+			UsdPrice:      usd_price,
+			ReqWSTime:     req_trade.ReqWSTime,
+			ReqArriveTime: req_trade.ReqArriveTime,
 		}
 
-		d.cache_period_data_mutex.Unlock()
+		go d.PublishTrade(&rsp_trade, ws)
+
 		return "", true
 	} else {
 		logx.Errorf("trade %s not cached", symbol)
