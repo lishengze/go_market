@@ -79,7 +79,7 @@ func (s *ServerEngine) StartNacosClient() {
 	if err != nil {
 		logx.Error(err.Error())
 	}
-	// logx.Info("Requested SymbolConfigStr: " + SymbolConfigStr)
+	logx.Info("Requested SymbolConfigStr: " + SymbolConfigStr)
 	s.ProcessSymbolConfigStr(SymbolConfigStr)
 
 	s.NacosClientWorker.ListenConfig("SymbolParams", datastruct.BCTS_GROUP, s.SymbolParamsChanged)
