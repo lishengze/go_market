@@ -48,9 +48,9 @@ func NewTestMain() *TestMain {
 	}
 }
 
-func (t *TestMain) GetTestTradeReqJson() []byte {
+func (t *TestMain) GetTestTradeReqJson(symbol_list []string) []byte {
 	// symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD", "BTC_USD", "ETH_USD", "ETH_BTC"}
-	symbol_list := []string{"BTC_USDT"}
+
 	req_start_time := strconv.FormatInt(util.UTCNanoTime(), 10)
 	sub_info := map[string]interface{}{
 		"type":           net.TRADE_SUB,
@@ -85,11 +85,11 @@ func (t *TestMain) GetTestDepthReqJson() []byte {
 	}
 }
 
-func (t *TestMain) GetTestKlineReqJson(frequency int) []byte {
+func (t *TestMain) GetTestKlineReqJson(symbol string, count int, frequency int) []byte {
 	sub_info := map[string]interface{}{
 		"type":      net.KLINE_SUB,
-		"symbol":    "BTC_USDT",
-		"count":     "10",
+		"symbol":    symbol,
+		"count":     fmt.Sprintf("%d", count),
 		"frequency": fmt.Sprintf("%d", frequency),
 	}
 	rst, err := json.Marshal(sub_info)
@@ -175,6 +175,14 @@ func (t *TestMain) read_func(c *websocket.Conn) {
 			t.process_depth(message)
 		}
 
+		if m["type"] == net.TRADE_SUB_OK {
+			logx.Infof(string(message))
+		}
+
+		if m["type"] == net.KLINE_SUB_OK {
+			logx.Infof(string(message))
+		}
+
 	}
 }
 
@@ -240,8 +248,9 @@ func (t *TestMain) GetHeartbeatMsg() []byte {
 }
 
 func (t *TestMain) write_func(c *websocket.Conn) {
+	symbol_list := []string{"BTC_USDT"}
 
-	send_msg := t.GetTestTradeReqJson()
+	send_msg := t.GetTestTradeReqJson(symbol_list)
 	// send_msg := t.GetTestDepthReqJson()
 	// send_msg := t.GetTestKlineReqJson(datastruct.SECS_PER_DAY * 7)
 
@@ -255,13 +264,13 @@ func (t *TestMain) write_func(c *websocket.Conn) {
 
 	// time.Sleep(time.Second * 5)
 
-	// send_msg2 := t.GetTestKlineReqJson(300)
+	send_msg2 := t.GetTestKlineReqJson("BTC_USDT", 10, 300)
 
-	// err = c.WriteMessage(websocket.TextMessage, send_msg2)
-	// if err != nil {
-	// 	logx.Info("write:", err)
-	// 	return
-	// }
+	err = c.WriteMessage(websocket.TextMessage, send_msg2)
+	if err != nil {
+		logx.Info("write:", err)
+		return
+	}
 
 	// ticker := time.NewTicker(time.Second)
 	// defer ticker.Stop()

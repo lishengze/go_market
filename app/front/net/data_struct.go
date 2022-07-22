@@ -24,21 +24,25 @@ package net
    }
 */
 const (
-	SYMBOL_SUB    = "sub_symbol"
-	SYMBOL_UNSUB  = "unsub_symbol"
-	SYMBOL_SUB_OK = "sub_symbol_OK"
+	SYMBOL_SUB      = "sub_symbol"
+	SYMBOL_SUB_OK   = "sub_symbol_ok"
+	SYMBOL_UNSUB    = "unsub_symbol"
+	SYMBOL_UNSUB_OK = "unsub_symbol_ok"
 
-	DEPTH_SUB    = "depth_sub"
-	DEPTH_UNSUB  = "depth_unsub"
-	DEPTH_SUB_OK = "depth_sub_ok"
+	DEPTH_SUB      = "depth_sub"
+	DEPTH_SUB_OK   = "depth_sub_ok"
+	DEPTH_UNSUB    = "depth_unsub"
+	DEPTH_UNSUB_OK = "depth_unsub_ok"
 
-	TRADE_SUB    = "trade_sub"
-	TRADE_UNSUB  = "trade_unsub"
-	TRADE_SUB_OK = "trade_sub_ok"
+	TRADE_SUB      = "trade_sub"
+	TRADE_SUB_OK   = "trade_sub_ok"
+	TRADE_UNSUB    = "trade_unsub"
+	TRADE_UNSUB_OK = "trade_unsub_ok"
 
-	KLINE_SUB    = "kline_sub"
-	KLINE_UNSUMB = "kline_unsub"
-	KLINE_SUB_OK = "kline_sub_ok"
+	KLINE_SUB       = "kline_sub"
+	KLINE_SUB_OK    = "kline_sub_ok"
+	KLINE_UNSUMB    = "kline_unsub"
+	KLINE_UNSUMB_OK = "kline_unsub_ok"
 
 	SYMBOL_UPDATE = "symbol_update"
 	DEPTH_UPDATE  = "depth_update"

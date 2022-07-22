@@ -312,10 +312,13 @@ func (w *WSEngine) ProcessSubDepth(m map[string]interface{}, ws *net.WSInfo) {
 	if value, ok := m["symbol"]; ok {
 		symbol_list := value.([]interface{})
 
+		var sub_symbol_list []string
 		for _, symbol := range symbol_list {
 			w.next_worker.SubDepth(symbol.(string), ws)
-		}
 
+			sub_symbol_list = append(sub_symbol_list, symbol.(string))
+		}
+		ws.SendMsg(1, GetSubDepthRspMsg(util.UTCNanoTime(), sub_symbol_list))
 	} else {
 		logx.Error("ProcessSubTrade: No Symbol Data %+v", m)
 	}
@@ -364,16 +367,19 @@ func (w *WSEngine) ProcessSubTrade(m map[string]interface{}, ws *net.WSInfo) {
 			}
 		}
 
+		var sub_symbol_list []string
 		for _, symbol := range symbol_list {
 			req_trade := &datastruct.ReqTrade{
 				Symbol:        symbol.(string),
 				ReqWSTime:     util.UTCNanoTime() - req_start_time,
 				ReqArriveTime: util.UTCNanoTime(),
 			}
-
+			sub_symbol_list = append(sub_symbol_list, symbol.(string))
 			// logx.Slowf("[Trade] %s, ReqWSTime %d ns", req_trade.Symbol, req_trade.ReqWSTime)
 			w.next_worker.SubTrade(req_trade, ws)
 		}
+
+		ws.SendMsg(1, GetSubTradeRspMsg(util.UTCNanoTime(), sub_symbol_list))
 	} else {
 		logx.Error("ProcessSubTrade: No Symbol Data %+v", m)
 	}
@@ -500,6 +506,8 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 		ReqArriveTime:   util.UTCNanoTime(),
 		ReqResponseTime: 0,
 	}
+
+	ws.SendMsg(1, GetSubKlineRspMsg(req_kline))
 
 	logx.Slowf("WSEngine: SubKline %s,", req_kline.String())
 

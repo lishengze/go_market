@@ -24,12 +24,11 @@ func GetHeartbeatMsg() []byte {
 	return rst
 }
 
-func GetSubTradeRspMsg(req_trade *datastruct.ReqTrade, symbol_list []string) []byte {
+func GetSubTradeRspMsg(req_arrive_time int64, symbol_list []string) []byte {
 	heartbeat_map := map[string]interface{}{
-		"time":            util.UTCNanoTime(),
 		"symbol":          symbol_list,
-		"req_arrive_time": util.TimeStrFromInt(req_trade.ReqArriveTime),
-		"type":            net.HEARTBEAT,
+		"req_arrive_time": util.TimeStrFromInt(req_arrive_time),
+		"type":            net.TRADE_SUB_OK,
 	}
 	rst, err := json.Marshal(heartbeat_map)
 
@@ -40,17 +39,33 @@ func GetSubTradeRspMsg(req_trade *datastruct.ReqTrade, symbol_list []string) []b
 	return rst
 }
 
-func GetSubSymbolRspMsg(req_depth *datastruct.ReqDepth, symbol_list []string) []byte {
+func GetSubDepthRspMsg(req_arrive_time int64, symbol_list []string) []byte {
 	heartbeat_map := map[string]interface{}{
-		"time":            util.UTCNanoTime(),
-		"symbol":          req_depth.Symbol,
-		"req_arrive_time": util.TimeStrFromInt(req_depth.ReqArriveTime),
-		"type":            net.HEARTBEAT,
+		"symbol":          symbol_list,
+		"req_arrive_time": util.TimeStrFromInt(req_arrive_time),
+		"type":            net.DEPTH_SUB_OK,
 	}
 	rst, err := json.Marshal(heartbeat_map)
 
 	if err != nil {
-		logx.Errorf("GetSubTradeRspMsg: %+v", err)
+		logx.Errorf("GetSubSymbolRspMsg: %+v", err)
+		return nil
+	}
+	return rst
+}
+
+func GetSubKlineRspMsg(req_kline *datastruct.ReqHistKline) []byte {
+	heartbeat_map := map[string]interface{}{
+		"symbol":          req_kline.Symbol,
+		"resolution":      req_kline.Frequency,
+		"count":           req_kline.Count,
+		"req_arrive_time": util.TimeStrFromInt(req_kline.ReqArriveTime),
+		"type":            net.KLINE_SUB_OK,
+	}
+	rst, err := json.Marshal(heartbeat_map)
+
+	if err != nil {
+		logx.Errorf("GetSubKlineRspMsg: %+v", err)
 		return nil
 	}
 	return rst
