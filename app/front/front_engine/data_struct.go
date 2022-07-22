@@ -40,7 +40,7 @@ type TradePubInfo struct {
 func (d *TradePubInfo) String() string {
 	// return fmt.Sprintf("ws_info: %s, trade: %s", d.ws_info.String(), d.data.String())
 
-	return fmt.Sprintf("ws_info: %s, trade: %s", d.ws_info.String(), string(d.data))
+	return fmt.Sprintf("[ws]:%s,[T]:%s", d.ws_info.String(), string(d.data))
 }
 
 type KlinePubInfo struct {
@@ -54,7 +54,7 @@ func (d *KlinePubInfo) String() string {
 	var kline_data PubKlineJson
 	if err := json.Unmarshal([]byte(d.data), &kline_data); err != nil {
 		logx.Errorf("Error = %+v", err)
-		return fmt.Sprintf("ws_info: %s, kline: nil", d.ws_info.String())
+		return fmt.Sprintf("[ws]:%s,[k]: nil", d.ws_info.String())
 	} else {
 		// logx.Infof("Rsp Update New Kline Time: %s", kline_data.TimeList())
 		return fmt.Sprintf("[ws]:%s,[k]:%s %s", d.ws_info.String(), kline_data.Symbol, kline_data.TimeList())

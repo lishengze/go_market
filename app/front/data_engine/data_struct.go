@@ -110,7 +110,7 @@ type PeriodData struct {
 }
 
 func (p *PeriodData) String() string {
-	return fmt.Sprintf("%s, Max: %f, MaxTime: %+v, Min: %f, MinTime: %+v, Change: %f, ChangeRate: %f", p.Symbol,
+	return fmt.Sprintf("%s, Max: %f, MaxTime: %+v, Min: %f, MinTime: %+v, Change: %+v, ChangeRate: %+v", p.Symbol,
 		p.Max, time.Unix(int64(p.MaxTime/datastruct.NANO_PER_SECS), p.MaxTime%datastruct.NANO_PER_SECS),
 		p.Min, time.Unix(int64(p.MinTime/datastruct.NANO_PER_SECS), p.MinTime%datastruct.NANO_PER_SECS),
 		p.Change, p.ChangeRate)
@@ -342,20 +342,20 @@ func (p *PeriodData) UpdateMeta() {
 	if p.CurTrade != nil && p.CurTrade.Time > p.KLineLastTime {
 		p.Change = decimal.NewFromFloat(p.CurTrade.Price).Sub(decimal.NewFromFloat(p.Start))
 
-		if p.Symbol == "BTC_USDT" {
-			logx.Infof("\nTrade: %s;\nLastK: t %s,p %f;\nStartL: t %s, p %f", p.CurTrade.String(),
-				util.TimeStrFromInt(p.KLineLastTime), p.Last,
-				util.TimeStrFromInt(p.StartTime), p.Start)
-		}
+		// if p.Symbol == "BTC_USDT" {
+		// 	logx.Infof("\nTrade: %s;\nLastK: t %s,p %f;\nStartL: t %s, p %f", p.CurTrade.String(),
+		// 		util.TimeStrFromInt(p.KLineLastTime), p.Last,
+		// 		util.TimeStrFromInt(p.StartTime), p.Start)
+		// }
 
 	} else {
 		p.Change = decimal.NewFromFloat(p.Last).Sub(decimal.NewFromFloat(p.Start))
 
-		if p.Symbol == "BTC_USDT" {
-			logx.Infof("LastK: t %s,p %f;\nStartL: t %s, p %f",
-				util.TimeStrFromInt(p.KLineLastTime), p.Last,
-				util.TimeStrFromInt(p.StartTime), p.Start)
-		}
+		// if p.Symbol == "BTC_USDT" {
+		// 	logx.Infof("LastK: t %s,p %f;\nStartL: t %s, p %f",
+		// 		util.TimeStrFromInt(p.KLineLastTime), p.Last,
+		// 		util.TimeStrFromInt(p.StartTime), p.Start)
+		// }
 	}
 
 	p.ChangeRate = p.Change.Div(decimal.NewFromFloat(p.Start))
@@ -396,7 +396,7 @@ func (p *PeriodData) GetChangeInfo(precision int) *datastruct.ChangeInfo {
 
 	Change, _ := change.Float64()
 
-	logx.Infof("%s, precision: %d, p.Change: %f", p.Symbol, precision, Change)
+	// logx.Infof("%s, precision: %d, p.Change: %f", p.Symbol, precision, Change)
 
 	// if !ok {
 	// 	logx.Errorf("change.Float64() change: %+v!", change)
