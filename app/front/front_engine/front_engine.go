@@ -167,7 +167,6 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 		}
 	} else {
 		trade_pub_list := f.sub_data.GetTradePubInfoList(trade)
-		// logx.Info("After GetTradePubInfoList")
 
 		for _, info := range trade_pub_list {
 			if info.ws_info.IsAlive() {

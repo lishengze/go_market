@@ -95,21 +95,6 @@ func (w *WSEngine) StartHeartbeat() {
 
 // {"time":"2022-06-20 08:23:54.20117945","type":"heartbeat"}
 
-func GetHeartbeatMsg() []byte {
-
-	heartbeat_map := map[string]interface{}{
-		"time": util.UTCNanoTime(),
-		"type": net.HEARTBEAT,
-	}
-	rst, err := json.Marshal(heartbeat_map)
-
-	if err != nil {
-		logx.Errorf("GetHeartbeatMsg: %+v", err)
-		return nil
-	}
-	return rst
-}
-
 func (w *WSEngine) ChecktHeartbeat() {
 	w.WSConSetMutex.Lock()
 	// defer w.WSConSetMutex.Unlock()
@@ -314,7 +299,7 @@ func (w *WSEngine) ProcessMessage(msg []byte, ws *net.WSInfo) {
 
 func (w *WSEngine) ProcessSubSymbol(ws *net.WSInfo) {
 	logx.Infof("WS %+v, SubStart!", ws)
-	go w.next_worker.SubSymbol(ws)
+	w.next_worker.SubSymbol(ws)
 }
 
 /*
@@ -328,7 +313,7 @@ func (w *WSEngine) ProcessSubDepth(m map[string]interface{}, ws *net.WSInfo) {
 		symbol_list := value.([]interface{})
 
 		for _, symbol := range symbol_list {
-			go w.next_worker.SubDepth(symbol.(string), ws)
+			w.next_worker.SubDepth(symbol.(string), ws)
 		}
 
 	} else {
@@ -387,7 +372,7 @@ func (w *WSEngine) ProcessSubTrade(m map[string]interface{}, ws *net.WSInfo) {
 			}
 
 			// logx.Slowf("[Trade] %s, ReqWSTime %d ns", req_trade.Symbol, req_trade.ReqWSTime)
-			go w.next_worker.SubTrade(req_trade, ws)
+			w.next_worker.SubTrade(req_trade, ws)
 		}
 	} else {
 		logx.Error("ProcessSubTrade: No Symbol Data %+v", m)
@@ -518,7 +503,7 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 
 	logx.Slowf("WSEngine: SubKline %s,", req_kline.String())
 
-	go w.next_worker.SubKline(req_kline, ws)
+	w.next_worker.SubKline(req_kline, ws)
 }
 
 func (w *WSEngine) ProcessUnSubKline(m map[string]interface{}, ws *net.WSInfo) {
