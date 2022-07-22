@@ -169,7 +169,8 @@ type PubTradeJson struct {
 
 func (t *PubTradeJson) String() string {
 	return fmt.Sprintf("%s, %s p: %f, up: %f, v: %f, c: %f, cr: %f, h: %f, l:%f",
-		t.Symbol, util.TimeStrFromInt(t.Time), t.Price, t.USDPrice, t.Volume, t.Change, t.ChangeRate, t.High, t.Low)
+		t.Symbol, util.TimeStrFromInt(t.Time*datastruct.NANO_PER_SECS),
+		t.Price, t.USDPrice, t.Volume, t.Change, t.ChangeRate, t.High, t.Low)
 }
 
 func NewTradeJsonMsg(trade *datastruct.RspTrade) []byte {

@@ -39,8 +39,15 @@ type TradePubInfo struct {
 
 func (d *TradePubInfo) String() string {
 	// return fmt.Sprintf("ws_info: %s, trade: %s", d.ws_info.String(), d.data.String())
+	var trade_data PubTradeJson
 
-	return fmt.Sprintf("[ws]:%s,[T]:%s", d.ws_info.String(), string(d.data))
+	if err := json.Unmarshal([]byte(d.data), &trade_data); err != nil {
+		logx.Errorf("Error = %+v", err)
+		return fmt.Sprintf("[ws]:%s,[T]: nil", d.ws_info.String())
+	} else {
+		// logx.Infof("Rsp Update New Kline Time: %s", kline_data.TimeList())
+		return fmt.Sprintf("[ws]:%s,[T]:%s ", d.ws_info.String(), trade_data.String())
+	}
 }
 
 type KlinePubInfo struct {
