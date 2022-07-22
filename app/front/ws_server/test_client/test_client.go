@@ -7,7 +7,6 @@ import (
 	"log"
 	"market_server/app/front/front_engine"
 	"market_server/app/front/net"
-	"market_server/common/datastruct"
 	"market_server/common/util"
 	"net/url"
 	"os"
@@ -198,7 +197,7 @@ func (t *TestMain) process_kline(message []byte) {
 		if len(kline_data.Data) > 1 {
 			logx.Infof("[k]:%s %d, \n%s", kline_data.Symbol, kline_data.Resolution, kline_data.UTCTimeList())
 		} else {
-			logx.Infof("[k]:%s %d, %s", kline_data.Symbol, kline_data.Resolution, kline_data.UTCTimeList())
+			logx.Infof("[k]:%s, %s %d", kline_data.Symbol, kline_data.UTCTimeList(), kline_data.Resolution)
 		}
 
 		// fmt.Printf("Kline: req_process_time: %d us, ws_time: %dus, \nkline_data: %s", kline_data.ReqProcessTime/datastruct.NANO_PER_MICR, delta_time/datastruct.NANO_PER_MICR, kline_data.TimeList())
@@ -211,8 +210,7 @@ func (t *TestMain) process_trade(message []byte) {
 		logx.Errorf("Error = %+v", err)
 		return
 	} else {
-		trade_data.Time = trade_data.Time * datastruct.NANO_PER_SECS
-		logx.Infof("[T] %s", trade_data.String())
+		logx.Infof("[T]:%s", trade_data.String())
 
 		// t.TradeUpdatedSymbolMapMutex.Lock()
 		// // delta_time := util.UTCNanoTime() - trade_data.ReqResponseTime
