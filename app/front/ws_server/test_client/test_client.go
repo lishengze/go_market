@@ -251,13 +251,12 @@ func (t *TestMain) GetHeartbeatMsg() []byte {
 }
 
 func (t *TestMain) write_func(c *websocket.Conn) {
-	symbol_list := []string{"BTC_USDT"}
+	// symbol_list := []string{"USDT_USD"}
 
-	send_msg := t.GetTestTradeReqJson(symbol_list)
+	// send_msg := t.GetTestTradeReqJson(symbol_list)
 	// send_msg := t.GetTestDepthReqJson()
-	// send_msg := t.GetTestKlineReqJson(datastruct.SECS_PER_DAY * 7)
 
-	// send_msg := t.GetTestKlineReqJson(300)
+	send_msg := t.GetTestKlineReqJson("USDT_USD", 20, 3600)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {
@@ -267,13 +266,13 @@ func (t *TestMain) write_func(c *websocket.Conn) {
 
 	// time.Sleep(time.Second * 5)
 
-	send_msg2 := t.GetTestKlineReqJson("BTC_USDT", 10, 300)
+	// send_msg2 := t.GetTestKlineReqJson("BTC_USDT", 10, 300)
 
-	err = c.WriteMessage(websocket.TextMessage, send_msg2)
-	if err != nil {
-		logx.Info("write:", err)
-		return
-	}
+	// err = c.WriteMessage(websocket.TextMessage, send_msg2)
+	// if err != nil {
+	// 	logx.Info("write:", err)
+	// 	return
+	// }
 
 	// ticker := time.NewTicker(time.Second)
 	// defer ticker.Stop()

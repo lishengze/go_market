@@ -35,7 +35,7 @@ LogConfig:
 
 MonitorConfigInfo:
   RateParam: 1.1
-  InitDeadLine: 900
+  InitDeadLine: 1800
   CheckSecs: 30
   
 DingConfigInfo:
