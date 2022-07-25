@@ -338,12 +338,12 @@ func IsTargetTime(time_secs int64, resolution_secs int64) bool {
 
 func IsNewKlineStartTime(tmp_time int64, resolution int64) bool {
 
-	if resolution > NANO_PER_SECS {
-		resolution = resolution / NANO_PER_SECS
+	if tmp_time > NANO_PER_HOUR {
+		tmp_time = tmp_time / NANO_PER_SECS
 	}
 
-	if tmp_time > NANO_PER_SECS {
-		tmp_time = tmp_time / NANO_PER_SECS
+	if resolution > NANO_PER_SECS {
+		resolution = resolution / NANO_PER_SECS
 	}
 
 	return IsTargetTime(tmp_time, resolution)
@@ -386,12 +386,12 @@ func IsOldKlineEnd(kline *Kline, resolution int64) bool {
 
 func IsOldKlineEndTime(tmp_time int64, src_resolution int, dst_resolution int64) bool {
 
-	if dst_resolution > NANO_PER_SECS {
-		dst_resolution = dst_resolution / NANO_PER_SECS
+	if tmp_time > NANO_PER_HOUR {
+		tmp_time = tmp_time / NANO_PER_SECS
 	}
 
-	if tmp_time > NANO_PER_SECS {
-		tmp_time = tmp_time / NANO_PER_SECS
+	if dst_resolution > NANO_PER_SECS {
+		dst_resolution = dst_resolution / NANO_PER_SECS
 	}
 
 	if src_resolution > NANO_PER_SECS {
@@ -410,7 +410,7 @@ func IsOldKlineEndTime(tmp_time int64, src_resolution int, dst_resolution int64)
 }
 
 func GetLastStartTime(tmp_time int64, resolution int64) int64 {
-	if tmp_time > NANO_PER_SECS {
+	if tmp_time > NANO_PER_DAY {
 		tmp_time = tmp_time / NANO_PER_SECS
 	}
 

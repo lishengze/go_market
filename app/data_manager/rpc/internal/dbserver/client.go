@@ -236,6 +236,8 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 		sql_str = get_kline_sql_str_by_time(table_name, in.GetStartTime(), in.GetEndTime())
 	}
 
+	frequency := in.GetFrequency()
+
 	fmt.Printf("sql_str: %+v \n", sql_str)
 
 	rows, err := d.db.Query(sql_str)
@@ -246,11 +248,6 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 	}
 
 	columns, _ := rows.Columns()
-	scanArgs := make([]interface{}, len(columns))
-	values := make([]interface{}, len(columns))
-	for i := range values {
-		scanArgs[i] = &values[i]
-	}
 
 	rst.Count = 0
 	rst.Symbol = in.GetSymbol()
@@ -258,6 +255,12 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 	rst.StartTime = in.GetStartTime()
 	rst.EndTime = in.GetEndTime()
 	rst.Frequency = in.GetFrequency()
+
+	scanArgs := make([]interface{}, len(columns))
+	values := make([]interface{}, len(columns))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
 
 	for rows.Next() {
 		rst.Count = rst.Count + 1

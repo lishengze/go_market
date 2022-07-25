@@ -76,6 +76,9 @@ message ReqTradeInfo
     string symbol = 1;
     string exchange = 2;
     uint64 time = 3;
+    uint64 start_time = 5;
+    uint64 end_time = 6;
+    uint32 count = 7;
 };
 
 service MarketService { // 服务名字还是用 MarketService, 整个行情系统都要用；
