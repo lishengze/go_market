@@ -7,6 +7,7 @@ import (
 	"market_server/common/util"
 	"strconv"
 
+	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -71,37 +72,6 @@ func GetKline(values []interface{}) *datastruct.Kline {
 	return tmp_kline
 }
 
-func ResetFirstKline(cache_kline *datastruct.Kline, target_resolution uint32) {
-	defer util.CatchExp("ResetFirstKline")
-	cache_kline.Time = datastruct.GetLastStartTime(cache_kline.Time, int64(target_resolution))
-}
-
-func ProcessOldEndKline(cur_kline *datastruct.Kline, cache_kline *datastruct.Kline, target_resolution int) *datastruct.Kline {
-	defer util.CatchExp("ProcessOldEndKline")
-	var pub_kline *datastruct.Kline
-	if cur_kline.Resolution != target_resolution {
-		cache_kline.Close = cur_kline.Close
-		cache_kline.Low = util.MinFloat64(cache_kline.Low, cur_kline.Low)
-		cache_kline.High = util.MaxFloat64(cache_kline.High, cur_kline.High)
-		cache_kline.Volume += cur_kline.Volume
-
-		pub_kline = datastruct.NewKlineWithKline(cache_kline)
-	} else {
-		pub_kline = datastruct.NewKlineWithKline(cur_kline)
-	}
-
-	cache_kline = datastruct.NewKlineWithKline(pub_kline)
-	return pub_kline
-}
-
-func ProcessNewStartKline(tmp_kline *datastruct.Kline, cache_kline *datastruct.Kline) {
-
-}
-
-func ProcessCachingKline(tmp_kline *datastruct.Kline, cache_kline *datastruct.Kline) {
-
-}
-
 func GetOriPbKline(kline_db_row *sql.Rows) []*datastruct.Kline {
 	var rst []*datastruct.Kline
 
@@ -125,34 +95,8 @@ func GetOriPbKline(kline_db_row *sql.Rows) []*datastruct.Kline {
 	}
 
 	return rst
-
 }
 
-func TrasOriKlineData(ori_klines []*datastruct.Kline, target_resolution uint32) []*pb.Kline {
-	var rst []*pb.Kline
+func TransKlineTree(kline_tree *treemap.Map) []*pb.Kline {
 
-	var cache_kline *datastruct.Kline = nil
-	var pub_kline *datastruct.Kline = nil
-
-	for _, tmp_kline := range ori_klines {
-		if cache_kline == nil {
-			cache_kline = tmp_kline
-			ResetFirstKline(cache_kline, target_resolution)
-		}
-
-		if datastruct.IsOldKlineEndTime(tmp_kline.Time, int(tmp_kline.Resolution), int64(target_resolution)) {
-			pub_kline = ProcessOldEndKline(tmp_kline, cache_kline, int(target_resolution))
-			// rst = append(rst, pub_kline)
-		} else if datastruct.IsNewKlineStartTime(tmp_kline.Time, int64(target_resolution)) {
-			ProcessNewStartKline(tmp_kline, cache_kline)
-		} else {
-			ProcessCachingKline(tmp_kline, cache_kline)
-		}
-	}
-
-	if cache_kline.Time != pub_kline.Time {
-		// rst = append(rst, cache_kline)
-	}
-
-	return rst
 }
