@@ -21,9 +21,10 @@ type KlineCache struct {
 	Config *CacheConfig
 }
 
-func NewKlineCache() *KlineCache {
+func NewKlineCache(config *CacheConfig) *KlineCache {
 	return &KlineCache{
 		Klines: make(map[string]map[int]*treemap.Map),
+		Config: config,
 	}
 }
 
@@ -96,18 +97,26 @@ func NewTreeMapWithKlines(ori_klines []*Kline, target_resolution int) *treemap.M
 	return rst
 }
 
-func UpdateTreeWithKlines(kline_tree *treemap.Map, klines []*Kline, target_resolution int) map[int]*Kline {
+func UpdateTreeWithKlines(kline_tree *treemap.Map, klines []*Kline, target_resolution int) *Kline {
 	defer util.CatchExp("UpdateTreeWithKlines")
 
-	rst := make(map[int]*Kline)
+	var rst *Kline
 
 	return rst
 }
 
-func UpdateTreeWithKline(kline_tree *treemap.Map, kline *Kline, target_resolution int) map[int]*Kline {
+func UpdateTreeWithKline(kline_tree *treemap.Map, kline *Kline, target_resolution int) *Kline {
 	defer util.CatchExp("UpdateTreeWithKline")
 
-	rst := make(map[int]*Kline)
+	var rst *Kline
+
+	return rst
+}
+
+func UpdateTreeWithTrade(kline_tree *treemap.Map, trade *Trade, target_resolution int) *Kline {
+	defer util.CatchExp("UpdateTreeWithKline")
+
+	var rst *Kline
 
 	return rst
 }

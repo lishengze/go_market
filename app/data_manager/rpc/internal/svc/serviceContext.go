@@ -3,7 +3,7 @@ package svc
 import "market_server/common/config"
 
 type ServiceContext struct {
-	Config config.Config
+	Config db_config.Config
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
