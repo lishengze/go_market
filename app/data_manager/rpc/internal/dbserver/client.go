@@ -21,6 +21,7 @@ import (
 )
 
 type DBServer struct {
+	kline_cache     *datastruct.KlineCache
 	RecvDataChan    *datastruct.DataChannel
 	conn            sqlx.SqlConn
 	db              *sql.DB
@@ -41,6 +42,7 @@ func NewDBServer(recvDataChan *datastruct.DataChannel, mysql_config config.Mysql
 		db:              new_db,
 		insert_stmt_map: make(map[string]*sql.Stmt),
 		tables_:         make(map[string]struct{}),
+		kline_cache:     datastruct.NewKlineCache(),
 	}, nil
 }
 
@@ -236,7 +238,7 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 		sql_str = get_kline_sql_str_by_time(table_name, in.GetStartTime(), in.GetEndTime())
 	}
 
-	frequency := in.GetFrequency()
+	// frequency := in.GetFrequency()
 
 	fmt.Printf("sql_str: %+v \n", sql_str)
 
