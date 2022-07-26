@@ -276,8 +276,7 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 			continue
 		}
 
-		var pub_kline *datastruct.Kline
-		pub_kline = nil
+		var pub_kline *datastruct.Kline = nil
 
 		if datastruct.IsOldKlineEnd(kline, int64(resolution)) {
 			logx.Slowf("Old Kline End: rsl:%d, %s", resolution, kline.String())

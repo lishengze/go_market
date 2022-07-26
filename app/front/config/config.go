@@ -2,6 +2,7 @@ package config
 
 import (
 	comm_config "market_server/common/config"
+	"market_server/common/datastruct"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/zrpc"
@@ -24,6 +25,7 @@ type Config struct {
 	LogConfig logx.LogConf
 	Nacos     comm_config.NacosConfig
 
-	Cache CacheConfig
-	WS    WSConfig
+	Cache       CacheConfig
+	WS          WSConfig
+	CacheConfig datastruct.CacheConfig
 }

@@ -113,7 +113,7 @@ func GetOriPbKline(kline_db_row *sql.Rows) []*datastruct.Kline {
 }
 
 func TransKlineData(klines []*datastruct.Kline) []*pb.Kline {
-	var rst []*pb.Kline
+	var rst []*pb.Kline = nil
 
 	for _, kline := range klines {
 		pb_kline := NewPbKlineWithKline(kline)

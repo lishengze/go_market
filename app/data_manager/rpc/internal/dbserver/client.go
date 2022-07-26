@@ -224,10 +224,59 @@ func (d *DBServer) store_depth(depth *datastruct.DepthQuote) error {
 	return nil
 }
 
+// Undo
+func (d *DBServer) GetLastestDBKLineByTrade(symbol string) *datastruct.Kline {
+	var rst *datastruct.Kline
+	return rst
+}
+
+// Undo
+func (d *DBServer) GetDBKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
+	table_name := d.get_table_name(datastruct.KLINE_TYPE, symbol, datastruct.BCTS_EXCHANGE)
+	sql_str := get_kline_sql_str_by_count(table_name, count)
+
+	rows, err := d.db.Query(sql_str)
+
+	if err != nil {
+		logx.Errorf("err: %+v", err)
+		return nil
+	}
+
+	rst := GetOriPbKline(rows)
+
+	return rst
+}
+
+// Undo
+func (d *DBServer) GetDBKlinesByTime(symbol string, resolution int, start_time int64, end_time int64) []*datastruct.Kline {
+	defer util.CatchExp("DBServer GetKlinesByCount")
+
+	table_name := d.get_table_name(datastruct.KLINE_TYPE, symbol, datastruct.BCTS_EXCHANGE)
+	sql_str := get_kline_sql_str_by_time(table_name, uint64(start_time), uint64(end_time))
+
+	rows, err := d.db.Query(sql_str)
+
+	if err != nil {
+		logx.Errorf("err: %+v", err)
+		return nil
+	}
+
+	rst := GetOriPbKline(rows)
+
+	return rst
+}
+
 func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
 	defer util.CatchExp("DBServer GetKlinesByCount")
 
-	var rst []*datastruct.Kline
+	rst := d.kline_cache.GetKlinesByCount(symbol, resolution, count, true)
+
+	if rst == nil {
+		db_klines := d.GetDBKlinesByCount(symbol, resolution, count)
+		d.kline_cache.InitWithKlines(db_klines, symbol, resolution)
+	}
+
+	rst = d.kline_cache.GetKlinesByCount(symbol, resolution, count, false)
 
 	return rst
 }
@@ -235,7 +284,14 @@ func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []
 func (d *DBServer) GetKlinesByTime(symbol string, resolution int, start_time int64, end_time int64) []*datastruct.Kline {
 	defer util.CatchExp("DBServer GetKlinesByTime")
 
-	var rst []*datastruct.Kline
+	rst := d.kline_cache.GetKlinesByTime(symbol, resolution, start_time, end_time, true)
+
+	if rst != nil {
+		db_klines := d.GetDBKlinesByTime(symbol, resolution, start_time, end_time)
+		d.kline_cache.InitWithKlines(db_klines, symbol, resolution)
+	}
+
+	rst = d.kline_cache.GetKlinesByTime(symbol, resolution, start_time, end_time, false)
 
 	return rst
 }
@@ -270,7 +326,6 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 	}
 
 	rst := &pb.HistKlineData{
-
 		Symbol:    symbol,
 		Exchange:  exchange,
 		Frequency: frequency,
@@ -281,7 +336,13 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 
 	rst.KlineData = TransKlineData(ori_klines)
 
-	return rst, nil
+	var err error = nil
+	if rst.KlineData == nil {
+		err = fmt.Errorf("empty Kline Data For %s, %d, %d, %d, %d",
+			symbol, frequency, count, start_time, end_time)
+	}
+
+	return rst, err
 }
 
 func (d *DBServer) RequestHistKlineDataBak(ctx context.Context, in *pb.ReqHishKlineInfo) (*pb.HistKlineData, error) {

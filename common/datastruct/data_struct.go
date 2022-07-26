@@ -158,7 +158,12 @@ type ReqHistKline struct {
 }
 
 func (r *ReqHistKline) String() string {
-	result := fmt.Sprintf("%s, count: %d, resolution: %d", r.Symbol, r.Count, r.Frequency)
+	var result string
+	if r.StartTime == 0 {
+		result = fmt.Sprintf("%s, start: %d, end: %d;resolution: %d", r.Symbol, r.StartTime, r.EndTime, r.Frequency)
+	} else {
+		result = fmt.Sprintf("%s, count: %d, resolution: %d", r.Symbol, r.Count, r.Frequency)
+	}
 	return result
 }
 

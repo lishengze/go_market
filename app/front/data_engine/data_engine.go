@@ -35,6 +35,8 @@ type DataEngine struct {
 
 	cache_kline_data map[string](map[int]*treemap.Map)
 
+	kline_cache *datastruct.KlineCache
+
 	IsTest bool
 }
 
@@ -48,6 +50,7 @@ func NewDataEngine(recvDataChan *datastruct.DataChannel, ctx *svc.ServiceContext
 			cache_kline_data:  make(map[string]map[int]*treemap.Map),
 			IsTest:            false,
 			msclient:          marketservice.NewMarketService(zrpc.MustNewClient(ctx.Config.RpcConfig)),
+			kline_cache:       datastruct.NewKlineCache(&ctx.Config.CacheConfig),
 		}
 	} else {
 		return &DataEngine{
@@ -56,6 +59,7 @@ func NewDataEngine(recvDataChan *datastruct.DataChannel, ctx *svc.ServiceContext
 			cache_period_data: make(map[string]*PeriodData),
 			cache_kline_data:  make(map[string]map[int]*treemap.Map),
 			IsTest:            false,
+			kline_cache:       datastruct.NewKlineCache(&ctx.Config.CacheConfig),
 		}
 	}
 }
@@ -146,7 +150,7 @@ func (a *DataEngine) InitPeriodDara(symbol string) error {
 }
 
 func (a *DataEngine) StartListenRecvdata() {
-	logx.Info("[S] DBServer start_listen_recvdata")
+	logx.Info("[S] DataEngine start_listen_recvdata")
 	go func() {
 		for {
 			select {
@@ -159,7 +163,7 @@ func (a *DataEngine) StartListenRecvdata() {
 			}
 		}
 	}()
-	logx.Info("[S] DBServer start_receiver Over!")
+	logx.Info("[S] DataEngine start_receiver Over!")
 }
 
 func catch_depth_exp(depth *datastruct.DepthQuote) {
@@ -441,17 +445,78 @@ func (d *DataEngine) SubDepth(symbol string, ws *net.WSInfo) (string, bool) {
 	}
 }
 
+// Undo
+func (d *DataEngine) GetDBKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
+	var rst []*datastruct.Kline
+
+	return rst
+}
+
+// Undo
+func (d *DataEngine) GetDBKlinesByTime(symbol string, resolution int, start_time int64, end_time int64) []*datastruct.Kline {
+	defer util.CatchExp("DataEngine GetKlinesByCount")
+	var rst []*datastruct.Kline
+
+	return rst
+}
+
+func (d *DataEngine) GetKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
+	defer util.CatchExp("DataEngine GetKlinesByCount")
+
+	rst := d.kline_cache.GetKlinesByCount(symbol, resolution, count, true)
+
+	if rst == nil {
+		db_klines := d.GetDBKlinesByCount(symbol, resolution, count)
+		d.kline_cache.InitWithKlines(db_klines, symbol, resolution)
+	}
+
+	rst = d.kline_cache.GetKlinesByCount(symbol, resolution, count, false)
+
+	return rst
+}
+
+func (d *DataEngine) GetKlinesByTime(symbol string, resolution int, start_time int64, end_time int64) []*datastruct.Kline {
+	defer util.CatchExp("DataEngine GetKlinesByTime")
+
+	rst := d.kline_cache.GetKlinesByTime(symbol, resolution, start_time, end_time, true)
+
+	if rst != nil {
+		db_klines := d.GetDBKlinesByTime(symbol, resolution, start_time, end_time)
+		d.kline_cache.InitWithKlines(db_klines, symbol, resolution)
+	}
+
+	rst = d.kline_cache.GetKlinesByTime(symbol, resolution, start_time, end_time, false)
+
+	return rst
+}
+
+func (d *DataEngine) GetHistKlineDataNew(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
+	defer util.CatchExp(fmt.Sprintf("GetHistKlineDataNew %s", req_kline_info.String()))
+	var ori_klines []*datastruct.Kline
+
+	if req_kline_info.Count > 0 {
+		ori_klines = d.GetKlinesByCount(req_kline_info.Symbol, int(req_kline_info.Frequency), int(req_kline_info.Count))
+	} else if req_kline_info.StartTime > 0 && req_kline_info.EndTime > req_kline_info.StartTime {
+		ori_klines = d.GetKlinesByTime(req_kline_info.Symbol, int(req_kline_info.Frequency),
+			int64(req_kline_info.StartTime), int64(req_kline_info.EndTime))
+	} else {
+		logx.Errorf("error req_hist_kline %s", req_kline_info.String())
+	}
+
+	trans_kline := datastruct.TransSliceKlines(ori_klines)
+
+	return &datastruct.RspHistKline{
+		ReqInfo: req_kline_info,
+		Klines:  trans_kline,
+	}
+}
+
 func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
 
 	tmp := treemap.NewWith(utils.Int64Comparator)
 
 	if d.IsTest {
 		tmp = datastruct.GetTestHistKline(req_kline_info)
-
-		// return &datastruct.RspHistKline{
-		// 	Klines:  datastruct.GetTestHistKline(req_kline_info),
-		// 	ReqInfo: req_kline_info,
-		// }
 	} else {
 		rate := req_kline_info.Frequency / datastruct.SECS_PER_MIN
 
