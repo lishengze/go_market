@@ -19,6 +19,10 @@ func NewPbKlineWithPbKline(ori_kline *pb.Kline) *pb.Kline {
 func NewPbKlineWithKline(ori_kline *datastruct.Kline) *pb.Kline {
 	defer util.CatchExp("NewPbKlineWithPbKline")
 
+	if ori_kline == nil {
+		return nil
+	}
+
 	return &pb.Kline{
 		Exchange:   ori_kline.Exchange,
 		Symbol:     ori_kline.Symbol,

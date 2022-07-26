@@ -165,7 +165,6 @@ func UpdateTreeWithKline(latest_kline *Kline, kline *Kline, resolution int) (*Kl
 	return pub_kline, is_add
 }
 
-//Undo
 func UpdateTreeWithTrade(latest_kline *Kline, trade *Trade, resolution int) (*Kline, bool) {
 	defer util.CatchExp("UpdateTreeWithKline")
 

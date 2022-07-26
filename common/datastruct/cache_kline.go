@@ -92,6 +92,39 @@ func (k *KlineCache) SetTradeCacheKline(kline *Kline) {
 	k.RealKlineByTrade[kline.Symbol][kline.Resolution] = kline
 }
 
+func (k *KlineCache) GetKlineCacheKline(symbol string, resolution int) *Kline {
+	defer util.CatchExp("GetKlineCacheKline")
+	k.RealKlineByKlineMutex.Lock()
+	defer k.RealKlineByKlineMutex.Unlock()
+
+	if _, ok := k.RealKlineByKline[symbol]; !ok {
+		return nil
+	}
+
+	if _, ok := k.RealKlineByKline[symbol][resolution]; !ok {
+		return nil
+	}
+
+	return k.RealKlineByKline[symbol][resolution]
+}
+
+func (k *KlineCache) GetTradeCacheKline(symbol string, resolution int) *Kline {
+	defer util.CatchExp("GetTradeCacheKline")
+
+	k.RealKlineByTradeMutex.Lock()
+	defer k.RealKlineByTradeMutex.Unlock()
+
+	if _, ok := k.RealKlineByTrade[symbol]; !ok {
+		return nil
+	}
+
+	if _, ok := k.RealKlineByTrade[symbol][resolution]; !ok {
+		return nil
+	}
+
+	return k.RealKlineByTrade[symbol][resolution]
+}
+
 func (k *KlineCache) UpdateWithKlines(ori_klines []*Kline, symbol string) error {
 	defer util.CatchExp("UpdateWithKlines")
 
@@ -170,12 +203,53 @@ func (k *KlineCache) UpdateWithTrade(trade *Trade) (*Kline, error) {
 	return pub_kline, err
 }
 
+func (k *KlineCache) UpdateWithTrades(trades []*Trade) error {
+	defer util.CatchExp("UpdateWithKline")
+
+	k.RealKlineByTradeMutex.Lock()
+	defer k.RealKlineByTradeMutex.Unlock()
+
+	var err error = nil
+
+	if trades == nil {
+		return fmt.Errorf(" UpdateWithKlines trades is nil")
+	}
+
+	symbol := trades[0].Symbol
+
+	if _, ok := k.RealKlineByTrade[symbol]; !ok {
+		return fmt.Errorf(" UpdateWithKlines Failed , symbol%s was not init", symbol)
+	}
+
+	for resolution, cache_kline := range k.RealKlineByTrade[symbol] {
+		for _, trade := range trades {
+			pub_kline, is_add := UpdateTreeWithTrade(cache_kline, trade, resolution)
+
+			if is_add {
+				k.AddNewKline(pub_kline)
+			}
+		}
+
+	}
+
+	k.EraseOutTimeKline()
+
+	return err
+}
+
 // Undo
 func (k *KlineCache) EraseOutTimeKline() {
 
 }
 
-//Undo
+// Undo
+
+func (k *KlineCache) GetProperRealkline(symbol string, resolution int) *Kline {
+	defer util.CatchExp(fmt.Sprintf("GetProperRealkline %s.%d", symbol, resolution))
+
+	return nil
+}
+
 func (k *KlineCache) GetKlinesByCount(symbol string, resolution int, count int, get_most bool) []*Kline {
 	defer util.CatchExp("GetKlinesByCount")
 
@@ -216,7 +290,6 @@ func (k *KlineCache) GetKlinesByCount(symbol string, resolution int, count int, 
 	return rst
 }
 
-//Undo
 func (k *KlineCache) GetKlinesByTime(symbol string, resolution int, start_time int64, end_time int64, get_most bool) []*Kline {
 	defer util.CatchExp("GetKlinesByTime")
 
