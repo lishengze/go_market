@@ -11,6 +11,7 @@ import (
 
 	"market_server/app/data_manager/rpc/internal/dbserver"
 	"market_server/app/data_manager/rpc/internal/svc"
+	"market_server/app/data_manager/rpc/internal/dmconfig"
 	"market_server/common/config"
 	"market_server/app/data_manager/rpc/types/pb"
 	"market_server/common/comm"
@@ -48,7 +49,7 @@ func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
 	recv_data_chan := datastruct.NewDataChannel()
 	pub_data_chan := datastruct.NewDataChannel()
 
-	dbServer, err := dbserver.NewDBServer(recv_data_chan, svcCtx.Config.Mysql)
+	dbServer, err := dbserver.NewDBServer(recv_data_chan, &svcCtx.Config.Mysql, &svcCtx.Config.CacheConfig)
 
 	if err != nil {
 		fmt.Println(err)
@@ -180,7 +181,7 @@ func TestMain() {
 
 	fmt.Println(*configFile)
 
-	var c config.Config
+	var c dmconfig.ServerConfig
 	conf.MustLoad(*configFile, &c)
 
 	fmt.Printf("config: %+v \n",c)
@@ -189,7 +190,7 @@ func TestMain() {
 
 	logx.Infof("config: %+v \n",c)
 
-	ctx := svc.NewServiceContext(c)
+	ctx := svc.NewServiceContext(&c)
 	svr := NewMarketServiceServer(ctx)
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {

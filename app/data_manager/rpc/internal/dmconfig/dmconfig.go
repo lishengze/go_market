@@ -1,4 +1,4 @@
-package db_config
+package dmconfig
 
 import (
 	"market_server/common/config"
@@ -8,7 +8,7 @@ import (
 	"github.com/zeromicro/go-zero/zrpc"
 )
 
-type DBConfig struct {
+type ServerConfig struct {
 	zrpc.RpcServerConf
 
 	Comm      config.CommConfig

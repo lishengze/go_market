@@ -39,3 +39,6 @@ Mysql:
   max_open_conns: 16
   max_idle_conns: 8
   conn_max_life_time: 300
+
+CacheConfig:
+  Count: 2000  

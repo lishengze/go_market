@@ -1,12 +1,12 @@
 package svc
 
-import "market_server/common/config"
+import "market_server/app/data_manager/rpc/internal/dmconfig"
 
 type ServiceContext struct {
-	Config db_config.Config
+	Config *dmconfig.ServerConfig
 }
 
-func NewServiceContext(c config.Config) *ServiceContext {
+func NewServiceContext(c *dmconfig.ServerConfig) *ServiceContext {
 	return &ServiceContext{
 		Config: c,
 	}

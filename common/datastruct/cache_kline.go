@@ -129,12 +129,12 @@ func TreeGetKlinesByCount(kline_tree *treemap.Map, count int, resolution int) []
 	return rst
 }
 
-func (k *KlineCache) InitWithKlines(klines []*Kline, target_resolution int) {
+func (k *KlineCache) InitWithKlines(klines []*Kline, symbol string, target_resolution int) {
 	defer util.CatchExp("InitWithKlines")
 
 }
 
-func (k *KlineCache) UpdateWithKlines(klines []*Kline) {
+func (k *KlineCache) UpdateWithKlines(klines []*Kline, symbol string) {
 	defer util.CatchExp("UpdateWithKlines")
 
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"market_server/app/data_manager/rpc/internal/dmconfig"
 	"market_server/app/data_manager/rpc/internal/server"
 	"market_server/app/data_manager/rpc/internal/svc"
 	"market_server/app/data_manager/rpc/types/pb"
@@ -46,7 +47,7 @@ func main() {
 	fmt.Printf("env: %+v \n", env)
 	var configFile = flag.String("f", "etc/"+env+"/marketData.yaml", "the config file")
 
-	var c config.Config
+	var c dmconfig.ServerConfig
 	conf.MustLoad(*configFile, &c)
 
 	logx.MustSetup(c.LogConfig)
@@ -54,7 +55,7 @@ func main() {
 
 	fmt.Printf("Log: %+v \n", c)
 
-	ctx := svc.NewServiceContext(c)
+	ctx := svc.NewServiceContext(&c)
 	svr := server.NewMarketServiceServer(ctx)
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {

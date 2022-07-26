@@ -7,7 +7,6 @@ import (
 	"market_server/common/util"
 	"strconv"
 
-	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -15,6 +14,22 @@ import (
 func NewPbKlineWithPbKline(ori_kline *pb.Kline) *pb.Kline {
 	defer util.CatchExp("NewPbKlineWithPbKline")
 	return nil
+}
+
+func NewPbKlineWithKline(ori_kline *datastruct.Kline) *pb.Kline {
+	defer util.CatchExp("NewPbKlineWithPbKline")
+
+	return &pb.Kline{
+		Exchange:   ori_kline.Exchange,
+		Symbol:     ori_kline.Symbol,
+		Timestamp:  &timestamppb.Timestamp{Seconds: int64(ori_kline.Time) / datastruct.NANO_PER_SECS, Nanos: int32(ori_kline.Time % datastruct.NANO_PER_SECS)},
+		Resolution: uint32(ori_kline.Resolution),
+		Open:       strconv.FormatFloat(ori_kline.Open, 'g', 8, 64),
+		High:       strconv.FormatFloat(ori_kline.High, 'g', 8, 64),
+		Low:        strconv.FormatFloat(ori_kline.Low, 'g', 8, 64),
+		Close:      strconv.FormatFloat(ori_kline.Close, 'g', 8, 64),
+		Volume:     strconv.FormatFloat(ori_kline.Volume, 'g', 8, 64),
+	}
 }
 
 func GetTimestamp(time int64) *timestamppb.Timestamp {
@@ -97,6 +112,13 @@ func GetOriPbKline(kline_db_row *sql.Rows) []*datastruct.Kline {
 	return rst
 }
 
-func TransKlineTree(kline_tree *treemap.Map) []*pb.Kline {
+func TransKlineData(klines []*datastruct.Kline) []*pb.Kline {
+	var rst []*pb.Kline
 
+	for _, kline := range klines {
+		pb_kline := NewPbKlineWithKline(kline)
+		rst = append(rst, pb_kline)
+	}
+
+	return rst
 }

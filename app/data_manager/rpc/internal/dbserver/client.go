@@ -12,6 +12,7 @@ import (
 	"market_server/app/data_manager/rpc/types/pb"
 	"market_server/common/config"
 	"market_server/common/datastruct"
+	"market_server/common/util"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
@@ -29,7 +30,7 @@ type DBServer struct {
 	tables_         map[string]struct{}
 }
 
-func NewDBServer(recvDataChan *datastruct.DataChannel, mysql_config config.MysqlConfig) (*DBServer, error) {
+func NewDBServer(recvDataChan *datastruct.DataChannel, mysql_config *config.MysqlConfig, cache_config *datastruct.CacheConfig) (*DBServer, error) {
 
 	new_db, err := sql.Open("mysql", mysql_config.Addr)
 
@@ -42,7 +43,7 @@ func NewDBServer(recvDataChan *datastruct.DataChannel, mysql_config config.Mysql
 		db:              new_db,
 		insert_stmt_map: make(map[string]*sql.Stmt),
 		tables_:         make(map[string]struct{}),
-		kline_cache:     datastruct.NewKlineCache(),
+		kline_cache:     datastruct.NewKlineCache(cache_config),
 	}, nil
 }
 
@@ -223,7 +224,67 @@ func (d *DBServer) store_depth(depth *datastruct.DepthQuote) error {
 	return nil
 }
 
+func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
+	defer util.CatchExp("DBServer GetKlinesByCount")
+
+	var rst []*datastruct.Kline
+
+	return rst
+}
+
+func (d *DBServer) GetKlinesByTime(symbol string, resolution int, start_time int64, end_time int64) []*datastruct.Kline {
+	defer util.CatchExp("DBServer GetKlinesByTime")
+
+	var rst []*datastruct.Kline
+
+	return rst
+}
+
 func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKlineInfo) (*pb.HistKlineData, error) {
+	defer util.CatchExp("DBServer RequestHistKlineData")
+
+	symbol := in.GetSymbol()
+	exchange := in.GetExchange()
+
+	if exchange != datastruct.BCTS_EXCHANGE {
+		return nil, fmt.Errorf("only has %s data ", exchange)
+	}
+
+	count := in.GetCount()
+	start_time := in.GetStartTime()
+	end_time := in.GetEndTime()
+	frequency := in.GetFrequency()
+
+	if frequency%datastruct.SECS_PER_MIN != 0 {
+		return nil, fmt.Errorf("frequency %d is error ", frequency)
+	}
+
+	var ori_klines []*datastruct.Kline
+
+	if count > 0 {
+		ori_klines = d.GetKlinesByCount(symbol, int(frequency), int(count))
+	} else if start_time > 0 && end_time > 0 && start_time <= end_time {
+		ori_klines = d.GetKlinesByTime(symbol, int(frequency), int64(start_time), int64(end_time))
+	} else {
+		return nil, fmt.Errorf("invalid count %d, start_time: %d, end_time: %d ", count, start_time, end_time)
+	}
+
+	rst := &pb.HistKlineData{
+
+		Symbol:    symbol,
+		Exchange:  exchange,
+		Frequency: frequency,
+		Count:     count,
+		StartTime: start_time,
+		EndTime:   end_time,
+	}
+
+	rst.KlineData = TransKlineData(ori_klines)
+
+	return rst, nil
+}
+
+func (d *DBServer) RequestHistKlineDataBak(ctx context.Context, in *pb.ReqHishKlineInfo) (*pb.HistKlineData, error) {
 
 	rst := pb.HistKlineData{}
 
@@ -487,7 +548,7 @@ func TestDB() {
 
 	fmt.Println(mysql_config)
 
-	dbServer, err := NewDBServer(recv_data_chan, mysql_config)
+	dbServer, err := NewDBServer(recv_data_chan, &mysql_config, nil)
 	if err != nil {
 		fmt.Println(err)
 		return
