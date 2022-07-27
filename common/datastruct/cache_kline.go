@@ -41,7 +41,7 @@ func NewKlineCache(config *CacheConfig) *KlineCache {
 	}
 }
 
-//Undo -- Cache Must Init First!
+//Cache Must Init First!
 func (k *KlineCache) InitWithKlines(klines []*Kline, symbol string, target_resolution int) {
 	defer util.CatchExp("InitWithKlines")
 
@@ -125,6 +125,7 @@ func (k *KlineCache) GetTradeCacheKline(symbol string, resolution int) *Kline {
 	return k.RealKlineByTrade[symbol][resolution]
 }
 
+// Undo
 func (k *KlineCache) UpdateWithKlines(ori_klines []*Kline, symbol string) error {
 	defer util.CatchExp("UpdateWithKlines")
 
@@ -243,7 +244,6 @@ func (k *KlineCache) EraseOutTimeKline() {
 }
 
 // Undo
-
 func (k *KlineCache) GetProperRealkline(symbol string, resolution int) *Kline {
 	defer util.CatchExp(fmt.Sprintf("GetProperRealkline %s.%d", symbol, resolution))
 

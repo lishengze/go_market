@@ -206,12 +206,15 @@ func catch_kline_exp(kline *datastruct.Kline) {
 	}
 }
 
+//UnTest
 func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 	defer catch_kline_exp(kline)
 
 	d.InitPeriodDaraMain(kline.Symbol)
 
 	d.cache_period_data[kline.Symbol].UpdateWithKline(kline)
+
+	d.kline_cache.UpdateWithKline(kline)
 
 	d.PublishKline(kline, nil)
 
@@ -249,6 +252,7 @@ func (d *DataEngine) InitPeriodDaraMain(symbol string) {
 
 }
 
+//UnTest
 func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	defer catch_trade_exp("process_trade", trade)
 
@@ -257,6 +261,8 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	d.InitPeriodDaraMain(trade.Symbol)
 
 	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
+
+	d.kline_cache.UpdateWithTrade(trade)
 
 	usd_price := trade.Price * d.GetUsdPrice(trade.Symbol)
 
@@ -446,20 +452,62 @@ func (d *DataEngine) SubDepth(symbol string, ws *net.WSInfo) (string, bool) {
 }
 
 // Undo
+// Untest
 func (d *DataEngine) GetDBKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
+	util.CatchExp(fmt.Sprintf("DataEngine GetDBKlinesByCount %s,%d,%d", symbol, resolution, count))
 	var rst []*datastruct.Kline
+
+	req_hist_info := &marketservice.ReqHishKlineInfo{
+		Symbol:    symbol,
+		Exchange:  datastruct.BCTS_EXCHANGE,
+		Count:     uint32(count),
+		Frequency: uint32(resolution),
+	}
+
+	logx.Infof("req_hist_info: %+v", req_hist_info)
+
+	hist_klines, err := d.msclient.RequestHistKlineData(context.Background(), req_hist_info)
+	if err != nil {
+		logx.Errorf("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
+		logx.Slowf("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
+		logx.Infof("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
+		return nil
+	}
+
+	rst = TrasPbKlines(hist_klines.KlineData)
 
 	return rst
 }
 
 // Undo
+// Untest
 func (d *DataEngine) GetDBKlinesByTime(symbol string, resolution int, start_time int64, end_time int64) []*datastruct.Kline {
-	defer util.CatchExp("DataEngine GetKlinesByCount")
+	util.CatchExp(fmt.Sprintf("DataEngine GetDBKlinesByTime %s,%d,%d~%d", symbol, resolution, start_time, end_time))
 	var rst []*datastruct.Kline
 
+	req_hist_info := &marketservice.ReqHishKlineInfo{
+		Symbol:    symbol,
+		Exchange:  datastruct.BCTS_EXCHANGE,
+		StartTime: uint64(start_time),
+		EndTime:   uint64(end_time),
+		Frequency: uint32(resolution),
+	}
+
+	logx.Infof("req_hist_info: %+v", req_hist_info)
+
+	hist_klines, err := d.msclient.RequestHistKlineData(context.Background(), req_hist_info)
+	if err != nil {
+		logx.Errorf("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
+		logx.Slowf("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
+		logx.Infof("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
+		return nil
+	}
+
+	rst = TrasPbKlines(hist_klines.KlineData)
 	return rst
 }
 
+// Untest
 func (d *DataEngine) GetKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
 	defer util.CatchExp("DataEngine GetKlinesByCount")
 
@@ -475,12 +523,13 @@ func (d *DataEngine) GetKlinesByCount(symbol string, resolution int, count int) 
 	return rst
 }
 
+// Untest
 func (d *DataEngine) GetKlinesByTime(symbol string, resolution int, start_time int64, end_time int64) []*datastruct.Kline {
 	defer util.CatchExp("DataEngine GetKlinesByTime")
 
 	rst := d.kline_cache.GetKlinesByTime(symbol, resolution, start_time, end_time, true)
 
-	if rst != nil {
+	if rst == nil {
 		db_klines := d.GetDBKlinesByTime(symbol, resolution, start_time, end_time)
 		d.kline_cache.InitWithKlines(db_klines, symbol, resolution)
 	}
@@ -490,6 +539,7 @@ func (d *DataEngine) GetKlinesByTime(symbol string, resolution int, start_time i
 	return rst
 }
 
+// Untest
 func (d *DataEngine) GetHistKlineDataNew(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
 	defer util.CatchExp(fmt.Sprintf("GetHistKlineDataNew %s", req_kline_info.String()))
 	var ori_klines []*datastruct.Kline

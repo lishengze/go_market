@@ -101,6 +101,7 @@ type DepthQuote struct {
 	Time     int64
 	Asks     *treemap.Map
 	Bids     *treemap.Map
+	Sequence uint64
 }
 
 type Kline struct {
@@ -113,6 +114,7 @@ type Kline struct {
 	Close      float64
 	Volume     float64
 	Resolution int
+	Sequence   uint64
 }
 
 type Trade struct {
@@ -121,6 +123,7 @@ type Trade struct {
 	Time     int64
 	Price    float64
 	Volume   float64
+	Sequence uint64
 }
 
 type ReqTrade struct {
@@ -442,6 +445,10 @@ func GetLastStartTime(tmp_time int64, resolution int64) int64 {
 	tmp_time = tmp_time * NANO_PER_SECS
 
 	return tmp_time
+}
+
+func GetMiniuteNanos(ori_nanos int64) int64 {
+	return ori_nanos - ori_nanos%NANO_PER_MIN
 }
 
 func GetDepthString(m *treemap.Map, numb int) string {

@@ -18,6 +18,7 @@ message Depth {
   repeated  PriceVolume asks = 4;
   repeated  PriceVolume bids = 5;
   google.protobuf.Timestamp mpu_timestamp = 6; // mpu 服务器时间
+  uint64 sequence = 7;
 }
 
 message Trade {
@@ -26,6 +27,7 @@ message Trade {
   string symbol = 3;
   string price = 4;
   string volume = 5;
+  uint64 sequence = 6;
 }
 
 message Kline {
@@ -39,6 +41,7 @@ message Kline {
   string volume = 8; // 量
   string value = 9; // 额
   uint32 resolution = 10;
+  uint64 sequence = 11;
 }
 
 message HistKlineData

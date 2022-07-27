@@ -34,6 +34,7 @@ func (p *ProtobufSerializer) EncodeDepth(local_depth *datastruct.DepthQuote) ([]
 	proto_depth.Symbol = local_depth.Symbol
 	proto_depth.Timestamp = &timestamppb.Timestamp{Seconds: local_depth.Time / datastruct.NANO_PER_SECS, Nanos: int32(local_depth.Time % datastruct.NANO_PER_SECS)}
 	proto_depth.MpuTimestamp = &timestamppb.Timestamp{Seconds: local_depth.Time / datastruct.NANO_PER_SECS, Nanos: int32(local_depth.Time % datastruct.NANO_PER_SECS)}
+	proto_depth.Sequence = local_depth.Sequence
 
 	SetProtoDepth(&proto_depth.Asks, local_depth.Asks)
 	SetProtoDepth(&proto_depth.Bids, local_depth.Bids)
@@ -60,6 +61,7 @@ func (p *ProtobufSerializer) EncodeKline(local_kline *datastruct.Kline) ([]byte,
 	proto_kline.Close = strconv.FormatFloat(local_kline.Close, 'f', -1, 64)
 
 	proto_kline.Volume = strconv.FormatFloat(local_kline.Volume, 'f', -1, 64)
+	proto_kline.Sequence = local_kline.Sequence
 
 	// fmt.Printf("proto_kline: %+v \n", proto_kline)
 
@@ -76,6 +78,7 @@ func (p *ProtobufSerializer) EncodeTrade(local_trade *datastruct.Trade) ([]byte,
 	proto_trade.Timestamp = &timestamppb.Timestamp{Seconds: local_trade.Time / datastruct.NANO_PER_SECS, Nanos: int32(local_trade.Time % datastruct.NANO_PER_SECS)}
 	proto_trade.Price = strconv.FormatFloat(local_trade.Price, 'f', -1, 64)
 	proto_trade.Volume = strconv.FormatFloat(local_trade.Volume, 'f', -1, 64)
+	proto_trade.Sequence = local_trade.Sequence
 
 	msg, err := proto.Marshal(&proto_trade)
 
@@ -127,6 +130,7 @@ func (p *ProtobufSerializer) DecodeDepth(raw_msg []byte) (*datastruct.DepthQuote
 		Time:     int64(proto_depth.Timestamp.Seconds*datastruct.NANO_PER_SECS + int64(proto_depth.Timestamp.Nanos)),
 		Asks:     asks,
 		Bids:     bids,
+		Sequence: proto_depth.Sequence,
 	}, nil
 }
 
@@ -178,6 +182,7 @@ func (p *ProtobufSerializer) DecodeKline(raw_msg []byte) (*datastruct.Kline, err
 		Low:        low,
 		Close:      close,
 		Volume:     volume,
+		Sequence:   proto_kline.Sequence,
 	}, nil
 }
 
@@ -208,6 +213,7 @@ func (p *ProtobufSerializer) DecodeTrade(raw_msg []byte) (*datastruct.Trade, err
 		Symbol:   proto_trade.Symbol,
 		Price:    price,
 		Volume:   volume,
+		Sequence: proto_trade.Sequence,
 		Time:     int64(proto_trade.Timestamp.Seconds*datastruct.NANO_PER_SECS + int64(proto_trade.Timestamp.Nanos)),
 	}, nil
 }

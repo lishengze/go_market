@@ -46,3 +46,7 @@ func get_kline_sql_str_by_count(table_name string, data_count int) string {
 func get_trade_sql_str(table_name string, time uint64) string {
 	return fmt.Sprintf(`select * from %s where time=%d;`, table_name, time)
 }
+
+func get_lastest_trades_by_count(table_name string, count int) string {
+	return fmt.Sprintf("select * from %s order by time desc limit %d", table_name, count)
+}

@@ -11,11 +11,13 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+//UnTest
 func NewPbKlineWithPbKline(ori_kline *pb.Kline) *pb.Kline {
 	defer util.CatchExp("NewPbKlineWithPbKline")
 	return nil
 }
 
+//UnTest
 func NewPbKlineWithKline(ori_kline *datastruct.Kline) *pb.Kline {
 	defer util.CatchExp("NewPbKlineWithPbKline")
 
@@ -36,11 +38,13 @@ func NewPbKlineWithKline(ori_kline *datastruct.Kline) *pb.Kline {
 	}
 }
 
+//UnTest
 func GetTimestamp(time int64) *timestamppb.Timestamp {
 	defer util.CatchExp("GetTimestamp")
 	return &timestamppb.Timestamp{Seconds: int64(time) / datastruct.NANO_PER_SECS, Nanos: int32(time % datastruct.NANO_PER_SECS)}
 }
 
+//UnTest
 func GetKline(values []interface{}) *datastruct.Kline {
 	defer util.CatchExp("GetPbKline")
 	tmp_kline := &datastruct.Kline{}
@@ -91,18 +95,46 @@ func GetKline(values []interface{}) *datastruct.Kline {
 	return tmp_kline
 }
 
-func GetOriPbKline(kline_db_row *sql.Rows) []*datastruct.Kline {
+//UnTest
+func GetTrade(values []interface{}) *datastruct.Trade {
+	defer util.CatchExp("GetPbKline")
+	tmp_trade := &datastruct.Trade{}
+	tmp_trade.Exchange = string(values[0].([]byte))
+	tmp_trade.Symbol = string(values[1].([]byte))
+
+	time, _ := strconv.Atoi(string(values[2].([]byte)))
+	tmp_trade.Time = int64(time)
+
+	price, err := strconv.ParseFloat(string(values[3].([]byte)), 64)
+	if err != nil {
+		logx.Error("strconv.ParseFloat price %s, Failed; Err: %s", string(values[3].([]byte)), err.Error())
+		return nil
+	}
+	tmp_trade.Price = price
+
+	volume, err := strconv.ParseFloat(string(values[4].([]byte)), 64)
+	if err != nil {
+		logx.Error("strconv.ParseFloat volume %s, Failed; Err: %s", string(values[4].([]byte)), err.Error())
+		return nil
+	}
+	tmp_trade.Volume = volume
+
+	return tmp_trade
+}
+
+//UnTest
+func TransDBKlines(db_rows *sql.Rows) []*datastruct.Kline {
 	var rst []*datastruct.Kline
 
-	columns, _ := kline_db_row.Columns()
+	columns, _ := db_rows.Columns()
 	scanArgs := make([]interface{}, len(columns))
 	values := make([]interface{}, len(columns))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
 
-	for kline_db_row.Next() {
-		err := kline_db_row.Scan(scanArgs...)
+	for db_rows.Next() {
+		err := db_rows.Scan(scanArgs...)
 
 		if err != nil {
 			logx.Error(err.Error())
@@ -116,6 +148,33 @@ func GetOriPbKline(kline_db_row *sql.Rows) []*datastruct.Kline {
 	return rst
 }
 
+//UnTest
+func TransDBTrades(db_rows *sql.Rows) []*datastruct.Trade {
+	var rst []*datastruct.Trade = nil
+
+	columns, _ := db_rows.Columns()
+	scanArgs := make([]interface{}, len(columns))
+	values := make([]interface{}, len(columns))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+
+	for db_rows.Next() {
+		err := db_rows.Scan(scanArgs...)
+
+		if err != nil {
+			logx.Error(err.Error())
+			return rst
+		}
+
+		tmp_trade := GetTrade(values)
+		rst = append(rst, tmp_trade)
+	}
+
+	return rst
+}
+
+//UnTest
 func TransKlineData(klines []*datastruct.Kline) []*pb.Kline {
 	var rst []*pb.Kline = nil
 

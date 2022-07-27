@@ -179,6 +179,7 @@ func (d *DBServer) create_table(data_type string, symbol string, exchange string
 	return d.check_table(data_type, symbol, exchange), nil
 }
 
+// UnTest
 func (d *DBServer) store_kline(kline *datastruct.Kline) error {
 	if ok := d.check_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); !ok {
 		if ok, err := d.create_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); !ok {
@@ -186,6 +187,8 @@ func (d *DBServer) store_kline(kline *datastruct.Kline) error {
 			return err
 		}
 	}
+
+	d.kline_cache.UpdateWithKline(kline)
 
 	stmt, err := d.get_insert_stmt(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange)
 
@@ -200,6 +203,7 @@ func (d *DBServer) store_kline(kline *datastruct.Kline) error {
 	return err
 }
 
+//UnTest
 func (d *DBServer) store_trade(trade *datastruct.Trade) error {
 	if ok := d.check_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
 		if ok, err := d.create_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
@@ -207,6 +211,8 @@ func (d *DBServer) store_trade(trade *datastruct.Trade) error {
 			return err
 		}
 	}
+
+	d.kline_cache.UpdateWithTrade(trade)
 
 	stmt, err := d.get_insert_stmt(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange)
 
@@ -224,22 +230,50 @@ func (d *DBServer) store_depth(depth *datastruct.DepthQuote) error {
 	return nil
 }
 
-// Undo
+// UnTest
 func (d *DBServer) GetTradesByCount(symbol string, count int) []*datastruct.Trade {
-	var rst []*datastruct.Trade = nil
+	util.CatchExp(fmt.Sprintf(" DBServer GetTradesByCount %s.%d Faled ", symbol, count))
 
-	return rst
+	table_name := d.get_table_name(datastruct.TRADE_TYPE, symbol, datastruct.BCTS_EXCHANGE)
+	sql_str := get_lastest_trades_by_count(table_name, count)
+
+	rows, err := d.db.Query(sql_str)
+	if err != nil {
+		logx.Errorf("db.Query %s err: %+v", sql_str, err)
+		return nil
+	}
+
+	trades := TransDBTrades(rows)
+
+	return trades
 }
 
-// Undo
+// UnTest
 func (d *DBServer) GetLastMinuteTrades(symbol string) []*datastruct.Trade {
+	util.CatchExp(fmt.Sprintf("DBServer GetLastMinuteTrades %s", symbol))
 	var rst []*datastruct.Trade = nil
 
-	// most_lastest_trades := d.GetTradesByCount(symbol, 1000)
+	most_lastest_trades := d.GetTradesByCount(symbol, 1000)
+
+	if most_lastest_trades == nil || len(most_lastest_trades) == 0 {
+		return rst
+	}
+
+	last_trade := most_lastest_trades[len(most_lastest_trades)-1]
+	last_min_nacos := datastruct.GetMiniuteNanos(last_trade.Time)
+
+	for i := len(most_lastest_trades) - 1; i > 0; i-- {
+		if datastruct.GetMiniuteNanos(most_lastest_trades[i].Time) == last_min_nacos {
+			rst = append(rst, most_lastest_trades[i])
+		} else {
+			break
+		}
+	}
 
 	return rst
 }
 
+// UnTest
 func (d *DBServer) GetDBKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
 	table_name := d.get_table_name(datastruct.KLINE_TYPE, symbol, datastruct.BCTS_EXCHANGE)
 	sql_str := get_kline_sql_str_by_count(table_name, count)
@@ -251,7 +285,7 @@ func (d *DBServer) GetDBKlinesByCount(symbol string, resolution int, count int) 
 		return nil
 	}
 
-	rst := GetOriPbKline(rows)
+	rst := TransDBKlines(rows)
 
 	return rst
 }
@@ -269,11 +303,12 @@ func (d *DBServer) GetDBKlinesByTime(symbol string, resolution int, start_time i
 		return nil
 	}
 
-	rst := GetOriPbKline(rows)
+	rst := TransDBKlines(rows)
 
 	return rst
 }
 
+// UnTest
 func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) ([]*datastruct.Kline, *datastruct.Kline, *datastruct.Kline) {
 	defer util.CatchExp("DBServer GetKlinesByCount")
 
@@ -297,6 +332,7 @@ func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) ([
 	return rst, kline_cache_kline, trade_cache_kline
 }
 
+// UnTest
 func (d *DBServer) GetKlinesByTime(symbol string, resolution int, start_time int64, end_time int64) []*datastruct.Kline {
 	defer util.CatchExp("DBServer GetKlinesByTime")
 
@@ -312,6 +348,7 @@ func (d *DBServer) GetKlinesByTime(symbol string, resolution int, start_time int
 	return rst
 }
 
+// UnTest
 func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKlineInfo) (*pb.HistKlineData, error) {
 	defer util.CatchExp("DBServer RequestHistKlineData")
 
