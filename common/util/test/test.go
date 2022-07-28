@@ -13,5 +13,7 @@ func test_nano() {
 func main() {
 	// util.TestUTCMinuteNano()
 
-	test_nano()
+	util.TestNanoMinute()
+
+	// test_nano()
 }

@@ -23,6 +23,10 @@ type Aggregator struct {
 	kline_cache map[string]map[string]*datastruct.Kline
 	trade_cache map[string]map[string]*datastruct.Trade
 
+	depth_seq_map            map[string]uint64
+	tradekline_seq_map       map[string]uint64
+	tradekline_seq_map_mutex sync.Mutex
+
 	kline_aggregated map[string]*datastruct.Kline
 
 	depth_mutex sync.Mutex
@@ -105,6 +109,27 @@ func (a *Aggregator) UpdateConfig(config mkconfig.AggregateConfig) {
 	a.AggConfigMutex.Lock()
 
 	a.AggConfig = config
+}
+
+// Undo
+func (a *Aggregator) UpdateDepthSeq(symbol string) {
+
+}
+
+// Undo
+func (a *Aggregator) UpdateTradeKlineSeq(symbol string) {
+
+}
+
+// Undo
+func (a *Aggregator) GetDepthSeq(symbol string) uint64 {
+
+	return 0
+}
+
+// Undo
+func (a *Aggregator) GetTradeKlineSeq(symbol string) uint64 {
+	return 0
 }
 
 func (a *Aggregator) Start() {
@@ -312,7 +337,7 @@ func (a *Aggregator) aggregate_kline() {
 	for _, kline := range a.kline_aggregated {
 		new_kline := datastruct.NewKline(kline)
 		kline.Time = 0
-		new_kline.Time = util.UTCNanoTime() - datastruct.NANO_PER_MIN
+		new_kline.Time = util.UTCMinuteNano()
 		a.publish_kline(new_kline)
 	}
 
