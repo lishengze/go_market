@@ -42,6 +42,7 @@ message Kline {
   string value = 9; // 额
   uint32 resolution = 10;
   uint64 sequence = 11;
+  string lastvolume = 12;
 }
 
 message HistKlineData
@@ -53,9 +54,6 @@ message HistKlineData
     uint32 count = 5;
     uint32 frequency = 6;
     repeated Kline kline_data = 7;
-
-    Kline real_kline_by_kline = 8;
-    Kline real_kline_by_trade = 9;
 };
 
 message EmptyReq {

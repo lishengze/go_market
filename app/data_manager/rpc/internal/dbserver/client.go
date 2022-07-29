@@ -309,7 +309,7 @@ func (d *DBServer) GetDBKlinesByTime(symbol string, resolution int, start_time i
 }
 
 // UnTest
-func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) ([]*datastruct.Kline, *datastruct.Kline, *datastruct.Kline) {
+func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
 	defer util.CatchExp("DBServer GetKlinesByCount")
 
 	rst := d.kline_cache.GetKlinesByCount(symbol, resolution, count, true)
@@ -326,10 +326,7 @@ func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) ([
 		d.kline_cache.UpdateWithTrades(trades)
 	}
 
-	kline_cache_kline := d.kline_cache.GetKlineCacheKline(symbol, resolution)
-	trade_cache_kline := d.kline_cache.GetTradeCacheKline(symbol, resolution)
-
-	return rst, kline_cache_kline, trade_cache_kline
+	return rst
 }
 
 // UnTest
@@ -369,11 +366,9 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 	}
 
 	var ori_klines []*datastruct.Kline = nil
-	var kline_cache_kline *datastruct.Kline = nil
-	var trade_cache_kline *datastruct.Kline = nil
 
 	if count > 0 {
-		ori_klines, kline_cache_kline, trade_cache_kline = d.GetKlinesByCount(symbol, int(frequency), int(count))
+		ori_klines = d.GetKlinesByCount(symbol, int(frequency), int(count))
 	} else if start_time > 0 && end_time > 0 && start_time <= end_time {
 		ori_klines = d.GetKlinesByTime(symbol, int(frequency), int64(start_time), int64(end_time))
 	} else {
@@ -381,14 +376,12 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 	}
 
 	rst := &pb.HistKlineData{
-		Symbol:           symbol,
-		Exchange:         exchange,
-		Frequency:        frequency,
-		Count:            count,
-		StartTime:        start_time,
-		EndTime:          end_time,
-		RealKlineByKline: NewPbKlineWithKline(kline_cache_kline),
-		RealKlineByTrade: NewPbKlineWithKline(trade_cache_kline),
+		Symbol:    symbol,
+		Exchange:  exchange,
+		Frequency: frequency,
+		Count:     count,
+		StartTime: start_time,
+		EndTime:   end_time,
 	}
 
 	rst.KlineData = TransKlineData(ori_klines)

@@ -115,6 +115,7 @@ type Kline struct {
 	Volume     float64
 	Resolution int
 	Sequence   uint64
+	LastVolume float64
 }
 
 type Trade struct {

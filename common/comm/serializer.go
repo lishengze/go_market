@@ -61,6 +61,7 @@ func (p *ProtobufSerializer) EncodeKline(local_kline *datastruct.Kline) ([]byte,
 	proto_kline.Close = strconv.FormatFloat(local_kline.Close, 'f', -1, 64)
 
 	proto_kline.Volume = strconv.FormatFloat(local_kline.Volume, 'f', -1, 64)
+	proto_kline.Lastvolume = strconv.FormatFloat(local_kline.LastVolume, 'f', -1, 64)
 	proto_kline.Sequence = local_kline.Sequence
 
 	// fmt.Printf("proto_kline: %+v \n", proto_kline)
@@ -172,6 +173,12 @@ func (p *ProtobufSerializer) DecodeKline(raw_msg []byte) (*datastruct.Kline, err
 		return nil, err
 	}
 
+	last_volume, err := strconv.ParseFloat(proto_kline.Lastvolume, 64)
+	if err != nil {
+		logx.Error(err.Error())
+		return nil, err
+	}
+
 	return &datastruct.Kline{
 		Exchange:   proto_kline.Exchange,
 		Symbol:     proto_kline.Symbol,
@@ -183,6 +190,7 @@ func (p *ProtobufSerializer) DecodeKline(raw_msg []byte) (*datastruct.Kline, err
 		Close:      close,
 		Volume:     volume,
 		Sequence:   proto_kline.Sequence,
+		LastVolume: last_volume,
 	}, nil
 }
 
