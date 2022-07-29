@@ -3,6 +3,7 @@ package aggregate
 import (
 
 	// config "market_aggregate/app/conf"
+	"fmt"
 	"market_server/app/market_aggregate/config"
 	mkconfig "market_server/app/market_aggregate/config"
 	"market_server/common/datastruct"
@@ -23,15 +24,16 @@ type Aggregator struct {
 	kline_cache map[string]map[string]*datastruct.Kline
 	trade_cache map[string]map[string]*datastruct.Trade
 
-	depth_seq_map            map[string]uint64
+	depth_seq_map       map[string]uint64
+	depth_seq_map_mutex sync.Mutex
+
 	tradekline_seq_map       map[string]uint64
 	tradekline_seq_map_mutex sync.Mutex
 
 	kline_aggregated map[string]*datastruct.Kline
 
-	depth_mutex sync.Mutex
-	kline_mutex sync.Mutex
-	trade_mutex sync.Mutex
+	depth_mutex      sync.Mutex
+	tradekline_mutex sync.Mutex
 
 	AggConfig      mkconfig.AggregateConfig
 	AggConfigMutex sync.RWMutex
@@ -111,25 +113,61 @@ func (a *Aggregator) UpdateConfig(config mkconfig.AggregateConfig) {
 	a.AggConfig = config
 }
 
-// Undo
+// UnTest
 func (a *Aggregator) UpdateDepthSeq(symbol string) {
+	defer util.CatchExp(fmt.Sprintf("UpdateDepthSeq %s", symbol))
 
+	a.depth_seq_map_mutex.Lock()
+	defer a.depth_seq_map_mutex.Unlock()
+
+	if _, ok := a.depth_seq_map[symbol]; !ok {
+		a.depth_seq_map[symbol] = 0
+	}
+
+	a.depth_seq_map[symbol] = a.depth_seq_map[symbol] + 1
 }
 
-// Undo
+// UnTest
 func (a *Aggregator) UpdateTradeKlineSeq(symbol string) {
+	defer util.CatchExp(fmt.Sprintf("UpdateTradeKlineSeq %s", symbol))
+
+	a.tradekline_seq_map_mutex.Lock()
+	defer a.tradekline_seq_map_mutex.Unlock()
+
+	if _, ok := a.tradekline_seq_map[symbol]; !ok {
+		a.tradekline_seq_map[symbol] = 0
+	}
+
+	a.tradekline_seq_map[symbol] = a.tradekline_seq_map[symbol] + 1
 
 }
 
-// Undo
+// UnTest
 func (a *Aggregator) GetDepthSeq(symbol string) uint64 {
+	defer util.CatchExp(fmt.Sprintf("GetDepthSeq %s", symbol))
 
-	return 0
+	a.depth_seq_map_mutex.Lock()
+	defer a.depth_seq_map_mutex.Unlock()
+
+	if _, ok := a.depth_seq_map[symbol]; !ok {
+		a.depth_seq_map[symbol] = 0
+	}
+
+	return a.depth_seq_map[symbol]
 }
 
-// Undo
+// UnTest
 func (a *Aggregator) GetTradeKlineSeq(symbol string) uint64 {
-	return 0
+	defer util.CatchExp(fmt.Sprintf("GetTradeKlineSeq %s", symbol))
+
+	a.tradekline_seq_map_mutex.Lock()
+	defer a.tradekline_seq_map_mutex.Unlock()
+
+	if _, ok := a.tradekline_seq_map[symbol]; !ok {
+		a.tradekline_seq_map[symbol] = 0
+	}
+
+	return a.tradekline_seq_map[symbol]
 }
 
 func (a *Aggregator) Start() {
@@ -329,35 +367,44 @@ func (a *Aggregator) start_listen_recvdata() {
 }
 
 func (a *Aggregator) aggregate_kline() {
-	defer a.kline_mutex.Unlock()
-	a.kline_mutex.Lock()
+	util.CatchExp(fmt.Sprintf("aggregate_kline"))
+
+	a.tradekline_mutex.Lock()
+	defer a.tradekline_mutex.Unlock()
 
 	// logx.Info(fmt.Sprintf("------ Start aggregate_kline time: %v", time.Now().UTC()))
 
 	for _, kline := range a.kline_aggregated {
+
+		kline.SetHistoryFlag()
+
+		if !kline.HasTrade() {
+			kline.Sequence++
+		}
+
+		kline.Time = util.LastUTCMinuteNano() // 当前时间超过了上一分钟;
 		new_kline := datastruct.NewKline(kline)
-		kline.Time = 0
-		new_kline.Time = util.UTCMinuteNano()
 		a.publish_kline(new_kline)
+
+		kline.RestWithLastPrice()
 	}
 
 	for k, _ := range a.kline_aggregated {
 		delete(a.kline_aggregated, k)
 	}
-
-	// a.kline_aggregated.clear()
 }
 
-func (a *Aggregator) update_kline(trade *datastruct.Trade) {
-	defer a.kline_mutex.Unlock()
-	a.kline_mutex.Lock()
+func (a *Aggregator) update_kline(trade *datastruct.Trade, sequence uint64) {
+	defer util.CatchExp(fmt.Sprintf("update_kline %s", trade.String()))
 
 	if _, ok := a.kline_aggregated[trade.Symbol]; !ok {
 		a.kline_aggregated[trade.Symbol] = datastruct.NewKline(nil)
 	}
 
 	cur_kline := a.kline_aggregated[trade.Symbol]
-	if cur_kline.Time == 0 {
+	cur_kline.Sequence = sequence
+
+	if !cur_kline.IsInited() {
 		datastruct.InitKlineByTrade(cur_kline, trade)
 		return
 	}
@@ -371,6 +418,19 @@ func (a *Aggregator) update_kline(trade *datastruct.Trade) {
 
 	cur_kline.Close = trade.Price
 	cur_kline.Volume += trade.Volume
+	cur_kline.LastVolume = trade.Volume
+
+	a.publish_kline(cur_kline)
+}
+
+func (a *Aggregator) update_trade(trade *datastruct.Trade, sequence uint64) {
+	defer util.CatchExp(fmt.Sprintf("update_trade %s", trade.String()))
+
+	new_trade := datastruct.NewTrade(trade)
+	new_trade.Exchange = datastruct.BCTS_EXCHANGE
+	new_trade.Sequence = sequence
+
+	a.publish_trade(new_trade)
 }
 
 func (a *Aggregator) cache_depth(depth *datastruct.DepthQuote) {
@@ -391,15 +451,18 @@ func (a *Aggregator) cache_depth(depth *datastruct.DepthQuote) {
 }
 
 func (a *Aggregator) cache_trade(trade *datastruct.Trade) {
+	defer util.CatchExp(fmt.Sprintf("cache_trade %s", trade.String()))
+
+	a.tradekline_mutex.Lock()
+	defer a.tradekline_mutex.Unlock()
+
 	a.MonitorMarketDataWorker.UpdateTrade(trade.Exchange + "_" + trade.Symbol)
 
-	new_trade := datastruct.NewTrade(trade)
-	new_trade.Exchange = datastruct.BCTS_EXCHANGE
+	sequence := a.GetTradeKlineSeq(trade.Symbol)
+	a.UpdateTradeKlineSeq(trade.Symbol)
 
-	// logx.Info(fmt.Sprintf(" Recv datastruct.Trade: %s\n", trade.String()))
-
-	a.update_kline(trade)
-	a.publish_trade(new_trade)
+	a.update_kline(trade, sequence)
+	a.update_trade(trade, sequence)
 }
 
 func (a *Aggregator) cache_kline(kline *datastruct.Kline) {

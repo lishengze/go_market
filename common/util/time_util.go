@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -31,9 +30,17 @@ func UTCNanoTime() int64 {
 
 func UTCMinuteNano() int64 {
 	cur_time := UTCNanoTime()
-	fmt.Printf("ori_time: %s, %d \n", TimeStrFromInt(cur_time), cur_time)
+	// fmt.Printf("ori_time: %s, %d \n", TimeStrFromInt(cur_time), cur_time)
 	cur_time = cur_time - cur_time%int64(time.Minute)
-	fmt.Printf("trans_time: %s, %d \n", TimeStrFromInt(cur_time), cur_time)
+	// fmt.Printf("trans_time: %s, %d \n", TimeStrFromInt(cur_time), cur_time)
+	return cur_time
+}
+
+func LastUTCMinuteNano() int64 {
+	cur_time := UTCMinuteNano()
+	// fmt.Printf("ori_time: %s, %d \n", TimeStrFromInt(cur_time), cur_time)
+	cur_time = cur_time - int64(time.Minute)
+	// fmt.Printf("trans_time: %s, %d \n", TimeStrFromInt(cur_time), cur_time)
 	return cur_time
 }
 

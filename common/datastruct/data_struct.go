@@ -118,6 +118,47 @@ type Kline struct {
 	LastVolume float64
 }
 
+// UnTest
+func (k *Kline) IsHistory() bool {
+
+	if k.LastVolume <= 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+//UnTest
+func (k *Kline) HasTrade() bool {
+
+	if k.Volume > 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (k *Kline) IsInited() bool {
+	if k.Time > 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (k *Kline) SetHistoryFlag() {
+	k.LastVolume = -1
+}
+
+func (k *Kline) RestWithLastPrice() {
+	k.Open = k.Close
+	k.High = k.Close
+	k.Low = k.Close
+	k.Volume = 0
+	k.LastVolume = -1
+	k.Time = 0
+}
+
 type Trade struct {
 	Exchange string
 	Symbol   string
@@ -520,6 +561,8 @@ func NewKline(src *Kline) *Kline {
 			Close:      src.Close,
 			Volume:     src.Volume,
 			Resolution: src.Resolution,
+			LastVolume: src.LastVolume,
+			Sequence:   src.Sequence,
 		}
 		return rst
 	} else {
@@ -532,12 +575,13 @@ func InitKlineByTrade(src *Kline, trade *Trade) {
 	src.Exchange = BCTS_EXCHANGE
 	src.Symbol = trade.Symbol
 	src.Time = trade.Time
-	src.Resolution = 60
+	src.Resolution = SECS_PER_MIN
 	src.Open = trade.Price
 	src.High = trade.Price
 	src.Low = trade.Price
 	src.Close = trade.Price
 	src.Volume = trade.Volume
+	src.LastVolume = trade.Volume
 }
 
 func NewDepth(src *DepthQuote) *DepthQuote {
