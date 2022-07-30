@@ -242,14 +242,14 @@ func (c *ChangeInfo) String() string {
 }
 
 func (t *Trade) String() string {
-	res := fmt.Sprintf("%s.%s, %+v, p: %f v: %f", t.Exchange, t.Symbol,
-		time.Unix(int64(t.Time/NANO_PER_SECS), t.Time%NANO_PER_SECS), t.Price, t.Volume)
+	res := fmt.Sprintf("%s.%s, %s, %d, v: %f, p: %f ", t.Exchange, t.Symbol,
+		util.TimeStrFromInt(t.Time), t.Sequence, t.Volume, t.Price)
 	return res
 }
 
 func (k *Kline) FullString() string {
-	res := fmt.Sprintf("%s.%s, %s, v: %f, o: %f, h: %f, l: %f, c: %f, \n",
-		k.Exchange, k.Symbol, util.TimeStrFromInt(k.Time), k.Volume,
+	res := fmt.Sprintf("%s.%s, %s, %d, v: %f, lv: %f, o: %f, h: %f, l: %f, c: %f, \n",
+		k.Exchange, k.Symbol, util.TimeStrFromInt(k.Time), k.Sequence, k.Volume, k.LastVolume,
 		k.Open, k.High, k.Low, k.Close)
 	return res
 }

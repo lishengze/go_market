@@ -13,7 +13,7 @@ import (
 func GetTestMetadata(symbols []string) *Metadata {
 	symbol_set := make(map[string](map[string]struct{}))
 	exchange_set := make(map[string]struct{})
-	exchange_set["FTX"] = struct{}{}
+	exchange_set["BINANCE"] = struct{}{}
 
 	for _, symbol := range symbols {
 		symbol_set[symbol] = exchange_set
@@ -23,7 +23,7 @@ func GetTestMetadata(symbols []string) *Metadata {
 
 	MetaData := Metadata{}
 
-	MetaData.DepthMeta = symbol_set
+	// MetaData.DepthMeta = symbol_set
 	MetaData.TradeMeta = symbol_set
 
 	return &MetaData
