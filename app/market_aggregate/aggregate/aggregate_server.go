@@ -387,14 +387,16 @@ func (a *Aggregator) aggregate_kline() {
 
 		kline.Time = util.LastUTCMinuteNano() // 当前时间超过了上一分钟;
 		new_kline := datastruct.NewKline(kline)
+
+		logx.Slowf("[PHK]: %s", new_kline.FullString())
 		a.publish_kline(new_kline)
 
 		kline.RestWithLastPrice()
 	}
 
-	for k, _ := range a.kline_aggregated {
-		delete(a.kline_aggregated, k)
-	}
+	// for k, _ := range a.kline_aggregated {
+	// 	delete(a.kline_aggregated, k)
+	// }
 }
 
 func (a *Aggregator) update_kline(trade *datastruct.Trade, sequence uint64) {
@@ -408,20 +410,21 @@ func (a *Aggregator) update_kline(trade *datastruct.Trade, sequence uint64) {
 	cur_kline.Sequence = sequence
 
 	if !cur_kline.IsInited() {
+		logx.Slowf("Kline Init By Trade: %s", trade.String())
 		datastruct.InitKlineByTrade(cur_kline, trade)
-		return
-	}
+	} else {
+		if cur_kline.High < trade.Price {
+			cur_kline.High = trade.Price
+		}
+		if cur_kline.Low > trade.Price {
+			cur_kline.Low = trade.Price
+		}
 
-	if cur_kline.High < trade.Price {
-		cur_kline.High = trade.Price
+		cur_kline.Close = trade.Price
+		cur_kline.Volume += trade.Volume
+		cur_kline.LastVolume = trade.Volume
+		cur_kline.Time = trade.Time
 	}
-	if cur_kline.Low > trade.Price {
-		cur_kline.Low = trade.Price
-	}
-
-	cur_kline.Close = trade.Price
-	cur_kline.Volume += trade.Volume
-	cur_kline.LastVolume = trade.Volume
 
 	logx.Slowf("[PK]: %s", cur_kline.FullString())
 
@@ -470,6 +473,8 @@ func (a *Aggregator) cache_trade(trade *datastruct.Trade) {
 
 	a.update_kline(trade, sequence)
 	a.update_trade(trade, sequence)
+
+	logx.Info("")
 }
 
 func (a *Aggregator) cache_kline(kline *datastruct.Kline) {

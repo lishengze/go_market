@@ -40,5 +40,5 @@ MonitorConfigInfo:
   CheckSecs: 30
   
 DingConfigInfo:
-  Secret: "SECad5a02a15b10624cb642cf7b079805799551c22c8f18b08baf94ca0a66249f4d"
-  Token: "38043087bae9594d5e1851ee2e28e70e22c190095f950d53c735a4abd2bc74ec"
+  Secret: "SECf2a1e12365ffa51cafc6833ff5cdc98208995be8e36d5bbf53ffc4de0338bc24"
+  Token: "a7e2499bdc8c2059b043f849ab9ffd8baa38a4ce812b448721e9db34173170d4"

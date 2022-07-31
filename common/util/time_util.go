@@ -16,7 +16,7 @@ func TimeFormat() string {
 func TimeToSecString(t time.Time) string {
 	// fmt.Println(t.GoString())
 	// t.GoString()
-	return t.Format("2006-01-02 15:04:05.12345")
+	return t.Format("2006-01-02 15:04:05.000000000")
 }
 
 func GetNextResolutionNanoTime(resolution int) int64 {

@@ -461,6 +461,8 @@ func (k *KafkaServer) ProcessTradeBytes(trade_bytes []byte) error {
 		return err
 	}
 
+	local_trade.Time = util.UTCNanoTime()
+
 	k.SendRecvedTrade(local_trade)
 
 	return nil
