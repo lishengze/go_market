@@ -101,10 +101,12 @@ func GetTestKline() *Kline {
 		Time:       util.UTCNanoTime(),
 		Resolution: 60,
 		Volume:     1.1,
+		LastVolume: 0.1,
 		Open:       3000,
 		High:       4000,
 		Low:        2800,
 		Close:      3500,
+		Sequence:   1,
 	}
 
 	return &new_kline

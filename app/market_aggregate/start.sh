@@ -8,7 +8,7 @@ echo "args : $@"
 go build
 
 
-nohup ./market_aggregate $1 >log/main.log &
+nohup ./market_aggregate $1 $2>log/main.log &
 
 
 ls -a

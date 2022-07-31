@@ -48,16 +48,18 @@ func NewDBServer(recvDataChan *datastruct.DataChannel, mysql_config *config.Mysq
 }
 
 func (a *DBServer) StartListenRecvdata() {
+	defer util.CatchExp(fmt.Sprintf("DBServer StartListenRecvdata"))
+
 	logx.Info("[S] DBServer start_listen_recvdata")
 	go func() {
 		for {
 			select {
 			case new_depth := <-a.RecvDataChan.DepthChannel:
-				a.store_depth(new_depth)
+				a.process_depth(new_depth)
 			case new_kline := <-a.RecvDataChan.KlineChannel:
-				a.store_kline(new_kline)
+				a.process_kline(new_kline)
 			case new_trade := <-a.RecvDataChan.TradeChannel:
-				a.store_trade(new_trade)
+				a.process_trade(new_trade)
 			}
 		}
 	}()
@@ -180,15 +182,33 @@ func (d *DBServer) create_table(data_type string, symbol string, exchange string
 }
 
 // UnTest
+func (d *DBServer) process_kline(kline *datastruct.Kline) error {
+	defer util.CatchExp(fmt.Sprintf("DBServer process_kline %s", kline.String()))
+
+	// d.kline_cache.UpdateWithKline(kline)
+
+	if kline.IsHistory() {
+		return d.store_kline(kline)
+	} else {
+		logx.Slowf("[RK] ", kline.FullString())
+
+		trade := datastruct.NewTradeWithRealTimeKline(kline)
+		return d.store_trade(trade)
+	}
+}
+
 func (d *DBServer) store_kline(kline *datastruct.Kline) error {
+
+	defer util.CatchExp(fmt.Sprintf("store_kline %s", kline.FullString()))
+
+	logx.Slowf("[HK] ", kline.FullString())
+
 	if ok := d.check_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); !ok {
 		if ok, err := d.create_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); !ok {
 			logx.Error(err.Error())
 			return err
 		}
 	}
-
-	d.kline_cache.UpdateWithKline(kline)
 
 	stmt, err := d.get_insert_stmt(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange)
 
@@ -203,16 +223,17 @@ func (d *DBServer) store_kline(kline *datastruct.Kline) error {
 	return err
 }
 
-//UnTest
 func (d *DBServer) store_trade(trade *datastruct.Trade) error {
+	defer util.CatchExp(fmt.Sprintf("store_trade %s", trade.String()))
+
+	logx.Slowf("[ST] %s", trade.String())
+
 	if ok := d.check_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
 		if ok, err := d.create_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
 			logx.Error(err.Error())
 			return err
 		}
 	}
-
-	d.kline_cache.UpdateWithTrade(trade)
 
 	stmt, err := d.get_insert_stmt(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange)
 
@@ -226,13 +247,42 @@ func (d *DBServer) store_trade(trade *datastruct.Trade) error {
 	return err
 }
 
+func (d *DBServer) process_trade(trade *datastruct.Trade) error {
+
+	logx.Slowf("[RT] %s", trade.String())
+
+	// if ok := d.check_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
+	// 	if ok, err := d.create_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
+	// 		logx.Error(err.Error())
+	// 		return err
+	// 	}
+	// }
+
+	// // d.kline_cache.UpdateWithTrade(trade)
+
+	// stmt, err := d.get_insert_stmt(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange)
+
+	// if err != nil {
+	// 	logx.Error(err)
+	// 	return err
+	// }
+
+	// stmt.Exec(trade.Exchange, trade.Symbol, trade.Time, trade.Price, trade.Volume)
+
+	return nil
+}
+
 func (d *DBServer) store_depth(depth *datastruct.DepthQuote) error {
+	return nil
+}
+
+func (d *DBServer) process_depth(depth *datastruct.DepthQuote) error {
 	return nil
 }
 
 // UnTest
 func (d *DBServer) GetTradesByCount(symbol string, count int) []*datastruct.Trade {
-	util.CatchExp(fmt.Sprintf(" DBServer GetTradesByCount %s.%d Faled ", symbol, count))
+	defer util.CatchExp(fmt.Sprintf(" DBServer GetTradesByCount %s.%d Faled ", symbol, count))
 
 	table_name := d.get_table_name(datastruct.TRADE_TYPE, symbol, datastruct.BCTS_EXCHANGE)
 	sql_str := get_lastest_trades_by_count(table_name, count)
@@ -250,7 +300,7 @@ func (d *DBServer) GetTradesByCount(symbol string, count int) []*datastruct.Trad
 
 // UnTest
 func (d *DBServer) GetLastMinuteTrades(symbol string) []*datastruct.Trade {
-	util.CatchExp(fmt.Sprintf("DBServer GetLastMinuteTrades %s", symbol))
+	defer util.CatchExp(fmt.Sprintf("DBServer GetLastMinuteTrades %s", symbol))
 	var rst []*datastruct.Trade = nil
 
 	most_lastest_trades := d.GetTradesByCount(symbol, 1000)
@@ -590,7 +640,7 @@ func test_basic(dbServer *DBServer) {
 func test_store(dbServer *DBServer) {
 	// test_kline := datastruct.GetTestKline()
 	// test_kline.Exchange = datastruct.BCTS_EXCHANGE
-	// dbServer.store_kline(test_kline)
+	// dbServer.process_kline(test_kline)
 
 	test_trade := datastruct.GetTestTrade()
 	test_trade.Exchange = datastruct.BCTS_EXCHANGE
@@ -602,7 +652,7 @@ func store_data(dbServer *DBServer, data_count int) {
 
 		test_kline := datastruct.GetTestKline()
 		test_kline.Exchange = datastruct.BCTS_EXCHANGE
-		dbServer.store_kline(test_kline)
+		dbServer.process_kline(test_kline)
 
 		test_trade := datastruct.GetTestTrade()
 		test_trade.Exchange = datastruct.BCTS_EXCHANGE

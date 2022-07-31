@@ -9,5 +9,7 @@ func main() {
 
 	// datastruct.TestIsTargetTime()
 
-	datastruct.TestGetLastStartTime()
+	// datastruct.TestGetLastStartTime()
+
+	datastruct.TestKlineToolMain()
 }

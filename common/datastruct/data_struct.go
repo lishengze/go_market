@@ -13,6 +13,8 @@ import (
 const (
 	BCTS_EXCHANGE           = "_bcts_"
 	BCTS_EXCHANGE_AGGREGATE = "_bcts_aggregate_"
+	BINANCE                 = "BINANCE"
+	FTX                     = "FTX"
 
 	BCTS_GROUP = "BCTS"
 

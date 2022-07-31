@@ -8,7 +8,7 @@ Etcd:
 
 
 Comm:
-  IP: "43.154.179.47:9117"
+  IP: "43.154.179.47:8117"
   NetServerType: "KAFKA"
   SerialType: "PROTOBUF"
 
@@ -26,6 +26,7 @@ Nacos:
 
 LogConfig: 
   Compress: true
+  Encoding: "plain"
   KeepDays: 0
   Level: "info"
   Mode: "file"
@@ -42,3 +43,12 @@ Mysql:
 
 CacheConfig:
   Count: 2000  
+
+MonitorConfigInfo:
+  RateParam: 1.1
+  InitDeadLine: 900
+  CheckSecs: 30
+  
+DingConfigInfo:
+  Secret: "SECad5a02a15b10624cb642cf7b079805799551c22c8f18b08baf94ca0a66249f4d"
+  Token: "38043087bae9594d5e1851ee2e28e70e22c190095f950d53c735a4abd2bc74ec"

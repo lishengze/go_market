@@ -6,7 +6,7 @@ echo "args : $@"
 
 go build 
 
-nohup ./rpc $1 >log/main.log &
+nohup ./rpc $1 $2 >log/main.log &
 
 ls -a
 

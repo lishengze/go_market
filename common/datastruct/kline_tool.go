@@ -1,12 +1,26 @@
 package datastruct
 
 import (
+	"fmt"
 	"market_server/common/util"
 
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/utils"
 	"github.com/zeromicro/go-zero/core/logx"
 )
+
+//Undo
+//UnTest
+func NewTradeWithRealTimeKline(kline *Kline) *Trade {
+	return &Trade{
+		Exchange: kline.Exchange,
+		Symbol:   kline.Symbol,
+		Time:     kline.Time,
+		Price:    kline.Close,
+		Volume:   kline.LastVolume,
+		Sequence: kline.Sequence,
+	}
+}
 
 func TransSliceKlines(ori_klines []*Kline) *treemap.Map {
 	var rst *treemap.Map
@@ -250,4 +264,18 @@ func TreeGetKlinesByTime(kline_tree *treemap.Map, resolution int, start_time int
 	var rst []*Kline
 
 	return rst
+}
+
+type TestKlineTool struct {
+}
+
+func (t *TestKlineTool) TestNewTradeWithRealTimeKline() {
+	ori_klines := GetTestKline()
+	trans_trade := NewTradeWithRealTimeKline(ori_klines)
+	fmt.Printf("OriKline: %s\nTransTrade: %s\n", ori_klines.FullString(), trans_trade.String())
+}
+
+func TestKlineToolMain() {
+	test_obj := &TestKlineTool{}
+	test_obj.TestNewTradeWithRealTimeKline()
 }
