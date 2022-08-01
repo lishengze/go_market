@@ -122,4 +122,6 @@ func (t *TestKlineCache) Start() {
 func TestKlineCacheMain() {
 	t := NewTestKlineCache()
 	t.Start()
+
+	select {}
 }
