@@ -120,6 +120,6 @@ func (t *TestKlineCache) Start() {
 }
 
 func TestKlineCacheMain() {
-	t := &TestKlineCache{}
+	t := NewTestKlineCache()
 	t.Start()
 }
