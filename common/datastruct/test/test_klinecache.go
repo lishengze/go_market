@@ -79,7 +79,7 @@ func NewTestKlineCache() *TestKlineCache {
 }
 
 func (t *TestKlineCache) StartListenRecvdata() {
-	logx.Info("[S] DBServer start_listen_recvdata")
+	logx.Info("[S] TestKlineCache start_listen_recvdata")
 	go func() {
 		for {
 			select {
@@ -92,7 +92,7 @@ func (t *TestKlineCache) StartListenRecvdata() {
 			}
 		}
 	}()
-	logx.Info("[S] DBServer start_receiver Over!")
+	logx.Info("[S] TestKlineCache start_receiver Over!")
 }
 
 func (t *TestKlineCache) process_kline(kline *datastruct.Kline) error {
