@@ -471,7 +471,7 @@ func (k *KafkaServer) ProcessTradeBytes(trade_bytes []byte) error {
 func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
 
 	if !k.CheckTopic(topic) && !k.CreateTopic(topic) {
-		return fmt.Errorf("%s is not created and create it failed!", topic)
+		return fmt.Errorf("%s is not created and create it failed! ", topic)
 	}
 
 	if value, ok := k.pub_statistic_info.Load(topic); ok {
@@ -480,8 +480,11 @@ func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
 		k.pub_statistic_info.Store(topic, 1)
 	}
 
+	key := sarama.ByteEncoder(topic)
+
 	msgs := []*sarama.ProducerMessage{{
 		Topic: topic,
+		Key:   key,
 		Value: sarama.ByteEncoder(origin_bytes),
 	}}
 
