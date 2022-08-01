@@ -135,9 +135,9 @@ func (s *MarketServiceServer) ProcessSymbolConfigStr(data string) {
 }
 
 func (s *MarketServiceServer) SetInitMeta() {
-	// init_symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD","BTC_USD", "ETH_USD", "ETH_BTC"}
+	init_symbol_list := []string{"BTC_USDT", "ETH_USDT", "USDT_USD","BTC_USD", "ETH_USD", "ETH_BTC"}
 
-	init_symbol_list := []string{"BTC_USDT"}
+	// init_symbol_list := []string{"BTC_USDT"}
 
 	symbol_exchange_set := make(map[string](map[string]struct{}))
 	new_meta := datastruct.Metadata{}
@@ -146,8 +146,8 @@ func (s *MarketServiceServer) SetInitMeta() {
 			symbol_exchange_set[symbol] = make(map[string]struct{})
 		}
 		if _,ok := symbol_exchange_set[symbol][datastruct.BCTS_EXCHANGE]; !ok {
-			// symbol_exchange_set[symbol][datastruct.BCTS_EXCHANGE] = struct{}{}
-			symbol_exchange_set[symbol][datastruct.FTX] = struct{}{}
+			symbol_exchange_set[symbol][datastruct.BCTS_EXCHANGE] = struct{}{}
+			// symbol_exchange_set[symbol][datastruct.FTX] = struct{}{}
 		}
 	}
 
