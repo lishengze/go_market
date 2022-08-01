@@ -262,8 +262,6 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 
 	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
 
-	d.kline_cache.UpdateWithTrade(trade)
-
 	usd_price := trade.Price * d.GetUsdPrice(trade.Symbol)
 
 	symbol_config := d.ctx.GetSymbolConfig(trade.Symbol)

@@ -372,8 +372,8 @@ func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []
 	rst = d.kline_cache.GetKlinesByCount(symbol, resolution, count, false)
 
 	if rst != nil {
-		trades := d.GetLastMinuteTrades(symbol)
-		d.kline_cache.UpdateWithTrades(trades)
+		// trades := d.GetLastMinuteTrades(symbol)
+		// d.kline_cache.UpdateWithTrades(trades)
 	}
 
 	return rst
