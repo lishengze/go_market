@@ -471,6 +471,7 @@ func (k *KafkaServer) ProcessTradeBytes(trade_bytes []byte) error {
 func (k *KafkaServer) PublishMsg(topic string, origin_bytes []byte) error {
 
 	if !k.CheckTopic(topic) && !k.CreateTopic(topic) {
+		logx.Errorf("%s is not created and create it failed! ", topic)
 		return fmt.Errorf("%s is not created and create it failed! ", topic)
 	}
 
