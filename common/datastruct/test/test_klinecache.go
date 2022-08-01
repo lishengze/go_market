@@ -96,7 +96,14 @@ func (t *TestKlineCache) StartListenRecvdata() {
 }
 
 func (t *TestKlineCache) process_kline(kline *datastruct.Kline) error {
-	logx.Slowf("[K] %s", kline.FullString())
+	if kline.IsHistory() {
+		logx.Slowf("[HK] %s", kline.FullString())
+	} else {
+		logx.Slowf("[RK] %s", kline.FullString())
+
+		trade := datastruct.NewTradeWithRealTimeKline(kline)
+		logx.Slowf("[RT] %s", trade.String())
+	}
 
 	return nil
 }
