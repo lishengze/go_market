@@ -190,7 +190,7 @@ func (d *DBServer) process_kline(kline *datastruct.Kline) error {
 	if kline.IsHistory() {
 		return d.store_kline(kline)
 	} else {
-		logx.Slowf("[RK] ", kline.FullString())
+		logx.Slowf("[RK] %s", kline.FullString())
 
 		trade := datastruct.NewTradeWithRealTimeKline(kline)
 		return d.store_trade(trade)
@@ -201,7 +201,7 @@ func (d *DBServer) store_kline(kline *datastruct.Kline) error {
 
 	defer util.CatchExp(fmt.Sprintf("store_kline %s", kline.FullString()))
 
-	logx.Slowf("[HK] ", kline.FullString())
+	logx.Slowf("[HK] %s", kline.FullString())
 
 	if ok := d.check_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); !ok {
 		if ok, err := d.create_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); !ok {
