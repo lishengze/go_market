@@ -426,7 +426,7 @@ func (a *Aggregator) update_kline(trade *datastruct.Trade, sequence uint64) {
 		cur_kline.Time = trade.Time
 	}
 
-	logx.Slowf("[PK]: %s", cur_kline.FullString())
+	// logx.Slowf("[PK]: %s", cur_kline.FullString())
 
 	a.publish_kline(cur_kline)
 }
@@ -438,7 +438,7 @@ func (a *Aggregator) update_trade(trade *datastruct.Trade, sequence uint64) {
 	new_trade.Exchange = datastruct.BCTS_EXCHANGE
 	new_trade.Sequence = sequence
 
-	logx.Slowf("[PT]: %s", new_trade.String())
+	// logx.Slowf("[PT]: %s", new_trade.String())
 
 	a.publish_trade(new_trade)
 }
