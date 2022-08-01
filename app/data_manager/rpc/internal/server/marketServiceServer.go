@@ -147,7 +147,7 @@ func (s *MarketServiceServer) SetInitMeta() {
 		}
 		if _,ok := symbol_exchange_set[symbol][datastruct.BCTS_EXCHANGE]; !ok {
 			// symbol_exchange_set[symbol][datastruct.BCTS_EXCHANGE] = struct{}{}
-			symbol_exchange_set[symbol][datastruct.BINANCE] = struct{}{}
+			symbol_exchange_set[symbol][datastruct.FTX] = struct{}{}
 		}
 	}
 
