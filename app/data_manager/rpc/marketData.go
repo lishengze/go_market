@@ -46,10 +46,12 @@ func main() {
 
 	fmt.Printf("env: %+v \n", env)
 	var configFile = flag.String("f", "etc/"+env+"/marketData.yaml", "the config file")
-	fmt.Printf("configFile: %s \n", *configFile)
+	fmt.Printf("configFile: %s \n\n", *configFile)
 
 	var c dmconfig.ServerConfig
 	conf.MustLoad(*configFile, &c)
+
+	fmt.Printf("LogConfig: %+v \n\n", c.LogConfig)
 
 	logx.MustSetup(c.LogConfig)
 	logx.Infof("Log: %+v \n", c)
