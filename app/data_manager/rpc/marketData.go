@@ -54,7 +54,7 @@ func main() {
 	fmt.Printf("LogConfig: %+v \n\n", c.LogConfig)
 
 	logx.MustSetup(c.LogConfig)
-	logx.Infof("Log: %+v \n", c)
+	// logx.Infof("Log: %+v \n", c)
 
 	fmt.Printf("Log: %+v \n", c)
 
