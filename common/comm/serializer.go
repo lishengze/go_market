@@ -175,8 +175,8 @@ func (p *ProtobufSerializer) DecodeKline(raw_msg []byte) (*datastruct.Kline, err
 
 	last_volume, err := strconv.ParseFloat(proto_kline.Lastvolume, 64)
 	if err != nil {
-		logx.Error(err.Error())
-		return nil, err
+		// logx.Error(err.Error())
+		// return nil, err
 	}
 
 	return &datastruct.Kline{
