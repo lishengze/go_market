@@ -1,46 +1,113 @@
 <mxfile host="65bd71144e">
     <diagram id="56FmQvFEXBWxtqMtwfCh" name="第 1 页">
-        <mxGraphModel dx="643" dy="803" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="1374" dy="860" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="4" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="2" target="3" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="2" value="K线服务" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                <mxCell id="2" value="Kline 数据处理" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="320" y="120" width="110" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="7" style="edgeStyle=none;html=1;entryX=1.029;entryY=0.103;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="3" target="6" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
+                <mxCell id="7" style="edgeStyle=none;html=1;" parent="1" source="3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="170" y="240" as="targetPoint"/>
+                    </mxGeometry>
                 </mxCell>
                 <mxCell id="14" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="3" target="9" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="3" value="以trade为基础&lt;br&gt;聚合1分频K线" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                <mxCell id="3" value="Trade - 实时数据" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="315" y="210" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="5" value="原始聚合" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="384" y="180" width="60" height="20" as="geometry"/>
+                <mxCell id="22" style="edgeStyle=none;html=1;fontColor=default;" edge="1" parent="1" source="6" target="21">
+                    <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="12" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6" target="9" edge="1">
+                <mxCell id="30" style="edgeStyle=none;html=1;exitX=1;exitY=0.683;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontColor=default;exitPerimeter=0;" edge="1" parent="1" source="6" target="27">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="35" style="edgeStyle=none;html=1;fontColor=default;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="6" target="31">
                     <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="300" y="390" as="targetPoint"/>
+                        <mxPoint x="180" y="870" as="sourcePoint"/>
+                        <mxPoint x="320" y="870" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="6" value="KAFKA" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="90" y="200" width="70" height="380" as="geometry"/>
+                    <mxGeometry x="90" y="160" width="80" height="710" as="geometry"/>
                 </mxCell>
                 <mxCell id="8" value="发布" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="210" y="210" width="40" height="20" as="geometry"/>
                 </mxCell>
-                <mxCell id="9" value="数据落地服务" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="315" y="360" width="120" height="60" as="geometry"/>
+                <mxCell id="17" style="edgeStyle=none;html=1;entryX=0.988;entryY=0.282;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="9" target="6">
+                    <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="13" value="订阅" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="220" y="370" width="40" height="20" as="geometry"/>
+                <mxCell id="9" value="Kline &lt;br&gt;1分频-历史数据" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="315" y="330" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="15" value="数据落地" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="384" y="320" width="60" height="20" as="geometry"/>
+                <mxCell id="13" value="发布" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="210" y="330" width="40" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="定频聚合" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="384" y="290" width="60" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="" style="whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#CCE5FF;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="290" y="190" width="170" height="230" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="原始聚合" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;strokeWidth=2;labelBackgroundColor=#001933;" vertex="1" parent="1">
+                    <mxGeometry x="460" y="220" width="60" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" style="edgeStyle=none;html=1;fontColor=default;" edge="1" parent="1" source="21">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="600" y="516" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="21" value="数据落地&lt;br&gt;- 实时 Trade,&lt;br&gt;- 1 分Kline" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;strokeColor=#CCE5FF;strokeWidth=1;fillColor=none;fontColor=default;" vertex="1" parent="1">
+                    <mxGeometry x="310" y="482.5" width="130" height="67.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="订阅 - kline, trade" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=default;" vertex="1" parent="1">
+                    <mxGeometry x="175" y="480" width="110" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" style="edgeStyle=none;html=1;exitX=0;exitY=0.823;exitDx=0;exitDy=0;fontColor=default;exitPerimeter=0;" edge="1" parent="1" source="24">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="440" y="647" as="targetPoint"/>
+                        <Array as="points"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="24" value="MySql" style="whiteSpace=wrap;html=1;labelBackgroundColor=#001933;fontColor=default;strokeColor=#CCE5FF;strokeWidth=1;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="610" y="482.5" width="50" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" value="存储" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=default;" vertex="1" parent="1">
+                    <mxGeometry x="490" y="490" width="40" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="44" style="edgeStyle=none;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.092;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;fontColor=default;" edge="1" parent="1" source="27" target="43">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" value="Kline 历史数据提供" style="whiteSpace=wrap;html=1;labelBackgroundColor=#001933;fontColor=default;strokeColor=#CCE5FF;strokeWidth=1;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="310" y="610" width="130" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" value="获取&amp;nbsp;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=default;" vertex="1" parent="1">
+                    <mxGeometry x="500" y="630" width="40" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" style="edgeStyle=none;html=1;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;fontColor=default;" edge="1" parent="1" source="31" target="27">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="行情前置服务器" style="whiteSpace=wrap;html=1;labelBackgroundColor=#001933;fontColor=default;strokeColor=#CCE5FF;strokeWidth=1;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="310" y="850" width="130" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="34" value="1 多分频&lt;br&gt;&lt;div&gt;&lt;span&gt;2. 历史&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Kline&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=default;" vertex="1" parent="1">
+                    <mxGeometry x="260" y="715" width="60" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" value="实时 trade" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=default;" vertex="1" parent="1">
+                    <mxGeometry x="200" y="840" width="70" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="37" value="1 分频 kline" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=default;" vertex="1" parent="1">
+                    <mxGeometry x="190" y="880" width="80" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="45" style="edgeStyle=none;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;fontColor=default;entryX=0.931;entryY=0.029;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="43" target="31">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="430" y="840" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="43" value="多分频率:&amp;nbsp; 先" style="whiteSpace=wrap;html=1;labelBackgroundColor=#001933;fontColor=default;strokeColor=#CCE5FF;strokeWidth=1;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="400" y="740" width="120" height="40" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
