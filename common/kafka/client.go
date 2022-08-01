@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"market_server/common/config"
 	"market_server/common/datastruct"
+
 	"market_server/common/util"
 	"sync"
 	"time"
@@ -138,19 +139,15 @@ func (k *KafkaServer) InitKafka(serializer datastruct.SerializerI,
 
 	logx.Infof("KafkaServer.Init, config: %+v\n", k.config)
 
-	var err error
-
-	err = k.InitApi()
+	err := k.InitApi()
 	if err != nil {
 		return err
-	} else {
-		logx.Infof("InitApi Err: %+v", err)
 	}
 
 	k.UpdateCreateTopics()
 	k.StartListenPubChan()
 
-	return nil
+	return err
 }
 
 func (k *KafkaServer) InitApi() error {

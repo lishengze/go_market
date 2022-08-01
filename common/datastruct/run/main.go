@@ -1,6 +1,8 @@
 package main
 
-import "market_server/common/datastruct"
+import (
+	"market_server/common/datastruct/test"
+)
 
 func main() {
 	// datastruct.TestGetHistKlineData()
@@ -11,5 +13,7 @@ func main() {
 
 	// datastruct.TestGetLastStartTime()
 
-	datastruct.TestKlineToolMain()
+	// datastruct.TestKlineToolMain()
+
+	test.TestKlineCacheMain()
 }
