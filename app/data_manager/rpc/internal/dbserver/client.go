@@ -249,7 +249,7 @@ func (d *DBServer) store_trade(trade *datastruct.Trade) error {
 
 func (d *DBServer) process_trade(trade *datastruct.Trade) error {
 
-	logx.Slowf("[RT] %s", trade.String())
+	// logx.Slowf("[RT] %s", trade.String())
 
 	// if ok := d.check_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
 	// 	if ok, err := d.create_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
