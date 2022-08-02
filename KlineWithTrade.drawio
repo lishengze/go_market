@@ -1,0 +1,250 @@
+<mxfile host="65bd71144e">
+    <diagram id="56FmQvFEXBWxtqMtwfCh" name="第 1 页">
+        <mxGraphModel dx="1374" dy="860" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="Kline 数据处理" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="120" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" style="edgeStyle=none;html=1;" parent="1" source="3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="170" y="240" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="14" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="3" target="9" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="Trade - 实时数据" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="315" y="210" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" style="edgeStyle=none;html=1;fontColor=default;" parent="1" source="6" target="21" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" style="edgeStyle=none;html=1;exitX=1;exitY=0.683;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontColor=default;exitPerimeter=0;" parent="1" source="6" target="27" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="35" style="edgeStyle=none;html=1;fontColor=default;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.286;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="6" target="31" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="180" y="870" as="sourcePoint"/>
+                        <mxPoint x="320" y="870" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="6" value="KAFKA" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="90" y="160" width="80" height="710" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="发布" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="210" y="210" width="40" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" style="edgeStyle=none;html=1;entryX=0.988;entryY=0.282;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="9" target="6" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="Kline &lt;br&gt;1分频-历史数据" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="315" y="330" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="发布" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="210" y="330" width="40" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="定频聚合" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="384" y="290" width="60" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="" style="whiteSpace=wrap;html=1;fillColor=#CCFFFF;dashed=1;strokeColor=#CCE5FF;strokeWidth=2;opacity=15;" parent="1" vertex="1">
+                    <mxGeometry x="290" y="190" width="170" height="230" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="原始聚合" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;strokeWidth=2;labelBackgroundColor=#001933;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="190" width="60" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" style="edgeStyle=none;html=1;fontColor=default;" parent="1" source="21" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="600" y="516" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="21" value="数据落地&lt;br&gt;- 实时 Trade,&lt;br&gt;- 1 分Kline" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;strokeColor=#CCE5FF;strokeWidth=1;fillColor=none;fontColor=default;" parent="1" vertex="1">
+                    <mxGeometry x="310" y="482.5" width="130" height="67.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="订阅 - kline, trade" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=default;" parent="1" vertex="1">
+                    <mxGeometry x="175" y="480" width="110" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" style="edgeStyle=none;html=1;exitX=0;exitY=0.823;exitDx=0;exitDy=0;fontColor=default;exitPerimeter=0;" parent="1" source="24" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="440" y="647" as="targetPoint"/>
+                        <Array as="points"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="24" value="MySql" style="whiteSpace=wrap;html=1;labelBackgroundColor=#001933;fontColor=default;strokeColor=#CCE5FF;strokeWidth=1;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="482.5" width="50" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" value="存储" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=default;" parent="1" vertex="1">
+                    <mxGeometry x="490" y="490" width="40" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="44" style="edgeStyle=none;html=1;exitX=0.772;exitY=1;exitDx=0;exitDy=0;entryX=0.092;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;fontColor=default;exitPerimeter=0;" parent="1" source="27" target="43" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" value="Kline 历史数据提供" style="whiteSpace=wrap;html=1;labelBackgroundColor=#001933;fontColor=default;strokeColor=#CCE5FF;strokeWidth=1;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="310" y="610" width="130" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" value="获取&amp;nbsp;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=default;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="630" width="40" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" style="edgeStyle=none;html=1;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;fontColor=default;" parent="1" source="31" target="27" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="行情前置服务器" style="whiteSpace=wrap;html=1;labelBackgroundColor=#001933;fontColor=default;strokeColor=#CCE5FF;strokeWidth=1;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="310" y="850" width="130" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="34" value="1 多分频&lt;br&gt;&lt;div&gt;&lt;span&gt;2. 历史&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Kline&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=default;" parent="1" vertex="1">
+                    <mxGeometry x="260" y="715" width="60" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" value="实时 trade" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=default;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="840" width="70" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="37" value="1 分频 kline" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=default;" parent="1" vertex="1">
+                    <mxGeometry x="190" y="880" width="80" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="45" style="edgeStyle=none;html=1;exitX=0.1;exitY=1.011;exitDx=0;exitDy=0;fontColor=default;exitPerimeter=0;" parent="1" source="43" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="413" y="850" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="43" value="多分频率当前历史数据的初始化获取:&amp;nbsp; &lt;br&gt;1. 历史部分: 先获取原始一分频数据，进行聚合 - 最后一个频段的数据可能是不完整的;&lt;br&gt;2. 获取当前 1分内，实时的 trade 流 - [落地的trade数据] , 聚合为一个当前一分频的实时Kline 与 第一步的&amp;nbsp; &amp;nbsp; 数据结合" style="whiteSpace=wrap;html=1;labelBackgroundColor=none;fontColor=default;strokeColor=#CCE5FF;strokeWidth=1;fillColor=none;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="715" width="330" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="61" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="46" target="58">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="84" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="46">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1630.151826015593" y="674.696347968814" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="46" value="&lt;br&gt;基本机制:&lt;br&gt;1.&amp;nbsp; 当前频段不完整 - 根据 trade 更新 高低收，成交量;&lt;br&gt;2.&amp;nbsp; 当前频段完整 - 新频段的第一个trade, 根据trade生成当前的 kline, 进行后续的更新&amp;nbsp;&lt;br&gt;3. 每一分的结束，每个频段的结束，需要依赖于 历史1分频的数据的更新 或者 下一个成交流的到来 - 行情流的时间只能由行情源头确定" style="whiteSpace=wrap;html=1;labelBackgroundColor=none;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="1250" y="617.5" width="300" height="112.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="48" value="&lt;div style=&quot;text-align: left&quot;&gt;&lt;span&gt;1. 减少对数据库的直接读取访问&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left&quot;&gt;&lt;span&gt;2. 减少 前置服务器与 历史数据服务器 间通信&lt;/span&gt;&lt;span&gt;压力&lt;/span&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;labelBackgroundColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="625" width="300" height="35" as="geometry"/>
+                </mxCell>
+                <mxCell id="55" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="51" target="48">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="51" value="必要性" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#FFCCFF;fillColor=none;dashed=1;strokeWidth=1;dashPattern=1 1;" parent="1" vertex="1">
+                    <mxGeometry x="965" y="572.5" width="50" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="109" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.267;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="53" target="107">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="53" value="" style="whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#FFFFFF;dashed=1;strokeWidth=2;strokeColor=#FFE6CC;opacity=12;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="460" width="490" height="370" as="geometry"/>
+                </mxCell>
+                <mxCell id="54" value="数据落地与 历史行情获取" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="580" y="462.5" width="150" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="57" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="56" target="46">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="56" value="&lt;span style=&quot;text-align: left&quot;&gt;方案1 - trade 流实时更新 kline&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=default;fillColor=none;dashed=1;" vertex="1" parent="1">
+                    <mxGeometry x="1310" y="572.5" width="180" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="63" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="58">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1400" y="792.5" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="58" value="问题" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#99004D;fillColor=#99004D;dashed=1;opacity=40;" vertex="1" parent="1">
+                    <mxGeometry x="1380" y="752.5" width="40" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="79" value="" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="65" target="66">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="81" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="65" target="78">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="65" value="1. trade 数据出现丢包乱序" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fillColor=none;opacity=40;" vertex="1" parent="1">
+                    <mxGeometry x="1340" y="792.5" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="76" value="" style="edgeStyle=none;html=1;entryX=0.196;entryY=-0.006;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="66" target="70">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1790" y="807.5" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="66" value="当前 1分频无法正确更新" style="whiteSpace=wrap;html=1;fillColor=none;strokeColor=#FFFFFF;rounded=1;strokeWidth=2;opacity=40;" vertex="1" parent="1">
+                    <mxGeometry x="1583" y="787.5" width="135" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="68" value="后果" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="1510" y="782.5" width="40" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="70" value="1. 从数据库请求丢失的trade 包 &lt;br&gt;---问题:&amp;nbsp; 数据库不一定及时落地&lt;br&gt;2. 等待完整的1分频数据&amp;nbsp;&lt;br&gt;---问题: a. 当前 1分频仍然无法更新&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;b. 若是下一分频的开始时立刻有成交, 那么新的成交很可能比旧的完整的一分频数据先到 ，这就涉及到更改上一分的数据，对于前端 和 后台 都是增加很大复杂度的操作&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; c. 用历史一分频数据，修正实时流数据，成交量需要特殊处理&lt;br&gt;总结:&amp;nbsp; 机制复杂，效果不佳" style="whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fillColor=none;opacity=40;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="1600" y="900" width="260" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="72" value="解决方案" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="1670" y="850" width="60" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="73" value="3. 多节点同时聚合k线， 不同节点的网络延迟，很可能导致多个节点聚合的不一致." style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fillColor=none;opacity=40;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="1340" y="942.5" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="82" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="78" target="73">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="78" value="2. 本地 trade 聚合的k线 与 行情源 发布的 一分频 K 线不一致，如何处理" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fillColor=none;opacity=40;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="1340" y="852.5" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="85" value="&lt;span style=&quot;&quot;&gt;强依赖于 trade 数据: 顺序性，&lt;br&gt;健壮性，&lt;br&gt;及时性&lt;/span&gt;" style="whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fillColor=none;opacity=40;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="1630" y="643.75" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="89" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="86" target="88">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="86" value="方案2 -&amp;nbsp; 随着 trade 的更新,&lt;br&gt;同时推送 kline 的实时流" style="whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fillColor=none;opacity=40;" vertex="1" parent="1">
+                    <mxGeometry x="890" y="682.5" width="200" height="47.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="104" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="88" target="90">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="88" value="基础机制 - 与trade 流类似&lt;br&gt;&lt;span&gt;1.&amp;nbsp; 当前频段不完整 - 根据新 kline 更新 高低收，成交量;&lt;/span&gt;&lt;br&gt;&lt;span&gt;2.&amp;nbsp; 当前频段完整 - 新频段的第一个kline, 直接发布;&lt;br&gt;3.&amp;nbsp;&amp;nbsp;&lt;/span&gt;每一分的结束，每个频段的结束，依赖于 历史1分频的数据的更新 或者 下一个实时流的到来&amp;nbsp;&lt;span&gt;&lt;br&gt;&lt;/span&gt;" style="whiteSpace=wrap;html=1;fillColor=none;strokeColor=#FFFFFF;strokeWidth=2;opacity=40;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="842.5" y="782.5" width="295" height="117.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="94" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="90" target="93">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="105" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="90" target="92">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="90" value="1. kline 流丢包乱序" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fillColor=none;opacity=40;" vertex="1" parent="1">
+                    <mxGeometry x="915" y="930" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="100" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="91" target="99">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="91" value="3. 多节点同时聚合k线， 不同节点的网络延迟，很可能导致多个节点聚合的不一致." style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fillColor=none;opacity=40;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="915" y="1080" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="95" value="" style="edgeStyle=none;html=1;entryX=0;entryY=0.167;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="92" target="96">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="106" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="92" target="91">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="92" value="2. 本地实时kline聚合数据与 行情源 发布的 一分频 K 线不一致，如何处理" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fillColor=none;opacity=40;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="915" y="990" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="93" value="通常直接等待下一个实时流即可： 同一分频的后面的kline 数据包含了 前面 kline 的数据" style="whiteSpace=wrap;html=1;fillColor=none;strokeColor=#FFFFFF;rounded=1;strokeWidth=2;opacity=40;" vertex="1" parent="1">
+                    <mxGeometry x="1140" y="907.5" width="142.5" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="96" value="从数据源上: 历史一分频数据是实时流的一次定时发送而已，Sequence 都一致，内容不会不一致。" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fillColor=none;opacity=40;" vertex="1" parent="1">
+                    <mxGeometry x="1140" y="1010" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="99" value="网络延迟也没办法，这种情况下，即使本地不聚和，单纯的只从行情源实时更新也会有误差" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fillColor=none;opacity=40;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="1137.5" y="1080" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="110" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;endArrow=block;endFill=1;exitX=-0.001;exitY=0.616;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="107" target="31">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="107" value="" style="whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fillColor=#FF6666;opacity=13;" vertex="1" parent="1">
+                    <mxGeometry x="825" y="460" width="1135" height="690" as="geometry"/>
+                </mxCell>
+                <mxCell id="108" value="多频率数据的缓存与更新" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="825" y="462.5" width="150" height="20" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
