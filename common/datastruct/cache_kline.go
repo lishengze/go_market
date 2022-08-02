@@ -95,23 +95,69 @@ func (k *KlineCache) AddNewKline(kline *Kline) {
 
 }
 
-func (k *KlineCache) UpdateWithKline(kline *Kline) (*Kline, error) {
+func (k *KlineCache) GetCurCacheKline(symbol string, resolution int) *Kline {
+	defer util.CatchExp("GetCurCacheKline")
+
+	k.CacheKlineMutex.Lock()
+	defer k.CacheKlineMutex.Unlock()
+
+	return nil
+}
+
+func (k *KlineCache) AddNewCacheLine(new_kline *Kline, resolution int) *Kline {
+	return nil
+}
+
+func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution int) (*Kline, error) {
 	defer util.CatchExp("UpdateWithKline")
 
 	var pub_kline *Kline = nil
 	var err error = nil
+
+	k.KlinesMutex.Lock()
+	defer k.KlinesMutex.Unlock()
+
+	cache_kline := k.GetCurCacheKline(new_kline.Symbol, resolution)
+
+	if cache_kline == nil {
+
+	} else {
+
+	}
 
 	k.EraseOutTimeKline()
 
 	return pub_kline, err
 }
 
-// Undo
+// UnTest
+func EraseTreeNode(tree *treemap.Map, target_count int) {
+	defer util.CatchExp("EraseTreeNode")
+
+	var erase_times []int64
+	iter := tree.Iterator()
+	iter.First()
+	for i := 0; tree.Size()-i > target_count; i++ {
+		erase_times = append(erase_times, iter.Key().(int64))
+		iter.Next()
+	}
+
+	for _, outtimeKey := range erase_times {
+		tree.Remove(outtimeKey)
+	}
+}
+
+// UnTest
 func (k *KlineCache) EraseOutTimeKline() {
 	defer util.CatchExp("EraseOutTimeKline")
 	k.KlinesMutex.Lock()
 	defer k.KlinesMutex.Unlock()
 
+	for _, s_klines := range k.CompletedKlines {
+		for _, klineTree := range s_klines {
+			EraseTreeNode(klineTree, k.Config.Count)
+		}
+	}
 }
 
 func (k *KlineCache) GetKlinesByCount(symbol string, resolution int, count int, get_most bool) []*Kline {
