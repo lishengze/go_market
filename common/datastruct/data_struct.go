@@ -148,6 +148,37 @@ func (k *Kline) IsInited() bool {
 	}
 }
 
+// UnTest
+func (k *Kline) UpdateInfoByNewKline(new_kline *Kline) {
+	if k == new_kline {
+		return
+	}
+
+	k.Close = new_kline.Close
+	k.Low = util.MinFloat64(k.Low, new_kline.Low)
+	k.High = util.MaxFloat64(k.High, new_kline.High)
+	k.Volume = k.Volume + new_kline.Volume
+	k.Sequence = new_kline.Sequence
+}
+
+func (k *Kline) ResetWithNewKline(new_kline *Kline) {
+	if k == new_kline {
+		return
+	}
+
+	k.Symbol = new_kline.Symbol
+	k.Exchange = new_kline.Exchange
+	k.Time = new_kline.Time
+	k.Open = new_kline.Open
+	k.Resolution = new_kline.Resolution
+	k.Close = new_kline.Close
+	k.Low = util.MinFloat64(k.Low, new_kline.Low)
+	k.High = util.MaxFloat64(k.High, new_kline.High)
+	k.Volume = k.Volume + new_kline.Volume
+	k.Sequence = new_kline.Sequence
+	k.LastVolume = new_kline.LastVolume
+}
+
 func (k *Kline) SetHistoryFlag() {
 	k.LastVolume = -1
 }
