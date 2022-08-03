@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"market_server/common/comm"
 	"market_server/common/config"
 	"market_server/common/datastruct"
@@ -96,6 +97,14 @@ func (t *TestKlineCache) StartListenRecvdata() {
 }
 
 func (t *TestKlineCache) process_kline(kline *datastruct.Kline) error {
+
+	if kline == nil {
+		return fmt.Errorf("kline is Nil")
+	}
+
+	resolution := 5 * datastruct.NANO_PER_MIN
+	t.KlineCache.UpdateWithKline(kline, resolution)
+
 	if kline.IsHistory() {
 		logx.Slowf("[HK] %s", kline.FullString())
 	} else {

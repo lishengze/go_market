@@ -149,7 +149,8 @@ func (k *Kline) IsInited() bool {
 }
 
 // UnTest
-func (k *Kline) UpdateInfoByNewKline(new_kline *Kline) {
+func (k *Kline) UpdateInfoByHistKline(new_kline *Kline) {
+	defer util.CatchExp(fmt.Sprintf("UpdateInfoByHistKline %s", new_kline.FullString()))
 	if k == new_kline {
 		return
 	}
@@ -161,7 +162,22 @@ func (k *Kline) UpdateInfoByNewKline(new_kline *Kline) {
 	k.Sequence = new_kline.Sequence
 }
 
+// UnTest
+func (k *Kline) UpdateInfoByRealKline(new_kline *Kline) {
+	defer util.CatchExp(fmt.Sprintf("UpdateInfoByRealKline %s", new_kline.FullString()))
+	if k == new_kline {
+		return
+	}
+
+	k.Close = new_kline.Close
+	k.Low = util.MinFloat64(k.Low, new_kline.Low)
+	k.High = util.MaxFloat64(k.High, new_kline.High)
+	k.Sequence = new_kline.Sequence
+}
+
 func (k *Kline) ResetWithNewKline(new_kline *Kline) {
+	defer util.CatchExp(fmt.Sprintf("ResetWithNewKline %s", new_kline.FullString()))
+
 	if k == new_kline {
 		return
 	}
@@ -190,6 +206,10 @@ func (k *Kline) RestWithLastPrice() {
 	k.Volume = 0
 	k.LastVolume = -1
 	k.Time = 0
+}
+
+func (k *Kline) SetPerfectTime(resolution int64) {
+	k.Time = k.Time - k.Time%resolution
 }
 
 type Trade struct {

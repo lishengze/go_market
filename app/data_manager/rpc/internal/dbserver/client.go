@@ -366,7 +366,7 @@ func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []
 
 	if rst == nil {
 		db_klines := d.GetDBKlinesByCount(symbol, resolution, count)
-		d.kline_cache.InitWithKlines(db_klines, symbol, resolution)
+		d.kline_cache.InitWithHistKlines(db_klines, symbol, resolution)
 	}
 
 	rst = d.kline_cache.GetKlinesByCount(symbol, resolution, count, false)
@@ -387,7 +387,7 @@ func (d *DBServer) GetKlinesByTime(symbol string, resolution int, start_time int
 
 	if rst != nil {
 		db_klines := d.GetDBKlinesByTime(symbol, resolution, start_time, end_time)
-		d.kline_cache.InitWithKlines(db_klines, symbol, resolution)
+		d.kline_cache.InitWithHistKlines(db_klines, symbol, resolution)
 	}
 
 	rst = d.kline_cache.GetKlinesByTime(symbol, resolution, start_time, end_time, false)

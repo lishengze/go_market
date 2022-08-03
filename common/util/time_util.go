@@ -90,6 +90,14 @@ func WaitForNextMinute() {
 	time.Sleep(time.Duration(int64(time.Minute)-delta_nano_secs) * time.Nanosecond)
 }
 
+func IsNewMinuteStart(new_time int64, old_time int64) bool {
+
+	new_time_minute := new_time - new_time%int64(time.Minute)
+	old_time_minute := old_time - old_time%int64(time.Minute)
+
+	return new_time_minute != old_time_minute
+}
+
 func TestNanoMinute() {
 	UTCMinuteNano()
 }
