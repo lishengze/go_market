@@ -106,14 +106,14 @@ func (t *TestKlineCache) process_kline(kline *datastruct.Kline) error {
 	resolution := 5 * datastruct.NANO_PER_MIN
 	t.KlineCache.UpdateWithKline(kline, resolution)
 
-	if kline.IsHistory() {
-		logx.Slowf("[HK] %s", kline.FullString())
-	} else {
-		logx.Slowf("[RK] %s", kline.FullString())
+	// if kline.IsHistory() {
+	// 	logx.Slowf("[HK] %s", kline.FullString())
+	// } else {
+	// 	logx.Slowf("[RK] %s", kline.FullString())
 
-		trade := datastruct.NewTradeWithRealTimeKline(kline)
-		logx.Slowf("[RT] %s", trade.String())
-	}
+	// 	trade := datastruct.NewTradeWithRealTimeKline(kline)
+	// 	logx.Slowf("[RT] %s", trade.String())
+	// }
 
 	return nil
 }

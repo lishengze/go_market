@@ -384,7 +384,7 @@ func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution int) (*Kline, 
 	// k.KlinesMutex.Lock()
 	// defer k.KlinesMutex.Unlock()
 
-	logx.Slowf("NewKline: %s\n", new_kline.FullString())
+	logx.Slowf("NewKline: %s", new_kline.FullString())
 
 	cache_kline := k.GetCurCacheKline(new_kline.Symbol, resolution)
 	last_kline := k.GetCurLastKline(new_kline.Symbol, resolution)
@@ -401,7 +401,7 @@ func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution int) (*Kline, 
 		}
 	}
 
-	logx.Slowf("PubKline: %s", pub_kline.FullString())
+	logx.Slowf("PubKline: %s\n", pub_kline.FullString())
 
 	k.EraseOutTimeKline()
 
