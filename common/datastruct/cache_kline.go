@@ -259,7 +259,7 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 
 	var pub_kline *Kline = nil
 
-	if IsNewKlineStart(new_kline, int64(resolution)) {
+	if IsNewKlineStart(new_kline, int64(resolution)) { // 未能正确的导出结果;
 
 		if k.CheckStoredKline(cache_kline) {
 			k.AddCompletedKline(cache_kline, resolution)
