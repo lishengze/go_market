@@ -265,7 +265,7 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 			k.AddCompletedKline(cache_kline, resolution)
 		}
 
-		logx.Slowf("AddCacheByNewReal:\nCache:%s\nNew: %s", resolution, cache_kline.FullString(), new_kline.FullString())
+		logx.Slowf("Real NewStart OldCache:\nCache:%s", resolution, cache_kline.FullString())
 
 		cache_kline = NewKlineWithKline(new_kline)
 		cache_kline.SetPerfectTime(int64(resolution))
@@ -278,7 +278,7 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 		pub_kline = NewKlineWithKline(cache_kline)
 		pub_kline.Volume = new_kline.Volume
 	} else {
-		logx.Slowf("\nUpdateCacheByRealNew:\nCache:%s\nNew:%s", cache_kline.FullString(), new_kline.FullString())
+		logx.Slowf("\nReal NewMinute Update:\nCache:%s", cache_kline.FullString())
 		cache_kline.UpdateInfoByRealKline(new_kline)
 		pub_kline = NewKlineWithKline(cache_kline)
 		pub_kline.Volume = cache_kline.Volume + new_kline.Volume
@@ -294,17 +294,16 @@ func (k *KlineCache) ProcessLaterRealKline(new_kline *Kline, cache_kline *Kline,
 	var pub_kline *Kline = nil
 
 	if util.IsNewMinuteStart(new_kline.Time, last_kline.Time) {
-		logx.Slowf("\nNewMinuteStart: \nnew:%s\nlast:%s", new_kline.FullString(), last_kline.FullString())
+		logx.Slowf("\nLaterReal NewMinuteStart: \nlast:%s", last_kline.FullString())
 		k.ProcessOldMinuteWork(cache_kline, last_kline)
 
 		pub_kline = k.ProcessNewMinuteWork(new_kline, cache_kline, last_kline, resolution)
 	} else {
+		logx.Slowf("LaterReal MiddleMinUpdate:\nCache:%s", cache_kline.FullString())
 
 		cache_kline.UpdateInfoByRealKline(new_kline)
 		pub_kline = NewKlineWithKline(cache_kline)
 		pub_kline.Volume = cache_kline.Volume + new_kline.Volume
-
-		logx.Slowf("MiddleMin:\nCache:%s\nNew: %s\n", cache_kline.FullString(), new_kline.FullString())
 	}
 
 	k.SetCacheKline(cache_kline, resolution)
@@ -320,7 +319,7 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 	var pub_kline *Kline = nil
 
 	if IsOldKlineEnd(new_kline, int64(resolution)) {
-		logx.Slowf("OldKlineEnd: %d, %s", resolution, new_kline.FullString())
+		logx.Slowf("LaterHist OldKlineEnd: %d, %s", resolution, new_kline.FullString())
 
 		if new_kline.Resolution != resolution {
 			cache_kline.UpdateInfoByHistKline(new_kline)
@@ -331,15 +330,15 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 		k.AddCompletedKline(cache_kline, resolution)
 
 	} else if IsNewKlineStart(new_kline, int64(resolution)) {
-		logx.Slowf("NewKlineStart: %d, %s", resolution, new_kline.FullString())
+		logx.Slowf("LaterHist NewKlineStart: cache: %s", resolution, cache_kline.FullString())
 		cache_kline = NewKlineWithKline(new_kline)
 		cache_kline.Resolution = resolution
 		cache_kline.LastVolume = 0
 		cache_kline.SetPerfectTime(int64(resolution))
 
 	} else {
+		logx.Slowf("LaterHist Cached Kline:%s", cache_kline.FullString())
 		cache_kline.UpdateInfoByHistKline(new_kline)
-		logx.Slowf("Cached Kline:%d\n%s\n%s", resolution, new_kline.FullString(), cache_kline.FullString())
 	}
 
 	k.SetCacheKline(cache_kline, resolution)
