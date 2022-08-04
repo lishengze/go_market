@@ -365,6 +365,7 @@ func (k *KlineCache) InitCacheKline(new_kline *Kline, resolution int) *Kline {
 	kline := NewKlineWithKline(new_kline)
 	kline.SetPerfectTime(int64(resolution))
 	kline.Resolution = resolution
+	kline.Volume = 0
 
 	k.SetCacheKline(kline, resolution)
 	k.SetLastKline(new_kline, resolution)

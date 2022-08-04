@@ -301,9 +301,9 @@ func (t *Trade) String() string {
 }
 
 func (k *Kline) FullString() string {
-	res := fmt.Sprintf("%s.%s, %s, %d, lv: %f, v: %f, o: %f, h: %f, l: %f, c: %f",
+	res := fmt.Sprintf("%s.%s, %s, %d, lv: %f, v: %f, o: %f, h: %f, l: %f, c: %f, %d",
 		k.Exchange, k.Symbol, util.TimeStrFromInt(k.Time), k.Sequence, k.LastVolume, k.Volume,
-		k.Open, k.High, k.Low, k.Close)
+		k.Open, k.High, k.Low, k.Close, k.Resolution)
 	return res
 }
 
