@@ -366,7 +366,7 @@ func (k *KlineCache) InitCacheKline(new_kline *Kline, resolution int) *Kline {
 	kline.Resolution = resolution
 
 	k.SetCacheKline(kline, resolution)
-	k.SetLastKline(kline, resolution)
+	k.SetLastKline(new_kline, resolution)
 
 	logx.Slowf("InitCache: %s", kline.FullString())
 
