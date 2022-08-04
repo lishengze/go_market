@@ -186,11 +186,11 @@ func (k *Kline) ResetWithNewKline(new_kline *Kline) {
 	k.Exchange = new_kline.Exchange
 	k.Time = new_kline.Time
 	k.Open = new_kline.Open
-	k.Resolution = new_kline.Resolution
 	k.Close = new_kline.Close
 	k.Low = util.MinFloat64(k.Low, new_kline.Low)
 	k.High = util.MaxFloat64(k.High, new_kline.High)
 	k.Volume = k.Volume + new_kline.Volume
+	k.Resolution = new_kline.Resolution
 	k.Sequence = new_kline.Sequence
 	k.LastVolume = new_kline.LastVolume
 }

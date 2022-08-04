@@ -213,7 +213,6 @@ func (k *KlineCache) ProcessOldKline(new_kline *Kline, cache_kline *Kline, resol
 	return nil
 }
 
-// UnTest
 func (k *KlineCache) ProcessEqualKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution int) *Kline {
 	defer util.CatchExp(fmt.Sprintf("ProcessEqualKline \n%s\n%s\n%d", new_kline.FullString(), cache_kline.FullString(), resolution))
 
@@ -225,6 +224,7 @@ func (k *KlineCache) ProcessEqualKline(new_kline *Kline, cache_kline *Kline, las
 		return nil
 	}
 
+	//Tested
 	cache_kline.Volume = cache_kline.Volume + new_kline.Volume
 	cache_kline.Sequence = new_kline.Sequence
 
@@ -243,7 +243,7 @@ func (k *KlineCache) ProcessEqualKline(new_kline *Kline, cache_kline *Kline, las
 	return pub_kline
 }
 
-// Tested
+//UnTested
 func (k *KlineCache) ProcessOldMinuteWork(cache_kline *Kline, last_kline *Kline) {
 	defer util.CatchExp(fmt.Sprintf("ProcessOldMinuteWork \ncache: %s\n%s", cache_kline.FullString(), last_kline.FullString()))
 
@@ -263,11 +263,11 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 	if IsNewKlineStart(new_kline, int64(resolution)) { // 未能正确的导出结果;
 		logx.Slowf("NewResolutionStart!")
 
-		if k.CheckStoredKline(cache_kline) {
+		if !k.CheckStoredKline(cache_kline) {
 			k.AddCompletedKline(cache_kline, resolution)
 		}
 
-		cache_kline = NewKlineWithKline(new_kline)
+		cache_kline.ResetWithNewKline(new_kline)
 		cache_kline.SetPerfectTime(int64(resolution))
 		cache_kline.Volume = 0
 		cache_kline.LastVolume = 0
@@ -277,7 +277,7 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 
 		pub_kline = NewKlineWithKline(cache_kline)
 		pub_kline.Volume = new_kline.Volume
-	} else {
+	} else { // Tested
 		cache_kline.UpdateInfoByRealKline(new_kline)
 		logx.Slowf("UpdateCache: %s", cache_kline.FullString())
 
@@ -344,7 +344,7 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 
 		logx.Slowf("NewKlineStart, SetCache: %s", cache_kline.FullString())
 
-	} else {
+	} else { //Tested
 
 		cache_kline.UpdateInfoByHistKline(new_kline)
 		logx.Slowf("UpdateMiddleCache: %s", cache_kline.FullString())
