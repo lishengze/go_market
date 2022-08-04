@@ -274,7 +274,7 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 		pub_kline = NewKlineWithKline(cache_kline)
 		pub_kline.Volume = new_kline.Volume
 	} else {
-		logx.Slowf("UpdateCacheByNew:\nCache:%s\nNew:%s", cache_kline.FullString(), new_kline.FullString())
+		logx.Slowf("\nUpdateCacheByRealNew:\nCache:%s\nNew:%s", cache_kline.FullString(), new_kline.FullString())
 		cache_kline.UpdateInfoByRealKline(new_kline)
 		pub_kline = NewKlineWithKline(cache_kline)
 		pub_kline.Volume = cache_kline.Volume + new_kline.Volume
