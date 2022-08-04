@@ -208,7 +208,7 @@ func (k *KlineCache) ProcessOldKline(new_kline *Kline, cache_kline *Kline, resol
 	defer util.CatchExp(fmt.Sprintf("ProcessOldKline \n%s\n%s\n%d", new_kline.FullString(), cache_kline.FullString(), resolution))
 
 	logx.Errorf("NewKline is Old: %s\nCacheKLine is: %s\n", new_kline.FullString(), cache_kline.FullString())
-	logx.Slowf("NewKline is Old: %s\nCacheKLine is: %s\n", new_kline.FullString(), cache_kline.FullString())
+	logx.Slowf("NewKline is Old: NewKline.Seq: %d, CacheKline.Seq: %d", new_kline.Sequence, cache_kline.Sequence)
 
 	return nil
 }
@@ -221,11 +221,9 @@ func (k *KlineCache) ProcessEqualKline(new_kline *Kline, cache_kline *Kline, las
 
 	if !new_kline.IsHistory() {
 		logx.Errorf("NewKLine Is Real: %s\nCacheKline: %s\nIs Same!", new_kline.FullString(), cache_kline.FullString())
-		logx.Slowf("NewKLine Is Real: %s\nCacheKline: %s\nIs Same!", new_kline.FullString(), cache_kline.FullString())
+		logx.Slowf("NewKLine Is Real: Is Same with CacheKline!", new_kline.FullString(), cache_kline.FullString())
 		return nil
 	}
-
-	logx.Slowf("Update Equal HistKline: %s\nLastKline: %s\nCacheKline: %s\n", new_kline.FullString(), last_kline.FullString(), cache_kline.FullString())
 
 	cache_kline.Volume = cache_kline.Volume + new_kline.Volume
 	cache_kline.Sequence = new_kline.Sequence
@@ -233,10 +231,12 @@ func (k *KlineCache) ProcessEqualKline(new_kline *Kline, cache_kline *Kline, las
 	k.SetLastKline(new_kline, resolution)
 	k.SetCacheKline(cache_kline, resolution)
 
+	logx.Slowf("UpdateHistEqual CacheKline:%s", cache_kline.FullString())
+
 	pub_kline = NewKlineWithKline(cache_kline)
 
 	if IsOldKlineEnd(new_kline, int64(resolution)) {
-		logx.Slowf("Old Kline End: %s", cache_kline.FullString())
+		logx.Slowf("Old Kline End!")
 		k.AddCompletedKline(cache_kline, resolution)
 	}
 
@@ -248,8 +248,9 @@ func (k *KlineCache) ProcessOldMinuteWork(cache_kline *Kline, last_kline *Kline)
 	defer util.CatchExp(fmt.Sprintf("ProcessOldMinuteWork \ncache: %s\n%s", cache_kline.FullString(), last_kline.FullString()))
 
 	if !last_kline.IsHistory() {
-		logx.Slowf("ProcessOldMinuteWork:\nCache:%s\nLast:%s", cache_kline.FullString(), last_kline.FullString())
 		cache_kline.Volume = cache_kline.Volume + last_kline.Volume
+
+		logx.Slowf("OldMinuteNotFinished LastKline is Real:\nLastKLine:%s\nNewCache: %s", last_kline.FullString(), cache_kline.FullString())
 	}
 
 }
@@ -260,12 +261,11 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 	var pub_kline *Kline = nil
 
 	if IsNewKlineStart(new_kline, int64(resolution)) { // 未能正确的导出结果;
+		logx.Slowf("NewResolutionStart!")
 
 		if k.CheckStoredKline(cache_kline) {
 			k.AddCompletedKline(cache_kline, resolution)
 		}
-
-		logx.Slowf("Real NewStart OldCache:\nCache:%s", resolution, cache_kline.FullString())
 
 		cache_kline = NewKlineWithKline(new_kline)
 		cache_kline.SetPerfectTime(int64(resolution))
@@ -278,8 +278,9 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 		pub_kline = NewKlineWithKline(cache_kline)
 		pub_kline.Volume = new_kline.Volume
 	} else {
-		logx.Slowf("\nReal NewMinute Update:\nCache:%s", cache_kline.FullString())
 		cache_kline.UpdateInfoByRealKline(new_kline)
+		logx.Slowf("UpdateCache: %s", cache_kline.FullString())
+
 		pub_kline = NewKlineWithKline(cache_kline)
 		pub_kline.Volume = cache_kline.Volume + new_kline.Volume
 	}
@@ -292,16 +293,17 @@ func (k *KlineCache) ProcessLaterRealKline(new_kline *Kline, cache_kline *Kline,
 	defer util.CatchExp(fmt.Sprintf("ProcessLaterRealKline \n%s\n%s\n%d", new_kline.FullString(), cache_kline.FullString(), resolution))
 
 	var pub_kline *Kline = nil
+	logx.Slowf("ProcessLaterRealKline")
 
 	if util.IsNewMinuteStart(new_kline.Time, last_kline.Time) {
-		logx.Slowf("\nLaterReal NewMinuteStart: \nlast:%s", last_kline.FullString())
+		logx.Slowf("NewMinuteStart: NewTime: %s", util.TimeStrFromInt(new_kline.Time))
 		k.ProcessOldMinuteWork(cache_kline, last_kline)
 
 		pub_kline = k.ProcessNewMinuteWork(new_kline, cache_kline, last_kline, resolution)
 	} else {
-		logx.Slowf("LaterReal MiddleMinUpdate:\nCache:%s", cache_kline.FullString())
-
 		cache_kline.UpdateInfoByRealKline(new_kline)
+		logx.Slowf("MiddleSecs UpdateCache:%s", cache_kline.FullString())
+
 		pub_kline = NewKlineWithKline(cache_kline)
 		pub_kline.Volume = cache_kline.Volume + new_kline.Volume
 	}
@@ -318,11 +320,15 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 
 	var pub_kline *Kline = nil
 
+	logx.Slowf("ProcessLaterHistKline")
+
 	if IsOldKlineEnd(new_kline, int64(resolution)) {
-		logx.Slowf("LaterHist OldKlineEnd: %d, %s", resolution, new_kline.FullString())
+
+		logx.Slowf("OldKlineEnd,Resolution:%d, NewTime: %s", resolution, util.TimeStrFromInt(new_kline.Time))
 
 		if new_kline.Resolution != resolution {
 			cache_kline.UpdateInfoByHistKline(new_kline)
+			logx.Slowf("UpdateLastCache: %s", cache_kline.FullString())
 		} else {
 			cache_kline.ResetWithNewKline(new_kline)
 		}
@@ -330,15 +336,18 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 		k.AddCompletedKline(cache_kline, resolution)
 
 	} else if IsNewKlineStart(new_kline, int64(resolution)) {
-		logx.Slowf("LaterHist NewKlineStart: cache: %s", resolution, cache_kline.FullString())
+
 		cache_kline = NewKlineWithKline(new_kline)
 		cache_kline.Resolution = resolution
 		cache_kline.LastVolume = 0
 		cache_kline.SetPerfectTime(int64(resolution))
 
+		logx.Slowf("NewKlineStart, SetCache: %s", cache_kline.FullString())
+
 	} else {
-		logx.Slowf("LaterHist Cached Kline:%s", cache_kline.FullString())
+
 		cache_kline.UpdateInfoByHistKline(new_kline)
+		logx.Slowf("UpdateMiddleCache: %s", cache_kline.FullString())
 	}
 
 	k.SetCacheKline(cache_kline, resolution)
@@ -407,6 +416,9 @@ func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution int) (*Kline, 
 	if cache_kline == nil {
 		pub_kline = k.InitCacheKline(new_kline, resolution)
 	} else {
+		logx.Slowf("cache_kline: %s", cache_kline.FullString())
+		logx.Slowf("last_kline : %s", last_kline.FullString())
+
 		if new_kline.Sequence < cache_kline.Sequence {
 			pub_kline = k.ProcessOldKline(new_kline, cache_kline, resolution)
 		} else if new_kline.Sequence == cache_kline.Sequence {
