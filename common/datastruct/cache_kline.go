@@ -426,7 +426,7 @@ func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution int) (*Kline, 
 		logx.Slowf("last_kline : %s", last_kline.FullString())
 
 		if new_kline.Sequence < cache_kline.Sequence {
-			pub_kline = k.ProcessOldKline(new_kline, cache_kline, resolution)
+			pub_kline = k.ProcessOldKline(new_kline, cache_kline, last_kline, resolution)
 		} else if new_kline.Sequence == cache_kline.Sequence {
 			pub_kline = k.ProcessEqualKline(new_kline, cache_kline, last_kline, resolution)
 		} else {
