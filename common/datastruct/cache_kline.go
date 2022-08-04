@@ -297,7 +297,7 @@ func (k *KlineCache) ProcessLaterRealKline(new_kline *Kline, cache_kline *Kline,
 		logx.Slowf("\nNewMinuteStart: \nnew:%s\nlast:%s", new_kline.FullString(), last_kline.FullString())
 		k.ProcessOldMinuteWork(cache_kline, last_kline)
 
-		k.ProcessNewMinuteWork(new_kline, cache_kline, last_kline, resolution)
+		pub_kline = k.ProcessNewMinuteWork(new_kline, cache_kline, last_kline, resolution)
 	} else {
 
 		cache_kline.UpdateInfoByRealKline(new_kline)
