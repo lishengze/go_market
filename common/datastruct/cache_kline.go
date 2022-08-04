@@ -328,7 +328,7 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 
 	logx.Slowf("ProcessLaterHistKline")
 
-	if IsOldKlineEnd(new_kline, int64(resolution)) {
+	if IsOldKlineEnd(new_kline, int64(resolution)) { //Tested
 
 		logx.Slowf("OldKlineEnd,Resolution:%d, NewTime: %s", resolution, util.TimeStrFromInt(new_kline.Time))
 
@@ -341,7 +341,7 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 
 		k.AddCompletedKline(cache_kline, resolution)
 
-	} else if util.IsNewResolutionStart(new_kline.Time, last_kline.Time, resolution) {
+	} else if util.IsNewResolutionStart(new_kline.Time, last_kline.Time, resolution) { // Tested
 
 		cache_kline = NewKlineWithKline(new_kline)
 		cache_kline.Resolution = resolution

@@ -382,7 +382,11 @@ func (a *Aggregator) aggregate_kline() {
 		kline.SetHistoryFlag()
 
 		if !kline.HasTrade() {
-			kline.Sequence++
+			sequence := a.GetTradeKlineSeq(kline.Symbol)
+
+			kline.Sequence = sequence
+
+			a.UpdateTradeKlineSeq(kline.Symbol)
 		}
 
 		kline.Time = util.LastUTCMinuteNano() // 当前时间超过了上一分钟;
