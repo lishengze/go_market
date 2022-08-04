@@ -24,3 +24,4 @@ app/admin/api/go_build_bcts_app_admin_cmd_api
 
 
 test_client
+common/datastruct/test_datastruct/test_datastruct
