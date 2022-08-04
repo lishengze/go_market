@@ -98,6 +98,18 @@ func IsNewMinuteStart(new_time int64, old_time int64) bool {
 	return new_time_minute != old_time_minute
 }
 
+func IsNewResolutionStart(new_time int64, old_time int64, resolution int) bool {
+
+	if resolution < int(time.Second) {
+		resolution = resolution * int(time.Second)
+	}
+
+	new_time_minute := new_time - new_time%int64(resolution)
+	old_time_minute := old_time - old_time%int64(resolution)
+
+	return new_time_minute != old_time_minute
+}
+
 func TestNanoMinute() {
 	UTCMinuteNano()
 }
