@@ -179,6 +179,7 @@ func (k *KlineCache) AddCompletedKline(new_kline *Kline, resolution int) {
 	if _, ok := k.CompletedKlines[new_kline.Symbol][resolution]; !ok {
 		k.CompletedKlines[new_kline.Symbol][resolution] = treemap.NewWith(utils.Int64Comparator)
 	}
+	logx.Slowf("AddComplteKline: %s", new_kline.FullString())
 
 	k.CompletedKlines[new_kline.Symbol][resolution].Put(new_kline.Time, new_kline)
 }
@@ -235,7 +236,7 @@ func (k *KlineCache) ProcessEqualKline(new_kline *Kline, cache_kline *Kline, las
 	pub_kline = NewKlineWithKline(cache_kline)
 
 	if IsOldKlineEnd(new_kline, int64(resolution)) {
-		logx.Slowf("Old Kline End: %s", resolution, cache_kline.FullString())
+		logx.Slowf("Old Kline End: %s", cache_kline.FullString())
 		k.AddCompletedKline(cache_kline, resolution)
 	}
 
