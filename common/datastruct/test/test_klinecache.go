@@ -87,7 +87,7 @@ func (t *TestKlineCache) StartListenRecvdata() {
 			case new_depth := <-t.RecvDataChan.DepthChannel:
 				t.process_depth(new_depth)
 			case new_kline := <-t.RecvDataChan.KlineChannel:
-				go t.process_kline(new_kline)
+				t.process_kline(new_kline)
 			case new_trade := <-t.RecvDataChan.TradeChannel:
 				t.process_trade(new_trade)
 			}

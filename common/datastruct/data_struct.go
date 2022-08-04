@@ -397,6 +397,8 @@ func NewKlineWithKline(kline *Kline) *Kline {
 		Close:      kline.Close,
 		Volume:     kline.Volume,
 		Resolution: kline.Resolution,
+		LastVolume: kline.LastVolume,
+		Sequence:   kline.Sequence,
 	}
 }
 
