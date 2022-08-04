@@ -262,13 +262,16 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 	if IsNewKlineStart(new_kline, int64(resolution)) {
 
 		if k.CheckStoredKline(cache_kline) {
-			logx.Slowf("AddKlineByNewReal:\nCache:%s\nNew: %s", resolution, cache_kline.FullString(), new_kline.FullString())
 			k.AddCompletedKline(cache_kline, resolution)
 		}
+
+		logx.Slowf("AddCacheByNewReal:\nCache:%s\nNew: %s", resolution, cache_kline.FullString(), new_kline.FullString())
 
 		cache_kline = NewKlineWithKline(new_kline)
 		cache_kline.SetPerfectTime(int64(resolution))
 		cache_kline.Volume = 0
+		cache_kline.LastVolume = 0
+		cache_kline.Resolution = resolution
 
 		logx.Slowf("SetNewCache:%s", cache_kline.FullString())
 
@@ -331,6 +334,7 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 		logx.Slowf("NewKlineStart: %d, %s", resolution, new_kline.FullString())
 		cache_kline = NewKlineWithKline(new_kline)
 		cache_kline.Resolution = resolution
+		cache_kline.LastVolume = 0
 		cache_kline.SetPerfectTime(int64(resolution))
 
 	} else {
@@ -366,6 +370,7 @@ func (k *KlineCache) InitCacheKline(new_kline *Kline, resolution int) *Kline {
 	kline.SetPerfectTime(int64(resolution))
 	kline.Resolution = resolution
 	kline.Volume = 0
+	kline.LastVolume = 0
 
 	k.SetCacheKline(kline, resolution)
 	k.SetLastKline(new_kline, resolution)
