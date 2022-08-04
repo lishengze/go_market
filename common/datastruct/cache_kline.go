@@ -320,7 +320,7 @@ func (k *KlineCache) ProcessLaterRealKline(new_kline *Kline, cache_kline *Kline,
 	return pub_kline
 }
 
-// UnTest
+// Tested
 func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution int) *Kline {
 	defer util.CatchExp(fmt.Sprintf("ProcessLaterHistKline \n%s\n%s\n%d", new_kline.FullString(), cache_kline.FullString(), resolution))
 
@@ -336,7 +336,7 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 			cache_kline.UpdateInfoByHistKline(new_kline)
 			logx.Slowf("UpdateLastCache: %s", cache_kline.FullString())
 		} else {
-			cache_kline.ResetWithNewKline(new_kline)
+			cache_kline.ResetWithNewKline(new_kline) //UnTest
 		}
 
 		k.AddCompletedKline(cache_kline, resolution)
@@ -363,7 +363,7 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 	return pub_kline
 }
 
-// UnTest
+// Tested
 func (k *KlineCache) ProcessLaterKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution int) *Kline {
 	defer util.CatchExp(fmt.Sprintf("ProcessLaterKline \n%s\n%s\n%d", new_kline.FullString(), cache_kline.FullString(), resolution))
 	var pub_kline *Kline = nil
@@ -454,7 +454,12 @@ func EraseTreeNode(tree *treemap.Map, target_count int) {
 	}
 
 	for _, outtimeKey := range erase_times {
-		tree.Remove(outtimeKey)
+		value, ok := tree.Get(outtimeKey)
+		if ok {
+			logx.Slowf("Erase %s \n", value.(*Kline).FullString())
+			tree.Remove(outtimeKey)
+		}
+
 	}
 }
 

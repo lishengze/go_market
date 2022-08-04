@@ -59,7 +59,7 @@ func NewTestKlineCache() *TestKlineCache {
 	kafkaServer, err := kafka.NewKafka(serializer, recvDataChan, pubDataChan, config.KafkaConfig)
 
 	cacheConfig := &datastruct.CacheConfig{
-		Count: 1500,
+		Count: 5,
 	}
 	klineCache := datastruct.NewKlineCache(cacheConfig)
 
@@ -103,7 +103,7 @@ func (t *TestKlineCache) process_kline(kline *datastruct.Kline) error {
 		return fmt.Errorf("kline is Nil")
 	}
 
-	resolution := 5 * datastruct.NANO_PER_MIN
+	resolution := 1 * datastruct.NANO_PER_MIN
 	t.KlineCache.UpdateWithKline(kline, resolution)
 
 	// if kline.IsHistory() {
