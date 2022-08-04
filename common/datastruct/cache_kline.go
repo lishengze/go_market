@@ -224,10 +224,10 @@ func (k *KlineCache) ProcessEqualKline(new_kline *Kline, cache_kline *Kline, las
 		return nil
 	}
 
+	logx.Slowf("Update Equal HistKline: %s\nLastKline: %s\nCacheKline: %s\n", new_kline.FullString(), last_kline.FullString(), cache_kline.FullString())
+
 	cache_kline.Volume = cache_kline.Volume + new_kline.Volume
 	cache_kline.Sequence = new_kline.Sequence
-
-	logx.Slowf("Update Equal HistKline: %s\nLastKline: %s\nCacheKline: %s\n", new_kline.FullString(), last_kline.FullString(), cache_kline.FullString())
 
 	k.SetLastKline(new_kline, resolution)
 	k.SetCacheKline(cache_kline, resolution)
@@ -235,14 +235,14 @@ func (k *KlineCache) ProcessEqualKline(new_kline *Kline, cache_kline *Kline, las
 	pub_kline = NewKlineWithKline(cache_kline)
 
 	if IsOldKlineEnd(new_kline, int64(resolution)) {
-		logx.Slowf("Old Kline End: rsl:%d, %s", resolution, new_kline.String())
+		logx.Slowf("Old Kline End: %s", resolution, cache_kline.FullString())
 		k.AddCompletedKline(cache_kline, resolution)
 	}
 
 	return pub_kline
 }
 
-//Undo
+// Tested
 func (k *KlineCache) ProcessOldMinuteWork(cache_kline *Kline, last_kline *Kline) {
 	defer util.CatchExp(fmt.Sprintf("ProcessOldMinuteWork \ncache: %s\n%s", cache_kline.FullString(), last_kline.FullString()))
 
