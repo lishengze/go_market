@@ -87,7 +87,7 @@ func (t *TestKlineCache) StartListenRecvdata() {
 			case new_depth := <-t.RecvDataChan.DepthChannel:
 				t.process_depth(new_depth)
 			case new_kline := <-t.RecvDataChan.KlineChannel:
-				t.process_kline(new_kline)
+				go t.process_kline(new_kline)
 			case new_trade := <-t.RecvDataChan.TradeChannel:
 				t.process_trade(new_trade)
 			}
@@ -97,6 +97,7 @@ func (t *TestKlineCache) StartListenRecvdata() {
 }
 
 func (t *TestKlineCache) process_kline(kline *datastruct.Kline) error {
+	defer util.CatchExp(fmt.Sprintf("ProcessKline %s", kline.FullString()))
 
 	if kline == nil {
 		return fmt.Errorf("kline is Nil")
