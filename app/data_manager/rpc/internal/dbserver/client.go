@@ -185,7 +185,7 @@ func (d *DBServer) create_table(data_type string, symbol string, exchange string
 func (d *DBServer) process_kline(kline *datastruct.Kline) error {
 	defer util.CatchExp(fmt.Sprintf("DBServer process_kline %s", kline.String()))
 
-	// d.kline_cache.UpdateWithKline(kline)
+	d.kline_cache.UpdateAllKline(kline)
 
 	if kline.IsHistory() {
 		return d.store_kline(kline)
@@ -367,14 +367,12 @@ func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []
 	if rst == nil {
 		db_klines := d.GetDBKlinesByCount(symbol, resolution, count)
 		d.kline_cache.InitWithHistKlines(db_klines, symbol, resolution)
+
+		latest_kline := d.kline_cache.GetLatestRealTimeKline(symbol)
+		d.kline_cache.UpdateWithKline(latest_kline, resolution)
 	}
 
 	rst = d.kline_cache.GetKlinesByCount(symbol, resolution, count, false)
-
-	if rst != nil {
-		// trades := d.GetLastMinuteTrades(symbol)
-		// d.kline_cache.UpdateWithTrades(trades)
-	}
 
 	return rst
 }
