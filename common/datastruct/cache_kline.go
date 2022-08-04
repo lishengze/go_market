@@ -46,8 +46,8 @@ func NewKlineCache(config *CacheConfig) *KlineCache {
 func (k *KlineCache) InitWithHistKlines(klines []*Kline, symbol string, target_resolution int) {
 	defer util.CatchExp("InitWithKlines")
 
-	k.KlinesMutex.Lock()
-	defer k.KlinesMutex.Unlock()
+	// k.KlinesMutex.Lock()
+	// defer k.KlinesMutex.Unlock()
 
 	if _, ok := k.CompletedKlines[symbol]; !ok {
 		k.CompletedKlines[symbol] = make(map[int]*treemap.Map)
@@ -169,6 +169,9 @@ func (k *KlineCache) SetLastKline(new_kline *Kline, resolution int) *Kline {
 func (k *KlineCache) AddCompletedKline(new_kline *Kline, resolution int) {
 	defer util.CatchExp("")
 
+	k.KlinesMutex.Lock()
+	defer k.KlinesMutex.Unlock()
+
 	if _, ok := k.CompletedKlines[new_kline.Symbol]; !ok {
 		k.CompletedKlines[new_kline.Symbol] = make(map[int]*treemap.Map)
 	}
@@ -181,6 +184,10 @@ func (k *KlineCache) AddCompletedKline(new_kline *Kline, resolution int) {
 }
 
 func (k *KlineCache) CheckStoredKline(kline *Kline) bool {
+	defer util.CatchExp(fmt.Sprintf("CheckStoredKline %s", kline.FullString()))
+
+	k.KlinesMutex.Lock()
+	defer k.KlinesMutex.Unlock()
 
 	if _, ok := k.CompletedKlines[kline.Symbol]; !ok {
 		return false
@@ -374,8 +381,8 @@ func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution int) (*Kline, 
 	var pub_kline *Kline = nil
 	var err error = nil
 
-	k.KlinesMutex.Lock()
-	defer k.KlinesMutex.Unlock()
+	// k.KlinesMutex.Lock()
+	// defer k.KlinesMutex.Unlock()
 
 	logx.Slowf("NewKline: %s\n", new_kline.FullString())
 
