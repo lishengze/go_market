@@ -254,7 +254,7 @@ func (k *KlineCache) ProcessOldMinuteWork(cache_kline *Kline, last_kline *Kline)
 }
 
 func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution int) *Kline {
-	defer util.CatchExp(fmt.Sprintf("ProcessOldMinuteWork \ncache: %s\n%s", cache_kline.FullString(), last_kline.FullString()))
+	defer util.CatchExp(fmt.Sprintf("ProcessNewMinuteWork \ncache: %s\n%s", cache_kline.FullString(), last_kline.FullString()))
 
 	var pub_kline *Kline = nil
 
@@ -290,6 +290,7 @@ func (k *KlineCache) ProcessLaterRealKline(new_kline *Kline, cache_kline *Kline,
 	var pub_kline *Kline = nil
 
 	if util.IsNewMinuteStart(new_kline.Time, last_kline.Time) {
+		logx.Slowf("\nNewMinuteStart: \nnew:%s\nlast:%s", new_kline.FullString(), last_kline.FullString())
 		k.ProcessOldMinuteWork(cache_kline, last_kline)
 
 		k.ProcessNewMinuteWork(new_kline, cache_kline, last_kline, resolution)
