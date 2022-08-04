@@ -362,6 +362,7 @@ func (k *KlineCache) ProcessLaterKline(new_kline *Kline, cache_kline *Kline, las
 	return pub_kline
 }
 
+//
 func (k *KlineCache) InitCacheKline(new_kline *Kline, resolution int) *Kline {
 	defer util.CatchExp(fmt.Sprintf("InitCacheKline: %d, %s", resolution, new_kline.FullString()))
 	var pub_kline *Kline = nil
@@ -376,6 +377,10 @@ func (k *KlineCache) InitCacheKline(new_kline *Kline, resolution int) *Kline {
 	k.SetLastKline(new_kline, resolution)
 
 	logx.Slowf("InitCache: %s", kline.FullString())
+
+	if new_kline.IsHistory() && IsOldKlineEnd(new_kline, int64(resolution)) {
+		k.AddCompletedKline(kline, resolution)
+	}
 
 	pub_kline = kline
 
