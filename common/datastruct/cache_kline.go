@@ -213,7 +213,7 @@ func (k *KlineCache) ProcessOldKline(new_kline *Kline, cache_kline *Kline, last_
 
 	} else {
 		logx.Errorf("NewKline is Old: %s\nCacheKLine is: %s\n", new_kline.FullString(), cache_kline.FullString())
-		logx.Slowf("NewKline is Old: NewKline.Seq: %d, CacheKline.Seq: %d", new_kline.Sequence, cache_kline.Sequence)
+		logx.Slowf("NewKline is Old: NewKline.Seq: %d, CacheKline.Seq: %d \n", new_kline.Sequence, cache_kline.Sequence)
 
 	}
 	return nil
