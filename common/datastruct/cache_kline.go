@@ -226,7 +226,7 @@ func (k *KlineCache) ProcessEqualKline(new_kline *Kline, cache_kline *Kline, las
 
 	if !new_kline.IsHistory() {
 		logx.Errorf("NewKLine Is Real: %s\nCacheKline: %s\nIs Same!", new_kline.FullString(), cache_kline.FullString())
-		logx.Slowf("NewKLine Is Real: Is Same with CacheKline!", new_kline.FullString(), cache_kline.FullString())
+		logx.Slowf("NewKLine Is Real: Is Same with CacheKline!")
 		return nil
 	}
 
