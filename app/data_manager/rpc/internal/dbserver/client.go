@@ -374,12 +374,18 @@ func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []
 		logx.Slowf("KlineCache does not have enough data \n")
 		req_count := util.MaxInt(count, d.kline_cache.Config.Count)
 		db_klines := d.GetDBKlinesByCount(symbol, resolution, req_count)
+
+		logx.Slowf("db_klines.size: %d\n", len(db_klines))
+
 		d.kline_cache.InitWithHistKlines(db_klines, symbol, resolution)
 
 		latest_kline := d.kline_cache.GetLatestRealTimeKline(symbol)
+
+		logx.Slowf("latest_kline: %s\n\n", latest_kline.FullString())
+
 		d.kline_cache.UpdateWithKline(latest_kline, resolution)
 
-		logx.Infof("\n--------------------------  KlineCache: ------------------------", d.kline_cache.String(symbol, resolution))
+		logx.Infof("\n--------------------------  KlineCache: ------------------------%s", d.kline_cache.String(symbol, resolution))
 	}
 
 	rst = d.kline_cache.GetKlinesByCount(symbol, resolution, count, false)
