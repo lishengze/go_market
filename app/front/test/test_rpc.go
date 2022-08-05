@@ -94,13 +94,16 @@ func (t *TestRpc) Start() {
 }
 
 func (t *TestRpc) TestKline() {
+	resolution := 5 * datastruct.NANO_PER_MIN
+	symbol := "BTC_USDT"
+
 	req_hist_info := &marketservice.ReqHishKlineInfo{
-		Symbol:    "BTC_USDT",
+		Symbol:    symbol,
 		Exchange:  datastruct.BCTS_EXCHANGE,
 		StartTime: 1654297007842658763,
 		EndTime:   1654297013959596689,
 		Count:     30,
-		Frequency: 60,
+		Frequency: uint32(resolution),
 	}
 
 	rst, err := t.MSClient.RequestHistKlineData(t.Ctx, req_hist_info)
@@ -116,7 +119,9 @@ func (t *TestRpc) TestKline() {
 		logx.Infof(kline.FullString())
 	}
 
-	fmt.Printf("Rst: %+v \n", rst)
+	t.KlineCache.ReleaseInputKlines(klines, symbol, resolution)
+
+	logx.Slowf("KlineCache: %s", t.KlineCache.String(symbol, resolution))
 }
 
 func (t *TestRpc) TestTrade() {

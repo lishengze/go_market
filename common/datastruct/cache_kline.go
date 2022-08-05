@@ -655,8 +655,8 @@ func (k *KlineCache) EraseOutTimeKline() {
 func (k *KlineCache) GetKlinesByCount(symbol string, resolution int, count int, get_most bool) []*Kline {
 	defer util.CatchExp("GetKlinesByCount")
 
-	k.CompleteKlinesMutex.Lock()
-	defer k.CompleteKlinesMutex.Unlock()
+	k.UpdateMutex.Lock()
+	defer k.UpdateMutex.Unlock()
 
 	var rst []*Kline
 
@@ -688,6 +688,12 @@ func (k *KlineCache) GetKlinesByCount(symbol string, resolution int, count int, 
 		}
 		index++
 	}
+
+	cache_kline := k.GetCurCacheKline(symbol, resolution)
+	last_kline := k.GetCurLastKline(symbol, resolution)
+
+	rst = append(rst, cache_kline)
+	rst = append(rst, last_kline)
 
 	return rst
 }
