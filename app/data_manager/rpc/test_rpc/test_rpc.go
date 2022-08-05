@@ -145,5 +145,8 @@ func (t *TestRpc) TestTrade() {
 func main() {
 	fmt.Println("----- Test Rpc -------")
 
-	test_rpc()
+	test_obj := NewTestRpc()
+	test_obj.Start()
+
+	// test_rpc()
 }
