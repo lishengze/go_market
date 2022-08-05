@@ -672,9 +672,11 @@ func (k *KlineCache) GetKlinesByCount(symbol string, resolution int, count int, 
 		return nil
 	}
 
+	logx.Slowf("k.CompletedKlines[%s][%d].Size: %d \n", k.CompletedKlines[symbol][resolution].Size())
+
 	// 缓存的数目不够，并且强制要求得到 count 数量的数据;
-	if k.CompletedKlines[symbol][resolution].Size() < count && k.CompletedKlines[symbol][resolution].Size() >= k.Config.Count && get_most {
-		logx.Slowf("CompleteKLins %s,%d.size: %d, count: %d, config.count: %d, get_most: %v",
+	if k.CompletedKlines[symbol][resolution].Size() < count && get_most {
+		logx.Slowf("CompleteKLins %s,%d.size: %d, count: %d, config.count: %d, get_most: %v\n",
 			symbol, resolution, k.CompletedKlines[symbol][resolution].Size(), count, k.Config.Count, get_most)
 
 		return nil

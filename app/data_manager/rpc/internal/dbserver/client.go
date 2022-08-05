@@ -366,12 +366,12 @@ func (d *DBServer) GetDBKlinesByTime(symbol string, resolution int, start_time i
 func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
 	defer util.CatchExp("DBServer GetKlinesByCount")
 
-	logx.Slowf("GetKlinesByCount  %s, %d, %d", symbol, resolution, count)
+	logx.Slowf("GetKlinesByCount  %s, %d, %d \n", symbol, resolution, count)
 
 	rst := d.kline_cache.GetKlinesByCount(symbol, resolution, count, true)
 
 	if rst == nil {
-		logx.Slowf("KlineCache does not have enough data")
+		logx.Slowf("KlineCache does not have enough data \n")
 		req_count := util.MaxInt(count, d.kline_cache.Config.Count)
 		db_klines := d.GetDBKlinesByCount(symbol, resolution, req_count)
 		d.kline_cache.InitWithHistKlines(db_klines, symbol, resolution)
