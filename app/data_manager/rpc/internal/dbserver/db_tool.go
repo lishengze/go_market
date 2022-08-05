@@ -7,6 +7,8 @@ import (
 	"market_server/common/util"
 	"strconv"
 
+	"github.com/emirpasic/gods/maps/treemap"
+	"github.com/emirpasic/gods/utils"
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -125,6 +127,7 @@ func GetTrade(values []interface{}) *datastruct.Trade {
 //UnTest
 func TransDBKlines(db_rows *sql.Rows) []*datastruct.Kline {
 	var rst []*datastruct.Kline
+	tree := treemap.NewWith(utils.Int64Comparator)
 
 	columns, _ := db_rows.Columns()
 	scanArgs := make([]interface{}, len(columns))
@@ -138,11 +141,16 @@ func TransDBKlines(db_rows *sql.Rows) []*datastruct.Kline {
 
 		if err != nil {
 			logx.Error(err.Error())
-			return rst
 		}
 
 		tmp_kline := GetKline(values)
-		rst = append(rst, tmp_kline)
+		tree.Put(tmp_kline.Time, tmp_kline)
+	}
+
+	iter := tree.Iterator()
+	iter.Begin()
+	for iter.Begin(); iter.Next(); {
+		rst = append(rst, iter.Value().(*datastruct.Kline))
 	}
 
 	return rst
