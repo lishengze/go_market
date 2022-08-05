@@ -386,6 +386,36 @@ func HistKlineTimeList(hist_line *treemap.Map, size int) string {
 	return rst
 }
 
+func HistKlineList(hist_line *treemap.Map, size int) string {
+
+	rst := fmt.Sprintf("Size: %d; \n", hist_line.Size())
+
+	if size == 0 || size*2 > hist_line.Size() {
+		iter := hist_line.Iterator()
+
+		for iter.Begin(); iter.Next(); {
+			rst = rst + fmt.Sprintf("%s, \n", iter.Value().(*Kline).FullString())
+		}
+	} else {
+		first_count := 0
+		iter := hist_line.Iterator()
+
+		rst = rst + fmt.Sprintf("First %d data: \n", size)
+		for iter.Begin(); iter.Next() && first_count < size; {
+			rst = rst + fmt.Sprintf("%s, \n", iter.Value().(*Kline).FullString())
+			first_count += 1
+		}
+
+		first_count = 0
+		rst = rst + fmt.Sprintf("Last %d data: \n", size)
+		for iter.End(); iter.Prev() && first_count < size; {
+			rst = rst + fmt.Sprintf("%s, \n", iter.Value().(*Kline).FullString())
+			first_count += 1
+		}
+	}
+	return rst
+}
+
 func NewKlineWithKline(kline *Kline) *Kline {
 	return &Kline{
 		Exchange:   kline.Exchange,

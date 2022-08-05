@@ -70,6 +70,61 @@ func (k *KlineCache) InitWithHistKlines(klines []*Kline, symbol string, resoluti
 	}
 }
 
+func (k *KlineCache) ReleaseInputKlines(klines []*Kline, symbol string, resolution int) {
+	defer util.CatchExp("ReleaseInputKlines")
+
+	k.UpdateMutex.Lock()
+	defer k.UpdateMutex.Unlock()
+
+	k.CleanHistData(symbol, resolution)
+
+	if len(klines) < 2 {
+		logx.Errorf("Not Enough Info,At least has CacheKline and LastKline")
+		return
+	}
+
+	cache_kline := klines[len(klines)-2]
+	last_kline := klines[len(klines)-1]
+
+	complete_klines := klines[0 : len(klines)-2]
+
+	k.SetCacheKline(cache_kline, resolution)
+	k.SetLastKline(last_kline, resolution)
+
+	for _, kline := range complete_klines {
+		k.AddCompletedKline(kline, resolution)
+	}
+}
+
+func (k *KlineCache) String(symbol string, resolution int) string {
+	defer util.CatchExp(fmt.Sprintf("KlineCache String %s, %d", symbol, resolution))
+
+	k.UpdateMutex.Lock()
+	defer k.UpdateMutex.Unlock()
+
+	rst := "\n"
+
+	if k.GetCurCacheKline(symbol, resolution) == nil {
+		rst = rst + "CacheKline is Nil\n"
+	} else {
+		rst = rst + fmt.Sprintf("CacheKline: %s\n", k.GetCurCacheKline(symbol, resolution).FullString())
+	}
+
+	if k.GetCurLastKline(symbol, resolution) == nil {
+		rst = rst + "LastKline is Nil\n"
+	} else {
+		rst = rst + fmt.Sprintf("LastKline: %s\n", k.GetCurLastKline(symbol, resolution).FullString())
+	}
+
+	if k.GetCurKlineTree(symbol, resolution) == nil {
+		rst = rst + "CompleteKline is Nil\n"
+	} else {
+		rst = rst + HistKlineList(k.GetCurKlineTree(symbol, resolution), 0)
+	}
+
+	return rst
+}
+
 // Clean
 func (k *KlineCache) CleanTreeKline(symbol string, resolution int) {
 	defer util.CatchExp(fmt.Sprintf("CleanTreeKline %s, %d", symbol, resolution))
@@ -222,6 +277,23 @@ func (k *KlineCache) GetCurLastKline(symbol string, resolution int) *Kline {
 	}
 
 	return k.LastKlines[symbol][resolution]
+}
+
+func (k *KlineCache) GetCurKlineTree(symbol string, resolution int) *treemap.Map {
+	defer util.CatchExp(fmt.Sprintf("GetCurKlineTree %s, %d", symbol, resolution))
+
+	k.CompleteKlinesMutex.Lock()
+	defer k.CompleteKlinesMutex.Unlock()
+
+	if _, ok := k.CompletedKlines[symbol]; !ok {
+		return nil
+	}
+
+	if _, ok := k.CompletedKlines[symbol][resolution]; !ok {
+		return nil
+	}
+
+	return k.CompletedKlines[symbol][resolution]
 }
 
 // UnTest

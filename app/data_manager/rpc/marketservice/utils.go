@@ -1,8 +1,10 @@
 package marketservice
 
 import (
+	"fmt"
 	"market_server/app/data_manager/rpc/types/pb"
 	"market_server/common/datastruct"
+	"market_server/common/util"
 	"strconv"
 
 	"github.com/emirpasic/gods/maps/treemap"
@@ -11,6 +13,7 @@ import (
 )
 
 func NewKlineWithPbKline(pb_kline *Kline) *datastruct.Kline {
+	defer util.CatchExp(fmt.Sprintf("NewKlineWithPbKline: %v", pb_kline))
 	open, err := strconv.ParseFloat(pb_kline.Open, 64)
 	if err != nil {
 		logx.Error(err.Error())
@@ -41,6 +44,11 @@ func NewKlineWithPbKline(pb_kline *Kline) *datastruct.Kline {
 		return nil
 	}
 
+	last_volume, err := strconv.ParseFloat(pb_kline.Lastvolume, 64)
+	if err != nil {
+		logx.Infof("Parse LastVolume err: %s", err.Error())
+	}
+
 	return &datastruct.Kline{
 		Exchange:   pb_kline.Exchange,
 		Symbol:     pb_kline.Symbol,
@@ -51,7 +59,18 @@ func NewKlineWithPbKline(pb_kline *Kline) *datastruct.Kline {
 		Low:        low,
 		Close:      close,
 		Volume:     volume,
+		Sequence:   pb_kline.Sequence,
+		LastVolume: last_volume,
 	}
+}
+
+func TransPbKlines(pb_klines []*pb.Kline) []*datastruct.Kline {
+	var rst []*datastruct.Kline
+	for _, pb_kline := range pb_klines {
+		new_kline := NewKlineWithPbKline(pb_kline)
+		rst = append(rst, new_kline)
+	}
+	return rst
 }
 
 func NewKlineWithPbTrade(pb_trade *Trade) *datastruct.Trade {

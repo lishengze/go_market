@@ -370,6 +370,8 @@ func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []
 
 		latest_kline := d.kline_cache.GetLatestRealTimeKline(symbol)
 		d.kline_cache.UpdateWithKline(latest_kline, resolution)
+
+		logx.Infof("\n--------------------------  KlineCache: ------------------------", d.kline_cache.String(symbol, resolution))
 	}
 
 	rst = d.kline_cache.GetKlinesByCount(symbol, resolution, count, false)
