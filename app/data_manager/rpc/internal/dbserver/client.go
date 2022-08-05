@@ -190,7 +190,7 @@ func (d *DBServer) process_kline(kline *datastruct.Kline) error {
 	if kline.IsHistory() {
 		return d.store_kline(kline)
 	} else {
-		logx.Slowf("[RK] %s", kline.FullString())
+		// logx.Slowf("[RK] %s", kline.FullString())
 
 		trade := datastruct.NewTradeWithRealTimeKline(kline)
 		return d.store_trade(trade)
@@ -201,7 +201,7 @@ func (d *DBServer) store_kline(kline *datastruct.Kline) error {
 
 	defer util.CatchExp(fmt.Sprintf("store_kline %s", kline.FullString()))
 
-	logx.Slowf("[HK] %s", kline.FullString())
+	// logx.Slowf("[HK] %s", kline.FullString())
 
 	if ok := d.check_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); !ok {
 		if ok, err := d.create_table(datastruct.KLINE_TYPE, kline.Symbol, kline.Exchange); !ok {
@@ -226,7 +226,7 @@ func (d *DBServer) store_kline(kline *datastruct.Kline) error {
 func (d *DBServer) store_trade(trade *datastruct.Trade) error {
 	defer util.CatchExp(fmt.Sprintf("store_trade %s", trade.String()))
 
-	logx.Slowf("[ST] %s", trade.String())
+	// logx.Slowf("[ST] %s", trade.String())
 
 	if ok := d.check_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
 		if ok, err := d.create_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
@@ -249,7 +249,7 @@ func (d *DBServer) store_trade(trade *datastruct.Trade) error {
 
 func (d *DBServer) process_trade(trade *datastruct.Trade) error {
 
-	logx.Slowf("[RT] %s", trade.String())
+	// logx.Slowf("[RT] %s", trade.String())
 
 	// if ok := d.check_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
 	// 	if ok, err := d.create_table(datastruct.TRADE_TYPE, trade.Symbol, trade.Exchange); !ok {
@@ -325,6 +325,10 @@ func (d *DBServer) GetLastMinuteTrades(symbol string) []*datastruct.Trade {
 
 // UnTest
 func (d *DBServer) GetDBKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
+	defer util.CatchExp(fmt.Sprintf("GetDBKlinesByCount %s, %d, %d", symbol, resolution, count))
+
+	logx.Slowf("GetDBKlinesByCount %s, %d, %d", symbol, resolution, count)
+
 	table_name := d.get_table_name(datastruct.KLINE_TYPE, symbol, datastruct.BCTS_EXCHANGE)
 	sql_str := get_kline_sql_str_by_count(table_name, count)
 
@@ -362,10 +366,14 @@ func (d *DBServer) GetDBKlinesByTime(symbol string, resolution int, start_time i
 func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
 	defer util.CatchExp("DBServer GetKlinesByCount")
 
+	logx.Slowf("GetKlinesByCount  %s, %d, %d", symbol, resolution, count)
+
 	rst := d.kline_cache.GetKlinesByCount(symbol, resolution, count, true)
 
 	if rst == nil {
-		db_klines := d.GetDBKlinesByCount(symbol, resolution, count)
+		logx.Slowf("KlineCache does not have enough data")
+		req_count := util.MaxInt(count, d.kline_cache.Config.Count)
+		db_klines := d.GetDBKlinesByCount(symbol, resolution, req_count)
 		d.kline_cache.InitWithHistKlines(db_klines, symbol, resolution)
 
 		latest_kline := d.kline_cache.GetLatestRealTimeKline(symbol)
@@ -414,6 +422,8 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 	if frequency%datastruct.SECS_PER_MIN != 0 {
 		return nil, fmt.Errorf("frequency %d is error ", frequency)
 	}
+
+	logx.Slowf("ReqHishKlineInfo: %+v", in)
 
 	var ori_klines []*datastruct.Kline = nil
 

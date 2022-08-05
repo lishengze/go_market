@@ -24,4 +24,6 @@ app/admin/api/go_build_bcts_app_admin_cmd_api
 
 
 test_client
+app/front/test_rpc/test_rpc
+test.txt
 common/datastruct/test_datastruct/test_datastruct

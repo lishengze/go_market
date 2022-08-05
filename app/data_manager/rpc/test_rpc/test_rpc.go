@@ -90,7 +90,9 @@ func NewTestRpc() *TestRpc {
 
 func (t *TestRpc) Start() {
 	t.TestKline()
-	t.TestTrade()
+	// t.TestTrade()
+
+	select {}
 }
 
 func (t *TestRpc) TestKline() {

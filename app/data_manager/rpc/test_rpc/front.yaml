@@ -1,6 +1,6 @@
 Name: marketdata.rpc
-ListenOn: 118.193.45.36:8181
+ListenOn: 127.0.0.1:8181
 Etcd:
   Hosts:
-  - 118.193.45.36:2379
+  - 127.0.0.1:2379
   Key: marketdata.rpc
