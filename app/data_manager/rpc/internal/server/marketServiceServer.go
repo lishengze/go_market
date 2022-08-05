@@ -189,7 +189,7 @@ func TestMain() {
 
 	fmt.Printf("config: %+v \n",c)
 
-	logx.MustSetup(c.LogConfig)
+	// logx.MustSetup(c.LogConfig)
 
 	logx.Infof("config: %+v \n",c)
 

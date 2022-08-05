@@ -111,4 +111,5 @@ func InitTestLogx() {
 	}
 
 	logx.MustSetup(LogConfig)
+	logx.Infof("----- InitTestLogx -----\n")
 }
