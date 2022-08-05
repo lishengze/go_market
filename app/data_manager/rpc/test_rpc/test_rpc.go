@@ -104,7 +104,7 @@ func (t *TestRpc) TestKline() {
 		Exchange:  datastruct.BCTS_EXCHANGE,
 		StartTime: 0,
 		EndTime:   0,
-		Count:     30,
+		Count:     2,
 		Frequency: uint32(resolution),
 	}
 

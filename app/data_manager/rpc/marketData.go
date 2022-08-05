@@ -8,10 +8,10 @@ import (
 	"market_server/app/data_manager/rpc/internal/svc"
 	"market_server/app/data_manager/rpc/types/pb"
 	"market_server/common/config"
+	"market_server/common/util"
 	"os"
 
 	"github.com/zeromicro/go-zero/core/conf"
-	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"
@@ -34,6 +34,7 @@ func test_config() {
 }
 
 func main() {
+	util.InitTestLogx()
 	flag.Parse()
 
 	fmt.Printf("Args: %+v \n", os.Args)
@@ -53,7 +54,7 @@ func main() {
 
 	fmt.Printf("LogConfig: %+v \n\n", c.LogConfig)
 
-	logx.MustSetup(c.LogConfig)
+	// logx.MustSetup(c.LogConfig)
 	// logx.Infof("Log: %+v \n", c)
 
 	fmt.Printf("Log: %+v \n", c)

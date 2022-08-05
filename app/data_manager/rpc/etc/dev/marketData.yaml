@@ -40,7 +40,7 @@ Mysql:
   conn_max_life_time: 300
 
 CacheConfig:
-  Count: 2000
+  Count: 30
 
 MonitorConfigInfo:
   RateParam: 1.1
