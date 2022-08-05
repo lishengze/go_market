@@ -427,10 +427,16 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 
 	var ori_klines []*datastruct.Kline = nil
 
+	resolution := int(frequency)
+
+	if resolution < datastruct.NANO_PER_SECS {
+		resolution = resolution * datastruct.NANO_PER_SECS
+	}
+
 	if count > 0 {
-		ori_klines = d.GetKlinesByCount(symbol, int(frequency), int(count))
+		ori_klines = d.GetKlinesByCount(symbol, resolution, int(count))
 	} else if start_time > 0 && end_time > 0 && start_time <= end_time {
-		ori_klines = d.GetKlinesByTime(symbol, int(frequency), int64(start_time), int64(end_time))
+		ori_klines = d.GetKlinesByTime(symbol, resolution, int64(start_time), int64(end_time))
 	} else {
 		return nil, fmt.Errorf("invalid count %d, start_time: %d, end_time: %d ", count, start_time, end_time)
 	}

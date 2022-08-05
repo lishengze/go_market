@@ -96,7 +96,7 @@ func (t *TestRpc) Start() {
 }
 
 func (t *TestRpc) TestKline() {
-	resolution := 5 * datastruct.NANO_PER_MIN
+	resolution := 5 * datastruct.SECS_PER_MIN
 	symbol := "BTC_USDT"
 
 	req_hist_info := &marketservice.ReqHishKlineInfo{
