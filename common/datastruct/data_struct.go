@@ -416,6 +416,32 @@ func HistKlineList(hist_line *treemap.Map, size int) string {
 	return rst
 }
 
+func HistKlineListWithSlice(klines []*Kline, size int) string {
+
+	rst := fmt.Sprintf("Size: %d; \n", len(klines))
+
+	if size == 0 || size*2 > len(klines) {
+		for _, kline := range klines {
+			rst = rst + fmt.Sprintf("%s, \n", kline.FullString())
+		}
+	} else {
+		first_data := klines[0:size]
+		rst = rst + fmt.Sprintf("First %d data: \n", size)
+		for _, kline := range first_data {
+			rst = rst + fmt.Sprintf("%s, \n", kline.FullString())
+		}
+
+		end_data := klines[size:]
+
+		rst = rst + fmt.Sprintf("Last %d data: \n", size)
+		for _, kline := range end_data {
+			rst = rst + fmt.Sprintf("%s, \n", kline.FullString())
+		}
+
+	}
+	return rst
+}
+
 func NewKlineWithKline(kline *Kline) *Kline {
 	return &Kline{
 		Exchange:   kline.Exchange,

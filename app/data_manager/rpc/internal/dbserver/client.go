@@ -375,7 +375,7 @@ func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []
 		req_count := util.MaxInt(count, d.kline_cache.Config.Count)
 		db_klines := d.GetDBKlinesByCount(symbol, resolution, req_count)
 
-		logx.Slowf("db_klines.size: %d\n", len(db_klines))
+		logx.Slowf("db_klines.info: %s\n", datastruct.HistKlineListWithSlice(db_klines, 3))
 
 		d.kline_cache.InitWithHistKlines(db_klines, symbol, resolution)
 
