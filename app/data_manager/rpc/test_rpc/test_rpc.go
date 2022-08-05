@@ -63,7 +63,7 @@ func test_rpc() {
 
 type TestRpc struct {
 	KlineCache datastruct.KlineCache
-	ZClient    zrpc.Client
+	ZClient    *zrpc.Client
 	MSClient   marketservice.MarketService
 	Ctx        context.Context
 }
@@ -82,7 +82,7 @@ func NewTestRpc() *TestRpc {
 
 	return &TestRpc{
 		KlineCache: *datastruct.NewKlineCache(cacheConfig),
-		ZClient:    zclient,
+		ZClient:    &zclient,
 		MSClient:   marketservice.NewMarketService(zclient),
 		Ctx:        context.Background(),
 	}
@@ -102,16 +102,26 @@ func (t *TestRpc) TestKline() {
 	req_hist_info := &marketservice.ReqHishKlineInfo{
 		Symbol:    symbol,
 		Exchange:  datastruct.BCTS_EXCHANGE,
-		StartTime: 1654297007842658763,
-		EndTime:   1654297013959596689,
+		StartTime: 0,
+		EndTime:   0,
 		Count:     30,
 		Frequency: uint32(resolution),
 	}
+
+	fmt.Printf("req_hist_info %+v \n", req_hist_info)
+	logx.Slowf("req_hist_info %+v \n", req_hist_info)
 
 	rst, err := t.MSClient.RequestHistKlineData(t.Ctx, req_hist_info)
 
 	if err != nil {
 		fmt.Printf("err %+v \n", err)
+	}
+
+	fmt.Printf("rst %v", rst)
+	logx.Slowf("rst %v", rst)
+
+	if rst == nil || rst.KlineData == nil {
+		return
 	}
 
 	klines := marketservice.TransPbKlines(rst.KlineData)
