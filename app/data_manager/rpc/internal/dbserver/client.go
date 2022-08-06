@@ -186,6 +186,8 @@ func (d *DBServer) create_table(data_type string, symbol string, exchange string
 func (d *DBServer) process_kline(kline *datastruct.Kline) error {
 	defer util.CatchExp(fmt.Sprintf("DBServer process_kline %s", kline.String()))
 
+	kline.ResetResolution()
+
 	d.kline_cache.UpdateAllKline(kline)
 
 	if kline.IsHistory() {
@@ -532,7 +534,7 @@ func (d *DBServer) RequestHistKlineDataBak(ctx context.Context, in *pb.ReqHishKl
 		tmp_kline.Volume = string(values[7].([]byte))
 
 		resolution, _ := strconv.Atoi(string(values[8].([]byte)))
-		tmp_kline.Resolution = uint32(resolution)
+		tmp_kline.Resolution = uint64(resolution)
 
 		rst.KlineData = append(rst.KlineData, tmp_kline)
 

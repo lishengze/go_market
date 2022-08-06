@@ -31,7 +31,7 @@ func NewPbKlineWithKline(ori_kline *datastruct.Kline) *pb.Kline {
 		Exchange:   ori_kline.Exchange,
 		Symbol:     ori_kline.Symbol,
 		Timestamp:  &timestamppb.Timestamp{Seconds: int64(ori_kline.Time) / datastruct.NANO_PER_SECS, Nanos: int32(ori_kline.Time % datastruct.NANO_PER_SECS)},
-		Resolution: uint32(ori_kline.Resolution),
+		Resolution: uint64(ori_kline.Resolution),
 		Open:       strconv.FormatFloat(ori_kline.Open, 'g', 8, 64),
 		High:       strconv.FormatFloat(ori_kline.High, 'g', 8, 64),
 		Low:        strconv.FormatFloat(ori_kline.Low, 'g', 8, 64),

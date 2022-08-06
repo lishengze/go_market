@@ -430,6 +430,8 @@ func (a *Aggregator) update_kline(trade *datastruct.Trade, sequence uint64) {
 		cur_kline.Time = trade.Time
 	}
 
+	cur_kline.ResetResolution()
+
 	// logx.Slowf("[PK]: %s", cur_kline.FullString())
 
 	a.publish_kline(cur_kline)

@@ -40,7 +40,7 @@ message Kline {
   string close = 7;
   string volume = 8; // 量
   string value = 9; // 额
-  uint32 resolution = 10;
+  uint64 resolution = 10;
   uint64 sequence = 11;
   string lastvolume = 12;
 }

@@ -53,7 +53,7 @@ func (p *ProtobufSerializer) EncodeKline(local_kline *datastruct.Kline) ([]byte,
 	proto_kline.Exchange = local_kline.Exchange
 	proto_kline.Symbol = local_kline.Symbol
 	proto_kline.Timestamp = &timestamppb.Timestamp{Seconds: local_kline.Time / datastruct.NANO_PER_SECS, Nanos: int32(local_kline.Time % datastruct.NANO_PER_SECS)}
-	proto_kline.Resolution = uint32(local_kline.Resolution)
+	proto_kline.Resolution = uint64(local_kline.Resolution)
 
 	proto_kline.Open = strconv.FormatFloat(local_kline.Open, 'f', -1, 64)
 	proto_kline.High = strconv.FormatFloat(local_kline.High, 'f', -1, 64)

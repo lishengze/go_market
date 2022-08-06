@@ -120,6 +120,13 @@ type Kline struct {
 	LastVolume float64
 }
 
+func (k *Kline) ResetResolution() {
+
+	if k.Resolution < NANO_PER_SECS {
+		k.Resolution = k.Resolution * NANO_PER_SECS
+	}
+}
+
 // UnTest
 func (k *Kline) IsHistory() bool {
 
@@ -692,7 +699,7 @@ func InitKlineByTrade(src *Kline, trade *Trade) {
 	src.Exchange = BCTS_EXCHANGE
 	src.Symbol = trade.Symbol
 	src.Time = trade.Time
-	src.Resolution = SECS_PER_MIN
+	src.Resolution = NANO_PER_MIN
 	src.Open = trade.Price
 	src.High = trade.Price
 	src.Low = trade.Price
