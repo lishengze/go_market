@@ -573,8 +573,12 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 			Exchange:  req_kline_info.Exchange,
 			StartTime: req_kline_info.StartTime,
 			EndTime:   req_kline_info.EndTime,
-			Count:     req_kline_info.Count * rate,
-			Frequency: datastruct.SECS_PER_MIN,
+			Count:     req_kline_info.Count,
+			Frequency: req_kline_info.Frequency,
+		}
+
+		if req_kline_info.Frequency%datastruct.NANO_PER_MIN != 0 {
+			return nil, fmt.Errorf("frequency %d is error ", frequency)
 		}
 
 		logx.Infof("req_hist_info: %+v", req_kline_info)

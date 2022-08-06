@@ -256,7 +256,7 @@ type ReqHistKline struct {
 	StartTime uint64
 	EndTime   uint64
 	Count     uint32
-	Frequency uint32
+	Frequency uint64
 
 	ReqArriveTime   int64
 	ReqResponseTime int64
