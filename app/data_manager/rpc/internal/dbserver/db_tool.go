@@ -56,43 +56,53 @@ func GetKline(values []interface{}) *datastruct.Kline {
 	time, _ := strconv.Atoi(string(values[2].([]byte)))
 	tmp_kline.Time = int64(time)
 
-	open, err := strconv.ParseFloat(string(values[3].([]byte)), 64)
+	sequence, _ := strconv.Atoi(string(values[3].([]byte)))
+	tmp_kline.Sequence = uint64(sequence)
+
+	open, err := strconv.ParseFloat(string(values[4].([]byte)), 64)
 	if err != nil {
 		logx.Error("strconv.ParseFloat open %s, Failed; Err: %s", string(values[3].([]byte)), err.Error())
 		return nil
 	}
 	tmp_kline.Open = open
 
-	high, err := strconv.ParseFloat(string(values[4].([]byte)), 64)
+	high, err := strconv.ParseFloat(string(values[5].([]byte)), 64)
 	if err != nil {
 		logx.Error("strconv.ParseFloat high %s, Failed; Err: %s", string(values[4].([]byte)), err.Error())
 		return nil
 	}
 	tmp_kline.High = high
 
-	low, err := strconv.ParseFloat(string(values[5].([]byte)), 64)
+	low, err := strconv.ParseFloat(string(values[6].([]byte)), 64)
 	if err != nil {
 		logx.Error("strconv.ParseFloat low %s, Failed; Err: %s", string(values[5].([]byte)), err.Error())
 		return nil
 	}
 	tmp_kline.Low = low
 
-	close, err := strconv.ParseFloat(string(values[6].([]byte)), 64)
+	close, err := strconv.ParseFloat(string(values[7].([]byte)), 64)
 	if err != nil {
 		logx.Error("strconv.ParseFloat close %s, Failed; Err: %s", string(values[6].([]byte)), err.Error())
 		return nil
 	}
 	tmp_kline.Close = close
 
-	volume, err := strconv.ParseFloat(string(values[7].([]byte)), 64)
+	volume, err := strconv.ParseFloat(string(values[8].([]byte)), 64)
 	if err != nil {
 		logx.Error("strconv.ParseFloat volume %s, Failed; Err: %s", string(values[7].([]byte)), err.Error())
 		return nil
 	}
 	tmp_kline.Volume = volume
 
-	resolution, _ := strconv.Atoi(string(values[8].([]byte)))
+	resolution, _ := strconv.Atoi(string(values[9].([]byte)))
 	tmp_kline.Resolution = resolution
+
+	lastvolume, err := strconv.ParseFloat(string(values[10].([]byte)), 64)
+	if err != nil {
+		logx.Error("strconv.ParseFloat volume %s, Failed; Err: %s", string(values[9].([]byte)), err.Error())
+		return nil
+	}
+	tmp_kline.LastVolume = lastvolume
 
 	return tmp_kline
 }

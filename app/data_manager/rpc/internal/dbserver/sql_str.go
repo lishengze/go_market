@@ -10,7 +10,7 @@ func get_kline_create_str(table_name string, symbol string, exchange string) str
 	result := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (exchange VARCHAR(32), 
 							symbol VARCHAR(64), time BIGINT PRIMARY KEY, sequence BIGINT,
 						   open DECIMAL(32, 8), high DECIMAL(32, 8), low DECIMAL(32, 8),
-						   close DECIMAL(32, 8), volume DECIMAL(32, 8), resolution BIGINT) 
+						   close DECIMAL(32, 8), volume DECIMAL(32, 8), resolution BIGINT, lastvolume DECIMAL(32, 8))
 						DEFAULT CHARSET utf8`,
 		table_name)
 
