@@ -67,6 +67,8 @@ func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
 		IsTest: false,
 	}
 
+	logx.Info("-------------- NewMarketServiceServer End!\n")
+
 	return rst
 }
 

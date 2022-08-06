@@ -12,6 +12,7 @@ import (
 	"os"
 
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"
@@ -62,20 +63,20 @@ func main() {
 	ctx := svc.NewServiceContext(&c)
 	svr := server.NewMarketServiceServer(ctx)
 
+	svr.SetTestValue(is_test)
+	svr.Start()
+
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		pb.RegisterMarketServiceServer(grpcServer, svr)
+		logx.Infof("Starting rpc server at %s...\n", c.ListenOn)
 
 		if c.Mode == service.DevMode || c.Mode == service.TestMode {
 			reflection.Register(grpcServer)
 		}
+		util.InitTestLogx()
 	})
 	defer s.Stop()
 
-	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
-
-	svr.SetTestValue(is_test)
-
-	svr.Start()
 	s.Start()
 
 	// server.TestMain()
