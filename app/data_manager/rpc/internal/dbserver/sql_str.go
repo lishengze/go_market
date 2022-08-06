@@ -8,7 +8,7 @@ import (
 
 func get_kline_create_str(table_name string, symbol string, exchange string) string {
 	result := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (exchange VARCHAR(32), 
-							symbol VARCHAR(64), time BIGINT PRIMARY KEY, 
+							symbol VARCHAR(64), time BIGINT PRIMARY KEY, sequence BIGINT,
 						   open DECIMAL(32, 8), high DECIMAL(32, 8), low DECIMAL(32, 8),
 						   close DECIMAL(32, 8), volume DECIMAL(32, 8), resolution BIGINT) 
 						DEFAULT CHARSET utf8`,
@@ -19,7 +19,7 @@ func get_kline_create_str(table_name string, symbol string, exchange string) str
 
 func get_trade_create_str(table_name string, symbol string, exchange string) string {
 	result := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (exchange VARCHAR(32), 
-						   symbol VARCHAR(64), time BIGINT PRIMARY KEY, 
+						   symbol VARCHAR(64), time BIGINT PRIMARY KEY, sequence BIGINT,
 						   price DECIMAL(32, 8), volume DECIMAL(32, 8))  DEFAULT CHARSET utf8`,
 		table_name)
 
@@ -28,7 +28,7 @@ func get_trade_create_str(table_name string, symbol string, exchange string) str
 
 func get_depth_create_str(table_name string, symbol string, exchange string) string {
 	result := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (exchange VARCHAR(32), 
-						symbol VARCHAR(64), time BIGINT PRIMARY KEY, 
+						symbol VARCHAR(64), time BIGINT PRIMARY KEY, sequence BIGINT,
 						price DECIMAL(32, 8), volume DECIMAL(32, 8))  DEFAULT CHARSET utf8`,
 		table_name)
 

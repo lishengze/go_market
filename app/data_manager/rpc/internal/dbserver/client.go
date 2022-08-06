@@ -76,12 +76,12 @@ func (d *DBServer) get_insert_stmt(data_type string, symbol string, exchange str
 	if stmt, ok = d.insert_stmt_map[table_name]; !ok {
 		switch data_type {
 		case datastruct.KLINE_TYPE:
-			stmt, err = d.db.Prepare(fmt.Sprintf(`INSERT %s (exchange,symbol,time,open,high,low,close,volume,resolution) 
-																			values (?,?,?,?,?,?,?,?,?)`, table_name))
+			stmt, err = d.db.Prepare(fmt.Sprintf(`INSERT %s (exchange,symbol,time,sequence,open,high,low,close,volume,resolution) 
+																			values (?,?,?,?,?,?,?,?,?,?)`, table_name))
 		case datastruct.TRADE_TYPE:
-			stmt, err = d.db.Prepare(fmt.Sprintf(`INSERT %s (exchange,symbol,time, price, volume) values (?,?,?,?,?)`, table_name))
+			stmt, err = d.db.Prepare(fmt.Sprintf(`INSERT %s (exchange,symbol,time, sequence,price, volume) values (?,?,?,?,?,?)`, table_name))
 		case datastruct.DEPTH_TYPE:
-			stmt, err = d.db.Prepare(fmt.Sprintf(`INSERT %s (exchange,symbol,time, price, volume) values (?,?,?,?,?)`, table_name))
+			stmt, err = d.db.Prepare(fmt.Sprintf(`INSERT %s (exchange,symbol,time, sequence, price, volume) values (?,?,?,?,?,?)`, table_name))
 		}
 	}
 
@@ -218,7 +218,7 @@ func (d *DBServer) store_kline(kline *datastruct.Kline) error {
 		return err
 	}
 
-	stmt.Exec(kline.Exchange, kline.Symbol, kline.Time, kline.Open,
+	stmt.Exec(kline.Exchange, kline.Symbol, kline.Time, kline.Sequence, kline.Open,
 		kline.High, kline.Low, kline.Close, kline.Volume, kline.Resolution)
 
 	return err
@@ -243,7 +243,7 @@ func (d *DBServer) store_trade(trade *datastruct.Trade) error {
 		return err
 	}
 
-	stmt.Exec(trade.Exchange, trade.Symbol, trade.Time, trade.Price, trade.Volume)
+	stmt.Exec(trade.Exchange, trade.Symbol, trade.Time, trade.Sequence, trade.Price, trade.Volume)
 
 	return err
 }
