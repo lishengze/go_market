@@ -431,7 +431,7 @@ func HistKlineListWithSlice(klines []*Kline, size int) string {
 			rst = rst + fmt.Sprintf("%s, \n", kline.FullString())
 		}
 
-		end_data := klines[size:]
+		end_data := klines[len(klines)-size:]
 
 		rst = rst + fmt.Sprintf("Last %d data: \n", size)
 		for _, kline := range end_data {
