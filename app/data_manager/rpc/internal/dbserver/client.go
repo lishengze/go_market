@@ -32,6 +32,7 @@ type DBServer struct {
 
 func NewDBServer(recvDataChan *datastruct.DataChannel, mysql_config *config.MysqlConfig, cache_config *datastruct.CacheConfig) (*DBServer, error) {
 
+	logx.Infof("NewDbServer %s\n", mysql_config.Addr)
 	new_db, err := sql.Open("mysql", mysql_config.Addr)
 
 	if err != nil {

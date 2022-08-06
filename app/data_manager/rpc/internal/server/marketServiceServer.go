@@ -46,6 +46,8 @@ type MarketServiceServer struct {
 }
 
 func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
+	logx.Info("-------------- NewMarketServiceServer Start!\n")
+
 	recv_data_chan := datastruct.NewDataChannel()
 	pub_data_chan := datastruct.NewDataChannel()
 
@@ -69,6 +71,8 @@ func NewMarketServiceServer(svcCtx *svc.ServiceContext) (*MarketServiceServer) {
 }
 
 func (m *MarketServiceServer) Start() {
+	logx.Infof("-------------- MarketServiceServer Start!\n")
+
 	m.dbServer.StartListenRecvdata()
 	m.commer.Start()
 	m.SetInitMeta()
