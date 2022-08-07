@@ -659,7 +659,7 @@ func (k *KlineCache) UpdateAllKline(new_kline *Kline) ([]*Kline, error) {
 	k.SetLatestRealTimeKline(new_kline)
 
 	if _, ok := k.CompletedKlines[new_kline.Symbol]; !ok {
-		return nil, fmt.Errorf("%s not cached hist kline", new_kline.Symbol)
+		return nil, nil
 	}
 
 	var pub_klines []*Kline = nil

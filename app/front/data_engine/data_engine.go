@@ -224,9 +224,9 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 	}
 
 	if err != nil {
-		logx.Errorf("UpdateAllKline Failed: %+V", err)
-		logx.Slowf("UpdateAllKline Failed: %+V", err)
-		logx.Infof("UpdateAllKline Failed: %+V", err)
+		logx.Errorf("UpdateAllKline Failed: %+v", err)
+		logx.Slowf("UpdateAllKline Failed: %+v", err)
+		logx.Infof("UpdateAllKline Failed: %+v", err)
 		return err
 	}
 
