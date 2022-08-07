@@ -259,7 +259,7 @@ type PubKlineJson struct {
 	Symbol          string           `json:"symbol"`
 	StartTime       int64            `json:"start_time"`
 	EndTime         int64            `json:"end_time"`
-	Resolution      int              `json:"frequency"`
+	Resolution      uint64           `json:"frequency"`
 	DataCount       int              `json:"data_count"`
 	Data            []PubKlineDetail `json:"data"`
 	ReqProcessTime  int64            `json:"req_process_time"`
@@ -316,7 +316,7 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 		Symbol:          hist_kline.ReqInfo.Symbol,
 		StartTime:       int64(hist_kline.ReqInfo.StartTime),
 		EndTime:         int64(hist_kline.ReqInfo.EndTime),
-		Resolution:      int(hist_kline.ReqInfo.Frequency),
+		Resolution:      hist_kline.ReqInfo.Frequency,
 		DataCount:       hist_kline.Klines.Size(),
 		Data:            kline_data,
 		ReqProcessTime:  util.UTCNanoTime() - hist_kline.ReqInfo.ReqArriveTime,
