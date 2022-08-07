@@ -131,6 +131,7 @@ func (p *PeriodData) UpdateWithTrade(trade *datastruct.Trade) {
 }
 
 func (p *PeriodData) UpdateWithKline(kline *datastruct.Kline) {
+	defer util.CatchExp(fmt.Sprintf("PeriodData UpdateWithKline %s", kline.FullString()))
 	p.AddKlineData(kline)
 
 	p.EraseOuttimeData()
@@ -162,7 +163,9 @@ func (p *PeriodData) AddTradeData(trade *datastruct.Trade) {
 }
 
 func (p *PeriodData) AddKlineData(kline *datastruct.Kline) {
+	defer util.CatchExp(fmt.Sprintf("PeriodData AddKlineData %s", kline.FullString()))
 	p.mutex.Lock()
+	defer p.mutex.Unlock()
 
 	logx.Slowf("[Add] Kline: %s", kline.String())
 
@@ -190,7 +193,6 @@ func (p *PeriodData) AddKlineData(kline *datastruct.Kline) {
 		p.LastTime = last_iter.Key().(int64)
 	}
 
-	defer p.mutex.Unlock()
 }
 
 func (p *PeriodData) EraseOuttimeData() {
