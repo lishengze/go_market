@@ -210,6 +210,8 @@ func catch_kline_exp(kline *datastruct.Kline) {
 func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 	defer catch_kline_exp(kline)
 
+	logx.Slowf("[RK]: %s", kline.FullString())
+
 	d.InitPeriodDaraMain(kline.Symbol)
 
 	d.cache_period_data[kline.Symbol].UpdateWithKline(kline)

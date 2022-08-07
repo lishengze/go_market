@@ -334,7 +334,7 @@ func (k *KlineCache) AddCompletedKline(new_kline *Kline, resolution uint64) {
 	}
 
 	if k.Config.IsDebug {
-		logx.Slowf("AddComplteKline: %s", new_kline.FullString())
+		// logx.Slowf("AddComplteKline: %s", new_kline.FullString())
 	}
 
 	k.CompletedKlines[new_kline.Symbol][resolution].Put(new_kline.Time, new_kline)
