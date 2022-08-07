@@ -111,9 +111,9 @@ func (t *TestMain) TestGetJsonData() {
 	// fmt.Println(string(rst3))
 }
 
-// var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
+var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
 
-var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
+// var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
 
 // var addr = flag.String("addr", "10.10.1.75:8114", "http service address")
 
@@ -256,7 +256,7 @@ func (t *TestMain) write_func(c *websocket.Conn) {
 	// send_msg := t.GetTestTradeReqJson(symbol_list)
 	// send_msg := t.GetTestDepthReqJson()
 
-	send_msg := t.GetTestKlineReqJson("USDT_USD", 20, 3600)
+	send_msg := t.GetTestKlineReqJson("BTC_USDT", 10, 300)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {
