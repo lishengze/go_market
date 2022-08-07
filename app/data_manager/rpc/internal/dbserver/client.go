@@ -330,10 +330,12 @@ func (d *DBServer) GetLastMinuteTrades(symbol string) []*datastruct.Trade {
 func (d *DBServer) GetDBKlinesByCount(symbol string, resolution uint64, count int) []*datastruct.Kline {
 	defer util.CatchExp(fmt.Sprintf("GetDBKlinesByCount %s, %d, %d", symbol, resolution, count))
 
-	logx.Slowf("GetDBKlinesByCount %s, %d, %d", symbol, resolution, count)
+	real_count := count * int(resolution/uint64(datastruct.NANO_PER_MIN))
+
+	logx.Slowf("GetDBKlinesByCount %s, resolution: %d, count: %d, real_count: %d\n", symbol, resolution, count, real_count)
 
 	table_name := d.get_table_name(datastruct.KLINE_TYPE, symbol, datastruct.BCTS_EXCHANGE)
-	sql_str := get_kline_sql_str_by_count(table_name, count)
+	sql_str := get_kline_sql_str_by_count(table_name, real_count)
 
 	rows, err := d.db.Query(sql_str)
 
