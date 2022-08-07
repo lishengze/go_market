@@ -37,3 +37,16 @@ Mysql:
   max_open_conns: 16
   max_idle_conns: 8
   conn_max_life_time: 300
+
+CacheConfig:
+  Count: 2000  
+  IsDebug: false
+
+MonitorConfigInfo:
+  RateParam: 1.1
+  InitDeadLine: 900
+  CheckSecs: 30
+  
+DingConfigInfo:
+  Secret: "SECad5a02a15b10624cb642cf7b079805799551c22c8f18b08baf94ca0a66249f4d"
+  Token: "38043087bae9594d5e1851ee2e28e70e22c190095f950d53c735a4abd2bc74ec" 

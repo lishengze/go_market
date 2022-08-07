@@ -17,7 +17,8 @@ import (
 )
 
 type CacheConfig struct {
-	Count int
+	Count   int
+	IsDebug bool
 }
 
 type KlineCache struct {
@@ -36,8 +37,6 @@ type KlineCache struct {
 	CacheKlineMutex          sync.Mutex
 	LastKlineMutex           sync.Mutex
 	LatestRealTimeKlineMutex sync.Mutex
-
-	IsDebug bool
 }
 
 func NewKlineCache(config *CacheConfig) *KlineCache {
@@ -47,7 +46,6 @@ func NewKlineCache(config *CacheConfig) *KlineCache {
 		CacheKlines:          make(map[string]map[uint64]*Kline),
 		LastKlines:           make(map[string]map[uint64]*Kline),
 		LatestRealTimeKlines: make(map[string]*Kline),
-		IsDebug:              false,
 	}
 }
 
@@ -335,7 +333,7 @@ func (k *KlineCache) AddCompletedKline(new_kline *Kline, resolution uint64) {
 		k.CompletedKlines[new_kline.Symbol][resolution] = treemap.NewWith(utils.Int64Comparator)
 	}
 
-	if k.IsDebug {
+	if k.Config.IsDebug {
 		logx.Slowf("AddComplteKline: %s", new_kline.FullString())
 	}
 
@@ -366,7 +364,7 @@ func (k *KlineCache) ProcessOldKline(new_kline *Kline, cache_kline *Kline, last_
 	defer util.CatchExp(fmt.Sprintf("ProcessOldKline \n%s\n%s\n%d", new_kline.FullString(), cache_kline.FullString(), resolution))
 
 	if new_kline.Sequence == 0 || new_kline.Time > cache_kline.Time {
-		if k.IsDebug {
+		if k.Config.IsDebug {
 			logx.Infof("KlineSource Restarted")
 		}
 
@@ -398,14 +396,14 @@ func (k *KlineCache) ProcessEqualKline(new_kline *Kline, cache_kline *Kline, las
 	k.SetLastKline(new_kline, resolution)
 	k.SetCacheKline(cache_kline, resolution)
 
-	if k.IsDebug {
+	if k.Config.IsDebug {
 		logx.Slowf("UpdateHistEqual CacheKline:%s", cache_kline.FullString())
 	}
 
 	pub_kline = NewKlineWithKline(cache_kline)
 
 	if IsOldKlineEnd(new_kline, resolution) {
-		if k.IsDebug {
+		if k.Config.IsDebug {
 			logx.Slowf("Old Kline End!")
 		}
 		k.AddCompletedKline(cache_kline, resolution)
@@ -421,7 +419,7 @@ func (k *KlineCache) ProcessOldMinuteWork(cache_kline *Kline, last_kline *Kline)
 	if !last_kline.IsHistory() {
 		cache_kline.Volume = cache_kline.Volume + last_kline.Volume
 
-		if k.IsDebug {
+		if k.Config.IsDebug {
 			logx.Slowf("OldMinuteNotFinished LastKline is Real:\nLastKLine:%s\nNewCache: %s", last_kline.FullString(), cache_kline.FullString())
 		}
 	}
@@ -434,7 +432,7 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 	var pub_kline *Kline = nil
 
 	if util.IsNewResolutionStart(new_kline.Time, last_kline.Time, resolution) { // Tested;
-		if k.IsDebug {
+		if k.Config.IsDebug {
 			logx.Slowf("NewResolutionStart!")
 		}
 
@@ -448,7 +446,7 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 		cache_kline.LastVolume = 0
 		cache_kline.Resolution = resolution
 
-		if k.IsDebug {
+		if k.Config.IsDebug {
 			logx.Slowf("SetNewCache:%s", cache_kline.FullString())
 		}
 
@@ -457,7 +455,7 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 	} else { // Tested
 		cache_kline.UpdateInfoByRealKline(new_kline)
 
-		if k.IsDebug {
+		if k.Config.IsDebug {
 			logx.Slowf("UpdateCache: %s", cache_kline.FullString())
 		}
 
@@ -474,12 +472,12 @@ func (k *KlineCache) ProcessLaterRealKline(new_kline *Kline, cache_kline *Kline,
 
 	var pub_kline *Kline = nil
 
-	if k.IsDebug {
+	if k.Config.IsDebug {
 		logx.Slowf("ProcessLaterRealKline")
 	}
 
 	if util.IsNewMinuteStart(new_kline.Time, last_kline.Time) { // Tested
-		if k.IsDebug {
+		if k.Config.IsDebug {
 			logx.Slowf("NewMinuteStart: NewTime: %s", util.TimeStrFromInt(new_kline.Time))
 		}
 
@@ -489,7 +487,7 @@ func (k *KlineCache) ProcessLaterRealKline(new_kline *Kline, cache_kline *Kline,
 	} else { // Tested
 		cache_kline.UpdateInfoByRealKline(new_kline)
 
-		if k.IsDebug {
+		if k.Config.IsDebug {
 			logx.Slowf("MiddleSecs UpdateCache:%s", cache_kline.FullString())
 		}
 
@@ -509,21 +507,21 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 
 	var pub_kline *Kline = nil
 
-	if k.IsDebug {
+	if k.Config.IsDebug {
 		logx.Slowf("ProcessLaterHistKline")
 
 	}
 
 	if IsOldKlineEnd(new_kline, resolution) { //Tested
 
-		if k.IsDebug {
+		if k.Config.IsDebug {
 			logx.Slowf("OldKlineEnd,Resolution:%d, NewTime: %s", resolution, util.TimeStrFromInt(new_kline.Time))
 		}
 
 		if new_kline.Resolution != resolution {
 			cache_kline.UpdateInfoByHistKline(new_kline)
 
-			if k.IsDebug {
+			if k.Config.IsDebug {
 				logx.Slowf("UpdateLastCache: %s", cache_kline.FullString())
 			}
 		} else {
@@ -539,7 +537,7 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 		cache_kline.LastVolume = 0
 		cache_kline.SetPerfectTime(int64(resolution))
 
-		if k.IsDebug {
+		if k.Config.IsDebug {
 			logx.Slowf("NewKlineStart, SetCache: %s", cache_kline.FullString())
 		}
 
@@ -547,7 +545,7 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 
 		cache_kline.UpdateInfoByHistKline(new_kline)
 
-		if k.IsDebug {
+		if k.Config.IsDebug {
 			logx.Slowf("UpdateMiddleCache: %s", cache_kline.FullString())
 		}
 
@@ -596,7 +594,7 @@ func (k *KlineCache) InitCacheKline(new_kline *Kline, resolution uint64) *Kline 
 	k.SetCacheKline(kline, resolution)
 	k.SetLastKline(new_kline, resolution)
 
-	if k.IsDebug {
+	if k.Config.IsDebug {
 		logx.Slowf("InitCache: %s", kline.FullString())
 	}
 
@@ -622,7 +620,7 @@ func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution uint64) *Kline
 	// k.CompleteKlinesMutex.Lock()
 	// defer k.CompleteKlinesMutex.Unlock()
 
-	if k.IsDebug {
+	if k.Config.IsDebug {
 		logx.Slowf("NewKline: %s", new_kline.FullString())
 	}
 
@@ -632,7 +630,7 @@ func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution uint64) *Kline
 	if cache_kline == nil {
 		pub_kline = k.InitCacheKline(new_kline, resolution)
 	} else {
-		if k.IsDebug {
+		if k.Config.IsDebug {
 			logx.Slowf("cache_kline: %s", cache_kline.FullString())
 			logx.Slowf("last_kline : %s", last_kline.FullString())
 		}
@@ -646,7 +644,7 @@ func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution uint64) *Kline
 		}
 	}
 
-	if k.IsDebug {
+	if k.Config.IsDebug {
 		logx.Slowf("PubKline: %s\n", pub_kline.FullString())
 	}
 
@@ -687,7 +685,7 @@ func (k *KlineCache) EraseTreeNode(tree *treemap.Map, target_count int) {
 		value, ok := tree.Get(outtimeKey)
 		if ok {
 
-			if k.IsDebug {
+			if k.Config.IsDebug {
 				logx.Slowf("Erase %s \n", value.(*Kline).FullString())
 			}
 

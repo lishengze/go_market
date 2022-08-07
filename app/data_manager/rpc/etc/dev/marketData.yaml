@@ -41,6 +41,7 @@ Mysql:
 
 CacheConfig:
   Count: 500
+  IsDebug: false
 
 MonitorConfigInfo:
   RateParam: 1.1

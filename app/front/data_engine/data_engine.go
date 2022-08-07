@@ -229,6 +229,7 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 	}
 
 	for _, tmp_kline := range pubklines {
+		logx.Slowf("[PK] %s", tmp_kline.FullString())
 		d.PublishKline(tmp_kline, nil)
 	}
 
@@ -271,6 +272,7 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	defer catch_trade_exp("process_trade", trade)
 
 	d.trade_cache_map.Store(trade.Symbol, trade)
+	logx.Slowf("[RT]: %s", trade.String())
 
 	usd_price := trade.Price * d.GetUsdPrice(trade.Symbol)
 

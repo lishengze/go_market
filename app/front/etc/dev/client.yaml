@@ -35,7 +35,8 @@ Nacos:
   LogLevel: "debug"
 
 Cache:
-  CacheDataCount: 1440
+  CacheDataCount: 1500
+  IsDebug: true
 
 WS:
   Address: "localhost:8114"
