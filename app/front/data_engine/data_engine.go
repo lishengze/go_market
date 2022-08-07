@@ -214,9 +214,23 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 
 	d.cache_period_data[kline.Symbol].UpdateWithKline(kline)
 
-	// d.kline_cache.UpdateWithKline(kline)
+	pubklines, err := d.kline_cache.UpdateAllKline(kline)
 
-	d.PublishKline(kline, nil)
+	if !kline.IsHistory() {
+		trade := datastruct.NewTradeWithRealTimeKline(kline)
+		d.process_trade(trade)
+	}
+
+	if err != nil {
+		logx.Errorf("UpdateAllKline Failed: %+V", err)
+		logx.Slowf("UpdateAllKline Failed: %+V", err)
+		logx.Infof("UpdateAllKline Failed: %+V", err)
+		return err
+	}
+
+	for _, tmp_kline := range pubklines {
+		d.PublishKline(tmp_kline, nil)
+	}
 
 	return nil
 }
@@ -257,10 +271,6 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	defer catch_trade_exp("process_trade", trade)
 
 	d.trade_cache_map.Store(trade.Symbol, trade)
-
-	d.InitPeriodDaraMain(trade.Symbol)
-
-	d.cache_period_data[trade.Symbol].UpdateWithTrade(trade)
 
 	usd_price := trade.Price * d.GetUsdPrice(trade.Symbol)
 
@@ -513,6 +523,8 @@ func (d *DataEngine) GetKlinesByCount(symbol string, resolution uint64, count in
 
 	if rst == nil {
 		db_klines := d.GetDBKlinesByCount(symbol, resolution, count)
+		datastruct.OutputDetailHistKlines(db_klines)
+
 		d.kline_cache.ReleaseInputKlines(db_klines, symbol, resolution)
 	}
 

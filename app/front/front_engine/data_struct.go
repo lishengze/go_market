@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"market_server/app/front/net"
-	"market_server/common/datastruct"
 	"sync"
 
 	"github.com/emirpasic/gods/maps/treemap"
@@ -115,8 +114,8 @@ func NewDepthSubInfo() *DepthSubInfo {
 }
 
 type KlineSubItem struct {
-	ws_info    *treemap.Map
-	cache_data *datastruct.Kline
+	ws_info *treemap.Map
+	// cache_data *datastruct.Kline
 }
 
 func NewKlineWithKline() *KlineSubItem {

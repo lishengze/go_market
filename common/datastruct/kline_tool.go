@@ -209,6 +209,23 @@ func TreeGetKlinesByTime(kline_tree *treemap.Map, resolution int, start_time int
 	return rst
 }
 
+func OutputDetailHistKlines(klines []*Kline) {
+	defer util.CatchExp("OutputDetailHistKlines")
+
+	if len(klines) > 3 {
+		pub_kline := klines[len(klines)-3]
+		cache_kline := klines[len(klines)-2]
+		last_kline := klines[len(klines)-1]
+
+		logx.Slowf("\npub_kline: %s\ncache_kline:%s\nlast_kline:%s\n",
+			pub_kline.FullString(), cache_kline.FullString(), last_kline.FullString())
+	}
+
+	for _, kline := range klines {
+		logx.Slowf("%s", kline.FullString())
+	}
+}
+
 type TestKlineTool struct {
 }
 

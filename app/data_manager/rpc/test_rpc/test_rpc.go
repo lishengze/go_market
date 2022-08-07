@@ -126,10 +126,12 @@ func (t *TestRpc) TestKline() {
 
 	klines := marketservice.TransPbKlines(rst.KlineData)
 
-	logx.Infof("ori data_count: %d", len(klines))
+	// logx.Infof("ori data_count: %d", len(klines))
 	for _, kline := range klines {
 		logx.Infof(kline.FullString())
 	}
+
+	datastruct.OutputDetailHistKlines(klines)
 
 	t.KlineCache.ReleaseInputKlines(klines, symbol, resolution)
 

@@ -308,6 +308,10 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 		kline_data = append(kline_data, tmp_detail)
 	}
 
+	if hist_kline.ReqInfo.Frequency > datastruct.NANO_PER_SECS {
+		hist_kline.ReqInfo.Frequency = hist_kline.ReqInfo.Frequency / datastruct.NANO_PER_SECS
+	}
+
 	json_data := PubKlineJson{
 		TypeInfo:        net.KLINE_UPATE,
 		DataType:        net.KLINE_HIST,
