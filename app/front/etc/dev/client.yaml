@@ -34,9 +34,10 @@ Nacos:
   MaxAge: 3
   LogLevel: "debug"
 
-Cache:
-  CacheDataCount: 1500
+CacheConfig:
+  Count: 100
   IsDebug: true
+
 
 WS:
   Address: "localhost:8114"

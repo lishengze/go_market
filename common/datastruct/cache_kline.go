@@ -666,6 +666,8 @@ func (k *KlineCache) UpdateAllKline(new_kline *Kline) ([]*Kline, error) {
 	for resolution := range k.CompletedKlines[new_kline.Symbol] {
 		pub_klines = append(pub_klines, k.UpdateWithKline(new_kline, resolution))
 	}
+
+	k.EraseOutTimeKline()
 	return pub_klines, nil
 }
 

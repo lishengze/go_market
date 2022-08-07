@@ -524,7 +524,12 @@ func (d *DataEngine) GetKlinesByCount(symbol string, resolution uint64, count in
 	rst := d.kline_cache.GetKlinesByCount(symbol, resolution, count, false, true)
 
 	if rst == nil {
-		db_klines := d.GetDBKlinesByCount(symbol, resolution, count)
+
+		req_count := util.MaxInt(count, d.kline_cache.Config.Count)
+
+		logx.Slowf("ReqDB: %s, %d, %d \n", symbol, resolution, req_count)
+
+		db_klines := d.GetDBKlinesByCount(symbol, resolution, req_count)
 		datastruct.OutputDetailHistKlines(db_klines)
 
 		d.kline_cache.ReleaseInputKlines(db_klines, symbol, resolution)

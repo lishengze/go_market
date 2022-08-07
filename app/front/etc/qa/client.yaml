@@ -34,8 +34,8 @@ Nacos:
   MaxAge: 3
   LogLevel: "debug"
 
-Cache:
-  CacheDataCount: 1500
+CacheConfig:
+  Count: 1500
   IsDebug: true
 
 WS:
