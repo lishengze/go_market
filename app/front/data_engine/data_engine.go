@@ -451,7 +451,7 @@ func (d *DataEngine) SubDepth(symbol string, ws *net.WSInfo) (string, bool) {
 
 // Undo
 // Untest
-func (d *DataEngine) GetDBKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
+func (d *DataEngine) GetDBKlinesByCount(symbol string, resolution uint64, count int) []*datastruct.Kline {
 	util.CatchExp(fmt.Sprintf("DataEngine GetDBKlinesByCount %s,%d,%d", symbol, resolution, count))
 	var rst []*datastruct.Kline
 
@@ -459,7 +459,7 @@ func (d *DataEngine) GetDBKlinesByCount(symbol string, resolution int, count int
 		Symbol:    symbol,
 		Exchange:  datastruct.BCTS_EXCHANGE,
 		Count:     uint32(count),
-		Frequency: uint32(resolution),
+		Frequency: resolution,
 	}
 
 	logx.Infof("req_hist_info: %+v", req_hist_info)
@@ -479,7 +479,7 @@ func (d *DataEngine) GetDBKlinesByCount(symbol string, resolution int, count int
 
 // Undo
 // Untest
-func (d *DataEngine) GetDBKlinesByTime(symbol string, resolution int, start_time int64, end_time int64) []*datastruct.Kline {
+func (d *DataEngine) GetDBKlinesByTime(symbol string, resolution uint64, start_time int64, end_time int64) []*datastruct.Kline {
 	util.CatchExp(fmt.Sprintf("DataEngine GetDBKlinesByTime %s,%d,%d~%d", symbol, resolution, start_time, end_time))
 	var rst []*datastruct.Kline
 
@@ -488,7 +488,7 @@ func (d *DataEngine) GetDBKlinesByTime(symbol string, resolution int, start_time
 		Exchange:  datastruct.BCTS_EXCHANGE,
 		StartTime: uint64(start_time),
 		EndTime:   uint64(end_time),
-		Frequency: uint32(resolution),
+		Frequency: resolution,
 	}
 
 	logx.Infof("req_hist_info: %+v", req_hist_info)
@@ -506,7 +506,7 @@ func (d *DataEngine) GetDBKlinesByTime(symbol string, resolution int, start_time
 }
 
 // Untest
-func (d *DataEngine) GetKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
+func (d *DataEngine) GetKlinesByCount(symbol string, resolution uint64, count int) []*datastruct.Kline {
 	defer util.CatchExp("DataEngine GetKlinesByCount")
 
 	rst := d.kline_cache.GetKlinesByCount(symbol, resolution, count, true)
@@ -522,7 +522,7 @@ func (d *DataEngine) GetKlinesByCount(symbol string, resolution int, count int) 
 }
 
 // Untest
-func (d *DataEngine) GetKlinesByTime(symbol string, resolution int, start_time int64, end_time int64) []*datastruct.Kline {
+func (d *DataEngine) GetKlinesByTime(symbol string, resolution uint64, start_time int64, end_time int64) []*datastruct.Kline {
 	defer util.CatchExp("DataEngine GetKlinesByTime")
 
 	rst := d.kline_cache.GetKlinesByTime(symbol, resolution, start_time, end_time, true)
@@ -543,9 +543,9 @@ func (d *DataEngine) GetHistKlineDataNew(req_kline_info *datastruct.ReqHistKline
 	var ori_klines []*datastruct.Kline
 
 	if req_kline_info.Count > 0 {
-		ori_klines = d.GetKlinesByCount(req_kline_info.Symbol, int(req_kline_info.Frequency), int(req_kline_info.Count))
+		ori_klines = d.GetKlinesByCount(req_kline_info.Symbol, req_kline_info.Frequency, int(req_kline_info.Count))
 	} else if req_kline_info.StartTime > 0 && req_kline_info.EndTime > req_kline_info.StartTime {
-		ori_klines = d.GetKlinesByTime(req_kline_info.Symbol, int(req_kline_info.Frequency),
+		ori_klines = d.GetKlinesByTime(req_kline_info.Symbol, req_kline_info.Frequency,
 			int64(req_kline_info.StartTime), int64(req_kline_info.EndTime))
 	} else {
 		logx.Errorf("error req_hist_kline %s", req_kline_info.String())
@@ -566,7 +566,7 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 	if d.IsTest {
 		tmp = datastruct.GetTestHistKline(req_kline_info)
 	} else {
-		rate := req_kline_info.Frequency / datastruct.SECS_PER_MIN
+		// rate := req_kline_info.Frequency / datastruct.SECS_PER_MIN
 
 		req_hist_info := &marketservice.ReqHishKlineInfo{
 			Symbol:    req_kline_info.Symbol,
@@ -578,7 +578,7 @@ func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *
 		}
 
 		if req_kline_info.Frequency%datastruct.NANO_PER_MIN != 0 {
-			return nil, fmt.Errorf("frequency %d is error ", frequency)
+			return nil
 		}
 
 		logx.Infof("req_hist_info: %+v", req_kline_info)
@@ -637,7 +637,7 @@ func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, o
 	defer catch_trasoriklinedaata_exp(req_kline_info)
 
 	rst := treemap.NewWith(utils.Int64Comparator)
-	resolution := int(req_kline_info.Frequency)
+	resolution := req_kline_info.Frequency
 
 	if ori_klines.Size() == 0 {
 		return rst, false
@@ -648,7 +648,8 @@ func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, o
 
 	cache_kline := iter.Value().(*datastruct.Kline)
 
-	if !datastruct.IsNewKlineStart(cache_kline, int64(resolution)) {
+	// Error
+	if !datastruct.IsNewKlineStart(cache_kline, resolution) {
 		cache_kline.Time = datastruct.GetLastStartTime(cache_kline.Time, int64(resolution))
 	}
 
@@ -657,7 +658,7 @@ func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, o
 	for iter.Next() {
 		cur_kline := iter.Value().(*datastruct.Kline)
 
-		if datastruct.IsOldKlineEnd(cur_kline, int64(resolution)) {
+		if datastruct.IsOldKlineEnd(cur_kline, resolution) {
 			if cur_kline.Resolution != resolution {
 				cache_kline.Close = cur_kline.Close
 				cache_kline.Low = util.MinFloat64(cache_kline.Low, cur_kline.Low)
@@ -671,7 +672,7 @@ func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, o
 
 			cache_kline = datastruct.NewKlineWithKline(pub_kline)
 			rst.Put(pub_kline.Time, pub_kline)
-		} else if datastruct.IsNewKlineStart(cur_kline, int64(resolution)) {
+		} else if datastruct.IsNewKlineStart(cur_kline, resolution) {
 			cache_kline = cur_kline
 			cache_kline.Resolution = resolution
 		} else {

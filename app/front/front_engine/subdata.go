@@ -103,16 +103,16 @@ func (s *SubData) GetTradePubInfoList(trade *datastruct.RspTrade) []*TradePubInf
 
 func (s *SubData) UpdateKlineCacheData(kline *datastruct.Kline) {
 	if _, ok := s.KlineInfo.Info[kline.Symbol]; !ok {
-		s.KlineInfo.Info[kline.Symbol] = make(map[int]*KlineSubItem)
+		s.KlineInfo.Info[kline.Symbol] = make(map[uint64]*KlineSubItem)
 	}
 
-	if _, ok := s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)]; !ok {
-		s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].cache_data = kline
+	if _, ok := s.KlineInfo.Info[kline.Symbol][kline.Resolution]; !ok {
+		s.KlineInfo.Info[kline.Symbol][kline.Resolution].cache_data = kline
 	} else {
-		cache_kline := s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].cache_data
+		cache_kline := s.KlineInfo.Info[kline.Symbol][kline.Resolution].cache_data
 
 		if kline.Time-cache_kline.Time >= int64(kline.Resolution) {
-			s.KlineInfo.Info[kline.Symbol][int(kline.Resolution)].cache_data = kline
+			s.KlineInfo.Info[kline.Symbol][kline.Resolution].cache_data = kline
 		}
 	}
 }
@@ -168,13 +168,13 @@ func (s *SubData) GetKlinePubInfoListWithTrade(trade *datastruct.Trade) []*Kline
 				Low:        trade.Price,
 				Close:      trade.Price,
 				Volume:     trade.Volume,
-				Resolution: resolution,
+				Resolution: uint64(resolution),
 			}
 
 			logx.Slowf("New Kline With: \nTrade %s\nkline: %s \n", trade.String(), tmp_kline.FullString())
 
 			s.KlineInfo.Info[trade.Symbol][resolution].cache_data = datastruct.NewKlineWithKline(tmp_kline)
-			s.KlineInfo.Info[trade.Symbol][resolution].cache_data.Resolution = resolution
+			s.KlineInfo.Info[trade.Symbol][resolution].cache_data.Resolution = uint64(resolution)
 
 			pub_kline = datastruct.NewKlineWithKline(tmp_kline)
 		} else {
@@ -278,7 +278,7 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 
 		var pub_kline *datastruct.Kline = nil
 
-		if datastruct.IsOldKlineEnd(kline, int64(resolution)) {
+		if datastruct.IsOldKlineEnd(kline, resolution) {
 			logx.Slowf("Old Kline End: rsl:%d, %s", resolution, kline.String())
 
 			if kline.Resolution != resolution {
@@ -308,7 +308,7 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 
 			s.KlineInfo.Info[kline.Symbol][resolution].cache_data = datastruct.NewKlineWithKline(pub_kline)
 
-		} else if datastruct.IsNewKlineStart(kline, int64(resolution)) {
+		} else if datastruct.IsNewKlineStart(kline, resolution) {
 			logx.Slowf("New Kline Start: rsl:%d, %s", resolution, kline.String())
 
 			s.KlineInfo.Info[kline.Symbol][resolution].cache_data = datastruct.NewKlineWithKline(kline)
@@ -346,16 +346,16 @@ func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 	last_kline := iter.Value().(*datastruct.Kline)
 
 	if _, ok := s.KlineInfo.Info[hist_kline.ReqInfo.Symbol]; !ok {
-		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol] = make(map[int]*KlineSubItem)
+		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol] = make(map[uint64]*KlineSubItem)
 	}
 
-	if _, ok := s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)]; !ok {
+	if _, ok := s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][hist_kline.ReqInfo.Frequency]; !ok {
 
-		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data = datastruct.NewKlineWithKline(last_kline)
+		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][hist_kline.ReqInfo.Frequency].cache_data = datastruct.NewKlineWithKline(last_kline)
 		logx.Slowf("[Store] %s ", last_kline.String())
-	} else if s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data == nil {
+	} else if s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][hist_kline.ReqInfo.Frequency].cache_data == nil {
 
-		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][int(hist_kline.ReqInfo.Frequency)].cache_data = datastruct.NewKlineWithKline(last_kline)
+		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][hist_kline.ReqInfo.Frequency].cache_data = datastruct.NewKlineWithKline(last_kline)
 		logx.Slowf("[Store] %s ", last_kline.String())
 	}
 
@@ -493,22 +493,22 @@ func (s *SubData) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSIn
 
 	if _, ok := s.KlineInfo.Info[req_kline_info.Symbol]; !ok {
 
-		s.KlineInfo.Info[req_kline_info.Symbol] = make(map[int]*KlineSubItem)
+		s.KlineInfo.Info[req_kline_info.Symbol] = make(map[uint64]*KlineSubItem)
 
-		s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)] = &KlineSubItem{
+		s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency] = &KlineSubItem{
 			ws_info:    treemap.NewWith(utils.Int64Comparator),
 			cache_data: nil,
 		}
 	}
 
-	if _, ok := s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)]; !ok {
-		s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)] = &KlineSubItem{
+	if _, ok := s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency]; !ok {
+		s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency] = &KlineSubItem{
 			ws_info:    treemap.NewWith(utils.Int64Comparator),
 			cache_data: nil,
 		}
 	}
 
-	s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].ws_info.Put(ws.ID, ws)
+	s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency].ws_info.Put(ws.ID, ws)
 
 	logx.Infof("SubKline After Sub %s, %s,%s", req_kline_info.String(), ws.String(), s.KlineInfo.String())
 }
@@ -521,18 +521,18 @@ func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WS
 
 	if _, ok := s.KlineInfo.Info[req_kline_info.Symbol]; !ok {
 		return
-	} else if _, ok := s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)]; !ok {
+	} else if _, ok := s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency]; !ok {
 		return
 	}
 
-	if s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].ws_info != nil {
-		s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].ws_info.Remove(ws.ID)
+	if s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency].ws_info != nil {
+		s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency].ws_info.Remove(ws.ID)
 
-		if s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].ws_info.Size() == 0 {
+		if s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency].ws_info.Size() == 0 {
 
-			s.KlineInfo.Info[req_kline_info.Symbol][int(req_kline_info.Frequency)].cache_data = nil
+			s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency].cache_data = nil
 
-			delete(s.KlineInfo.Info[req_kline_info.Symbol], int(req_kline_info.Frequency))
+			delete(s.KlineInfo.Info[req_kline_info.Symbol], req_kline_info.Frequency)
 
 			if len(s.KlineInfo.Info[req_kline_info.Symbol]) == 0 {
 				delete(s.KlineInfo.Info, req_kline_info.Symbol)

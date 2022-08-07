@@ -104,7 +104,7 @@ func (t *TestKlineCache) process_kline(kline *datastruct.Kline) error {
 	}
 
 	resolution := 1 * datastruct.NANO_PER_MIN
-	t.KlineCache.UpdateWithKline(kline, resolution)
+	t.KlineCache.UpdateWithKline(kline, uint64(resolution))
 
 	// if kline.IsHistory() {
 	// 	logx.Slowf("[HK] %s", kline.FullString())

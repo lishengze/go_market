@@ -190,7 +190,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 			for _, info := range kline_pub_list {
 				cur_req := &datastruct.ReqHistKline{
 					Symbol:    info.Symbol,
-					Frequency: uint32(info.Resolution),
+					Frequency: info.Resolution,
 				}
 
 				logx.Slowf("[KP]:%s", info.String())
@@ -226,7 +226,7 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 	if ws != nil {
 		cur_req := &datastruct.ReqHistKline{
 			Symbol:    kline.Symbol,
-			Frequency: uint32(kline.Resolution),
+			Frequency: kline.Resolution,
 		}
 
 		if ws.IsAlive() {
@@ -249,7 +249,7 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 			for _, info := range kline_pub_list {
 				cur_req := &datastruct.ReqHistKline{
 					Symbol:    info.Symbol,
-					Frequency: uint32(info.Resolution),
+					Frequency: info.Resolution,
 				}
 
 				// logx.Slowf("KP:%s", info.String())

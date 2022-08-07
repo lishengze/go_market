@@ -327,7 +327,7 @@ func (d *DBServer) GetLastMinuteTrades(symbol string) []*datastruct.Trade {
 }
 
 // UnTest
-func (d *DBServer) GetDBKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
+func (d *DBServer) GetDBKlinesByCount(symbol string, resolution uint64, count int) []*datastruct.Kline {
 	defer util.CatchExp(fmt.Sprintf("GetDBKlinesByCount %s, %d, %d", symbol, resolution, count))
 
 	logx.Slowf("GetDBKlinesByCount %s, %d, %d", symbol, resolution, count)
@@ -347,7 +347,7 @@ func (d *DBServer) GetDBKlinesByCount(symbol string, resolution int, count int) 
 	return rst
 }
 
-func (d *DBServer) GetDBKlinesByTime(symbol string, resolution int, start_time int64, end_time int64) []*datastruct.Kline {
+func (d *DBServer) GetDBKlinesByTime(symbol string, resolution uint64, start_time int64, end_time int64) []*datastruct.Kline {
 	defer util.CatchExp("DBServer GetKlinesByCount")
 
 	table_name := d.get_table_name(datastruct.KLINE_TYPE, symbol, datastruct.BCTS_EXCHANGE)
@@ -366,7 +366,7 @@ func (d *DBServer) GetDBKlinesByTime(symbol string, resolution int, start_time i
 }
 
 // UnTest
-func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []*datastruct.Kline {
+func (d *DBServer) GetKlinesByCount(symbol string, resolution uint64, count int) []*datastruct.Kline {
 	defer util.CatchExp("DBServer GetKlinesByCount")
 
 	logx.Slowf("GetKlinesByCount  %s, %d, %d \n", symbol, resolution, count)
@@ -397,7 +397,7 @@ func (d *DBServer) GetKlinesByCount(symbol string, resolution int, count int) []
 }
 
 // UnTest
-func (d *DBServer) GetKlinesByTime(symbol string, resolution int, start_time int64, end_time int64) []*datastruct.Kline {
+func (d *DBServer) GetKlinesByTime(symbol string, resolution uint64, start_time int64, end_time int64) []*datastruct.Kline {
 	defer util.CatchExp("DBServer GetKlinesByTime")
 
 	rst := d.kline_cache.GetKlinesByTime(symbol, resolution, start_time, end_time, true)
@@ -436,7 +436,7 @@ func (d *DBServer) RequestHistKlineData(ctx context.Context, in *pb.ReqHishKline
 
 	var ori_klines []*datastruct.Kline = nil
 
-	resolution := int(frequency)
+	resolution := frequency
 
 	if resolution < datastruct.NANO_PER_SECS {
 		resolution = resolution * datastruct.NANO_PER_SECS

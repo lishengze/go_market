@@ -95,7 +95,7 @@ func GetKline(values []interface{}) *datastruct.Kline {
 	tmp_kline.Volume = volume
 
 	resolution, _ := strconv.Atoi(string(values[9].([]byte)))
-	tmp_kline.Resolution = resolution
+	tmp_kline.Resolution = uint64(resolution)
 
 	lastvolume, err := strconv.ParseFloat(string(values[10].([]byte)), 64)
 	if err != nil {

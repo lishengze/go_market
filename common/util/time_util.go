@@ -98,10 +98,10 @@ func IsNewMinuteStart(new_time int64, old_time int64) bool {
 	return new_time_minute != old_time_minute
 }
 
-func IsNewResolutionStart(new_time int64, old_time int64, resolution int) bool {
+func IsNewResolutionStart(new_time int64, old_time int64, resolution uint64) bool {
 
-	if resolution < int(time.Second) {
-		resolution = resolution * int(time.Second)
+	if resolution < uint64(time.Second) {
+		resolution = resolution * uint64(time.Second)
 	}
 
 	new_time_minute := new_time - new_time%int64(resolution)

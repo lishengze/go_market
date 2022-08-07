@@ -96,7 +96,7 @@ func (t *TestRpc) Start() {
 }
 
 func (t *TestRpc) TestKline() {
-	resolution := 5 * datastruct.SECS_PER_MIN
+	resolution := uint64(5 * datastruct.SECS_PER_MIN)
 	symbol := "BTC_USDT"
 
 	req_hist_info := &marketservice.ReqHishKlineInfo{
@@ -105,7 +105,7 @@ func (t *TestRpc) TestKline() {
 		StartTime: 0,
 		EndTime:   0,
 		Count:     2,
-		Frequency: uint32(resolution),
+		Frequency: uint64(resolution),
 	}
 
 	fmt.Printf("req_hist_info %+v \n", req_hist_info)

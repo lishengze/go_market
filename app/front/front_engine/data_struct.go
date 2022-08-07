@@ -53,7 +53,7 @@ func (d *TradePubInfo) String() string {
 type KlinePubInfo struct {
 	ws_info    *net.WSInfo
 	Symbol     string
-	Resolution int
+	Resolution uint64
 	data       []byte
 }
 
@@ -127,7 +127,7 @@ func NewKlineWithKline() *KlineSubItem {
 
 type KlineSubInfo struct {
 	mutex sync.Mutex
-	Info  map[string](map[int]*KlineSubItem)
+	Info  map[string](map[uint64]*KlineSubItem)
 }
 
 func (d *KlineSubInfo) String() string {
@@ -149,7 +149,7 @@ func (d *KlineSubInfo) String() string {
 
 func NewKlineSubInfo() *KlineSubInfo {
 	return &KlineSubInfo{
-		Info: make(map[string](map[int]*KlineSubItem)),
+		Info: make(map[string](map[uint64]*KlineSubItem)),
 	}
 }
 

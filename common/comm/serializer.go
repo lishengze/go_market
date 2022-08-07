@@ -183,7 +183,7 @@ func (p *ProtobufSerializer) DecodeKline(raw_msg []byte) (*datastruct.Kline, err
 		Exchange:   proto_kline.Exchange,
 		Symbol:     proto_kline.Symbol,
 		Time:       int64(proto_kline.Timestamp.Seconds*datastruct.NANO_PER_SECS + int64(proto_kline.Timestamp.Nanos)),
-		Resolution: int(proto_kline.Resolution),
+		Resolution: proto_kline.Resolution,
 		Open:       open,
 		High:       high,
 		Low:        low,

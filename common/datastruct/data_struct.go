@@ -115,7 +115,7 @@ type Kline struct {
 	Low        float64
 	Close      float64
 	Volume     float64
-	Resolution int
+	Resolution uint64
 	Sequence   uint64
 	LastVolume float64
 }
@@ -465,7 +465,7 @@ func NewKlineWithKline(kline *Kline) *Kline {
 	}
 }
 
-func IsNewKlineStart(kline *Kline, resolution int64) bool {
+func IsNewKlineStart(kline *Kline, resolution uint64) bool {
 	return IsNewKlineStartTime(kline.Time, resolution)
 
 	// tmp_time := kline.Time
@@ -485,7 +485,7 @@ func IsNewKlineStart(kline *Kline, resolution int64) bool {
 	// }
 }
 
-func IsTargetTime(time_secs int64, resolution_secs int64) bool {
+func IsTargetTime(time_secs uint64, resolution_secs uint64) bool {
 
 	if resolution_secs == SECS_PER_DAY*7 {
 		// fmt.Printf("Ori Days: %d\n", time_secs/SECS_PER_DAY)
@@ -504,7 +504,7 @@ func IsTargetTime(time_secs int64, resolution_secs int64) bool {
 	}
 }
 
-func IsNewKlineStartTime(tmp_time int64, resolution int64) bool {
+func IsNewKlineStartTime(tmp_time int64, resolution uint64) bool {
 
 	if tmp_time > NANO_PER_HOUR {
 		tmp_time = tmp_time - tmp_time%NANO_PER_MIN
@@ -517,7 +517,7 @@ func IsNewKlineStartTime(tmp_time int64, resolution int64) bool {
 
 	tmp_time = tmp_time - tmp_time%SECS_PER_MIN
 
-	return IsTargetTime(tmp_time, resolution)
+	return IsTargetTime(uint64(tmp_time), resolution)
 
 	// if tmp_time%resolution == 0 {
 	// 	return true
@@ -526,7 +526,7 @@ func IsNewKlineStartTime(tmp_time int64, resolution int64) bool {
 	// }
 }
 
-func IsOldKlineEnd(kline *Kline, resolution int64) bool {
+func IsOldKlineEnd(kline *Kline, resolution uint64) bool {
 
 	return IsOldKlineEndTime(kline.Time, kline.Resolution, resolution)
 
@@ -555,7 +555,7 @@ func IsOldKlineEnd(kline *Kline, resolution int64) bool {
 	// }
 }
 
-func IsOldKlineEndTime(tmp_time int64, src_resolution int, dst_resolution int64) bool {
+func IsOldKlineEndTime(tmp_time int64, src_resolution uint64, dst_resolution uint64) bool {
 
 	if tmp_time > NANO_PER_HOUR {
 		tmp_time = tmp_time - tmp_time%NANO_PER_MIN
@@ -574,7 +574,7 @@ func IsOldKlineEndTime(tmp_time int64, src_resolution int, dst_resolution int64)
 
 	tmp_time = tmp_time + int64(src_resolution)
 
-	return IsTargetTime(tmp_time, dst_resolution)
+	return IsTargetTime(uint64(tmp_time), dst_resolution)
 
 	// if tmp_time%dst_resolution == 0 {
 	// 	return true

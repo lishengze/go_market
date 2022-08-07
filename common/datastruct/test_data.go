@@ -170,9 +170,9 @@ func GetTestHistKline(req_kline_info *ReqHistKline) *treemap.Map {
 
 	klines := treemap.NewWith(utils.Int64Comparator)
 
-	real_count := int64(req_kline_info.Count * (req_kline_info.Frequency / SECS_PER_MIN))
+	real_count := req_kline_info.Count * (uint32)(req_kline_info.Frequency/uint64(SECS_PER_MIN))
 
-	cur_time := util.TimeMinuteNanos() - real_count*NANO_PER_MIN
+	cur_time := util.TimeMinuteNanos() - int64(real_count)*int64(NANO_PER_MIN)
 
 	if req_kline_info.Count != 0 {
 		for i := 0; i < int(real_count); i++ {
@@ -260,7 +260,7 @@ func TestIsTargetTime() {
 	fmt.Printf("nano_secs: %d, CurTime: %s, IsTarget: %+v \n",
 		nano_secs,
 		util.TimeStrFromInt(nano_secs),
-		IsTargetTime(nano_secs/NANO_PER_SECS, SECS_PER_DAY*7))
+		IsTargetTime(uint64(nano_secs/NANO_PER_SECS), SECS_PER_DAY*7))
 
 }
 

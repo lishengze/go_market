@@ -53,7 +53,7 @@ func NewKlineWithPbKline(pb_kline *Kline) *datastruct.Kline {
 		Exchange:   pb_kline.Exchange,
 		Symbol:     pb_kline.Symbol,
 		Time:       int64(pb_kline.Timestamp.Seconds*datastruct.NANO_PER_SECS + int64(pb_kline.Timestamp.Nanos)),
-		Resolution: int(pb_kline.Resolution),
+		Resolution: pb_kline.Resolution,
 		Open:       open,
 		High:       high,
 		Low:        low,

@@ -32,13 +32,13 @@ func TransSliceKlines(ori_klines []*Kline) *treemap.Map {
 	return rst
 }
 
-func ResetFirstKline(latest_kline *Kline, target_resolution int) {
+func ResetFirstKline(latest_kline *Kline, target_resolution uint64) {
 	defer util.CatchExp("ResetFirstKline")
 	latest_kline.Time = GetLastStartTime(latest_kline.Time, int64(target_resolution))
 	latest_kline.Resolution = target_resolution
 }
 
-func ProcessOldEndKline(cur_kline *Kline, latest_kline *Kline, target_resolution int) *Kline {
+func ProcessOldEndKline(cur_kline *Kline, latest_kline *Kline, target_resolution uint64) *Kline {
 	defer util.CatchExp("ProcessOldEndKline")
 	var pub_kline *Kline
 	if cur_kline.Resolution != target_resolution {
@@ -55,7 +55,7 @@ func ProcessOldEndKline(cur_kline *Kline, latest_kline *Kline, target_resolution
 	return pub_kline
 }
 
-func ProcessNewStartKline(cur_kline *Kline, latest_kline *Kline, target_resolution int) {
+func ProcessNewStartKline(cur_kline *Kline, latest_kline *Kline, target_resolution uint64) {
 	defer util.CatchExp("ProcessNewStartKline")
 
 	latest_kline = NewKlineWithKline(cur_kline)
@@ -71,7 +71,7 @@ func ProcessCachingKline(cur_kline *Kline, latest_kline *Kline) {
 	latest_kline.Volume = latest_kline.Volume + cur_kline.Volume
 }
 
-func NewTreeMapWithKlines(ori_klines []*Kline, target_resolution int) *treemap.Map {
+func NewTreeMapWithKlines(ori_klines []*Kline, target_resolution uint64) *treemap.Map {
 	defer util.CatchExp("NewTreeMapWithKlines")
 
 	rst := treemap.NewWith(utils.Int64Comparator)
@@ -85,10 +85,10 @@ func NewTreeMapWithKlines(ori_klines []*Kline, target_resolution int) *treemap.M
 			ResetFirstKline(latest_kline, target_resolution)
 		}
 
-		if IsOldKlineEndTime(cur_kline.Time, int(cur_kline.Resolution), int64(target_resolution)) {
-			pub_kline = ProcessOldEndKline(cur_kline, latest_kline, int(target_resolution))
+		if IsOldKlineEndTime(cur_kline.Time, cur_kline.Resolution, target_resolution) {
+			pub_kline = ProcessOldEndKline(cur_kline, latest_kline, target_resolution)
 			rst.Put(pub_kline.Time, pub_kline)
-		} else if IsNewKlineStartTime(cur_kline.Time, int64(target_resolution)) {
+		} else if IsNewKlineStartTime(cur_kline.Time, target_resolution) {
 			ProcessNewStartKline(cur_kline, latest_kline, target_resolution)
 		} else {
 			ProcessCachingKline(cur_kline, latest_kline)
@@ -136,7 +136,7 @@ func GetLastKline(kline_tree *treemap.Map) *Kline {
 	4. 是当前频率时段的中间某个时间的 Kline:
 	   进行行情的比较与吸收 - close, high, low, volume，再发布;
 */
-func UpdateTreeWithKline(latest_kline *Kline, kline *Kline, resolution int) (*Kline, bool) {
+func UpdateTreeWithKline(latest_kline *Kline, kline *Kline, resolution uint64) (*Kline, bool) {
 	defer util.CatchExp("UpdateTreeWithKline")
 
 	var pub_kline *Kline = nil
@@ -146,7 +146,7 @@ func UpdateTreeWithKline(latest_kline *Kline, kline *Kline, resolution int) (*Kl
 		return nil, false
 	}
 
-	if IsOldKlineEnd(kline, int64(resolution)) {
+	if IsOldKlineEnd(kline, resolution) {
 		logx.Slowf("Old Kline End: rsl:%d, %s", resolution, kline.String())
 
 		if kline.Resolution != resolution {
@@ -159,7 +159,7 @@ func UpdateTreeWithKline(latest_kline *Kline, kline *Kline, resolution int) (*Kl
 		} else {
 			pub_kline = NewKlineWithKline(kline)
 		}
-	} else if IsNewKlineStart(kline, int64(resolution)) {
+	} else if IsNewKlineStart(kline, resolution) {
 		logx.Slowf("New Kline Start: rsl:%d, %s", resolution, kline.String())
 		new_add_kline := NewKlineWithKline(kline)
 		new_add_kline.Resolution = resolution
@@ -172,63 +172,6 @@ func UpdateTreeWithKline(latest_kline *Kline, kline *Kline, resolution int) (*Kl
 		latest_kline.Volume = latest_kline.Volume + kline.Volume
 
 		logx.Slowf("Cached Kline:%d, %s", resolution, kline.String())
-
-		pub_kline = NewKlineWithKline(latest_kline)
-	}
-
-	return pub_kline, is_add
-}
-
-func UpdateTreeWithTrade(latest_kline *Kline, trade *Trade, resolution int) (*Kline, bool) {
-	defer util.CatchExp("UpdateTreeWithKline")
-
-	var pub_kline *Kline = nil
-	is_add := false
-	NextKlineTime := latest_kline.Time + int64(resolution)*NANO_PER_SECS
-
-	if trade.Time/NANO_PER_MIN == NextKlineTime/NANO_PER_MIN {
-
-		tmp_kline := &Kline{
-			Exchange:   trade.Exchange,
-			Symbol:     trade.Symbol,
-			Time:       trade.Time - trade.Time%NANO_PER_MIN,
-			Open:       trade.Price,
-			High:       trade.Price,
-			Low:        trade.Price,
-			Close:      trade.Price,
-			Volume:     trade.Volume,
-			Resolution: resolution,
-		}
-
-		logx.Slowf("New Kline With: \nTrade %s\nkline: %s \n", trade.String(), tmp_kline.FullString())
-		pub_kline = NewKlineWithKline(tmp_kline)
-		is_add = true
-	} else {
-
-		if resolution == 60 {
-			NextKlineTime = NextKlineTime + int64(resolution)*NANO_PER_SECS
-		}
-
-		if trade.Time <= latest_kline.Time {
-			logx.Errorf("Trade.Time %s, earlier than CachedKlineTime: %s", util.TimeStrFromInt(trade.Time), util.TimeStrFromInt(latest_kline.Time))
-			return nil, false
-		}
-
-		if trade.Time > NextKlineTime {
-			logx.Errorf("Trade.Time %s, later than NextKlineTime: %s", util.TimeStrFromInt(trade.Time), util.TimeStrFromInt(NextKlineTime))
-			return nil, false
-		}
-
-		latest_kline.Close = trade.Price
-		if latest_kline.Low > trade.Price {
-			latest_kline.Low = trade.Price
-
-		}
-		if latest_kline.High < trade.Price {
-			latest_kline.High = trade.Price
-		}
-
-		latest_kline.Volume = latest_kline.Volume + trade.Volume
 
 		pub_kline = NewKlineWithKline(latest_kline)
 	}

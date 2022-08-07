@@ -21,10 +21,10 @@ type CacheConfig struct {
 }
 
 type KlineCache struct {
-	CompletedKlines map[string]map[int]*treemap.Map
+	CompletedKlines map[string]map[uint64]*treemap.Map
 
-	CacheKlines map[string]map[int]*Kline
-	LastKlines  map[string]map[int]*Kline
+	CacheKlines map[string]map[uint64]*Kline
+	LastKlines  map[string]map[uint64]*Kline
 
 	LatestRealTimeKlines map[string]*Kline
 
@@ -41,14 +41,14 @@ type KlineCache struct {
 func NewKlineCache(config *CacheConfig) *KlineCache {
 	return &KlineCache{
 		Config:               config,
-		CompletedKlines:      make(map[string]map[int]*treemap.Map),
-		CacheKlines:          make(map[string]map[int]*Kline),
-		LastKlines:           make(map[string]map[int]*Kline),
+		CompletedKlines:      make(map[string]map[uint64]*treemap.Map),
+		CacheKlines:          make(map[string]map[uint64]*Kline),
+		LastKlines:           make(map[string]map[uint64]*Kline),
 		LatestRealTimeKlines: make(map[string]*Kline),
 	}
 }
 
-func (k *KlineCache) CleanHistData(symbol string, resolution int) {
+func (k *KlineCache) CleanHistData(symbol string, resolution uint64) {
 	defer util.CatchExp(fmt.Sprintf("CleanHistData %s.%d", symbol, resolution))
 
 	k.CleanTreeKline(symbol, resolution)
@@ -57,7 +57,7 @@ func (k *KlineCache) CleanHistData(symbol string, resolution int) {
 }
 
 //Cache Must Init First!
-func (k *KlineCache) InitWithHistKlines(klines []*Kline, symbol string, resolution int) {
+func (k *KlineCache) InitWithHistKlines(klines []*Kline, symbol string, resolution uint64) {
 	defer util.CatchExp("InitWithKlines")
 
 	k.UpdateMutex.Lock()
@@ -70,7 +70,7 @@ func (k *KlineCache) InitWithHistKlines(klines []*Kline, symbol string, resoluti
 	}
 }
 
-func (k *KlineCache) ReleaseInputKlines(klines []*Kline, symbol string, resolution int) {
+func (k *KlineCache) ReleaseInputKlines(klines []*Kline, symbol string, resolution uint64) {
 	defer util.CatchExp("ReleaseInputKlines")
 
 	k.UpdateMutex.Lock()
@@ -96,7 +96,7 @@ func (k *KlineCache) ReleaseInputKlines(klines []*Kline, symbol string, resoluti
 	}
 }
 
-func (k *KlineCache) String(symbol string, resolution int) string {
+func (k *KlineCache) String(symbol string, resolution uint64) string {
 	defer util.CatchExp(fmt.Sprintf("KlineCache String %s, %d", symbol, resolution))
 
 	k.UpdateMutex.Lock()
@@ -126,7 +126,7 @@ func (k *KlineCache) String(symbol string, resolution int) string {
 }
 
 // Clean
-func (k *KlineCache) CleanTreeKline(symbol string, resolution int) {
+func (k *KlineCache) CleanTreeKline(symbol string, resolution uint64) {
 	defer util.CatchExp(fmt.Sprintf("CleanTreeKline %s, %d", symbol, resolution))
 
 	k.CompleteKlinesMutex.Lock()
@@ -188,7 +188,7 @@ func (k *KlineCache) GetLatestRealTimeKline(symbol string) *Kline {
 }
 
 // Clean
-func (k *KlineCache) CleanCacheKline(symbol string, resolution int) {
+func (k *KlineCache) CleanCacheKline(symbol string, resolution uint64) {
 	defer util.CatchExp(fmt.Sprintf("CleanCacheKline %s, %d", symbol, resolution))
 
 	k.CacheKlineMutex.Lock()
@@ -206,7 +206,7 @@ func (k *KlineCache) CleanCacheKline(symbol string, resolution int) {
 }
 
 // UnTest
-func (k *KlineCache) GetCurCacheKline(symbol string, resolution int) *Kline {
+func (k *KlineCache) GetCurCacheKline(symbol string, resolution uint64) *Kline {
 	defer util.CatchExp(fmt.Sprintf("GetCurCacheKline %s, %d", symbol, resolution))
 
 	k.CacheKlineMutex.Lock()
@@ -224,14 +224,14 @@ func (k *KlineCache) GetCurCacheKline(symbol string, resolution int) *Kline {
 }
 
 // UnTest
-func (k *KlineCache) SetCacheKline(new_kline *Kline, resolution int) *Kline {
+func (k *KlineCache) SetCacheKline(new_kline *Kline, resolution uint64) *Kline {
 	defer util.CatchExp(fmt.Sprintf("SetCacheKline %s, %d", new_kline.String(), resolution))
 
 	k.CacheKlineMutex.Lock()
 	defer k.CacheKlineMutex.Unlock()
 
 	if _, ok := k.CacheKlines[new_kline.Symbol]; !ok {
-		k.CacheKlines[new_kline.Symbol] = make(map[int]*Kline)
+		k.CacheKlines[new_kline.Symbol] = make(map[uint64]*Kline)
 	}
 
 	if _, ok := k.CacheKlines[new_kline.Symbol][resolution]; !ok {
@@ -244,7 +244,7 @@ func (k *KlineCache) SetCacheKline(new_kline *Kline, resolution int) *Kline {
 }
 
 //UnTest
-func (k *KlineCache) CleanLastKline(symbol string, resolution int) {
+func (k *KlineCache) CleanLastKline(symbol string, resolution uint64) {
 	defer util.CatchExp(fmt.Sprintf("GetCurLastKline %s, %d", symbol, resolution))
 
 	k.LastKlineMutex.Lock()
@@ -262,7 +262,7 @@ func (k *KlineCache) CleanLastKline(symbol string, resolution int) {
 }
 
 // UnTest
-func (k *KlineCache) GetCurLastKline(symbol string, resolution int) *Kline {
+func (k *KlineCache) GetCurLastKline(symbol string, resolution uint64) *Kline {
 	defer util.CatchExp(fmt.Sprintf("GetCurLastKline %s, %d", symbol, resolution))
 
 	k.LastKlineMutex.Lock()
@@ -279,7 +279,7 @@ func (k *KlineCache) GetCurLastKline(symbol string, resolution int) *Kline {
 	return k.LastKlines[symbol][resolution]
 }
 
-func (k *KlineCache) GetCurKlineTree(symbol string, resolution int) *treemap.Map {
+func (k *KlineCache) GetCurKlineTree(symbol string, resolution uint64) *treemap.Map {
 	defer util.CatchExp(fmt.Sprintf("GetCurKlineTree %s, %d", symbol, resolution))
 
 	k.CompleteKlinesMutex.Lock()
@@ -297,14 +297,14 @@ func (k *KlineCache) GetCurKlineTree(symbol string, resolution int) *treemap.Map
 }
 
 // UnTest
-func (k *KlineCache) SetLastKline(new_kline *Kline, resolution int) *Kline {
+func (k *KlineCache) SetLastKline(new_kline *Kline, resolution uint64) *Kline {
 	defer util.CatchExp(fmt.Sprintf("SetLastKline %s, %d", new_kline.String(), resolution))
 
 	k.LastKlineMutex.Lock()
 	defer k.LastKlineMutex.Unlock()
 
 	if _, ok := k.LastKlines[new_kline.Symbol]; !ok {
-		k.LastKlines[new_kline.Symbol] = make(map[int]*Kline)
+		k.LastKlines[new_kline.Symbol] = make(map[uint64]*Kline)
 	}
 
 	if _, ok := k.LastKlines[new_kline.Symbol][resolution]; !ok {
@@ -317,14 +317,14 @@ func (k *KlineCache) SetLastKline(new_kline *Kline, resolution int) *Kline {
 }
 
 // UnTest
-func (k *KlineCache) AddCompletedKline(new_kline *Kline, resolution int) {
+func (k *KlineCache) AddCompletedKline(new_kline *Kline, resolution uint64) {
 	defer util.CatchExp("")
 
 	k.CompleteKlinesMutex.Lock()
 	defer k.CompleteKlinesMutex.Unlock()
 
 	if _, ok := k.CompletedKlines[new_kline.Symbol]; !ok {
-		k.CompletedKlines[new_kline.Symbol] = make(map[int]*treemap.Map)
+		k.CompletedKlines[new_kline.Symbol] = make(map[uint64]*treemap.Map)
 	}
 
 	if _, ok := k.CompletedKlines[new_kline.Symbol][resolution]; !ok {
@@ -355,7 +355,7 @@ func (k *KlineCache) CheckStoredKline(kline *Kline) bool {
 }
 
 // UnTest
-func (k *KlineCache) ProcessOldKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution int) *Kline {
+func (k *KlineCache) ProcessOldKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution uint64) *Kline {
 	defer util.CatchExp(fmt.Sprintf("ProcessOldKline \n%s\n%s\n%d", new_kline.FullString(), cache_kline.FullString(), resolution))
 
 	if new_kline.Sequence == 0 {
@@ -370,7 +370,7 @@ func (k *KlineCache) ProcessOldKline(new_kline *Kline, cache_kline *Kline, last_
 	return nil
 }
 
-func (k *KlineCache) ProcessEqualKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution int) *Kline {
+func (k *KlineCache) ProcessEqualKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution uint64) *Kline {
 	defer util.CatchExp(fmt.Sprintf("ProcessEqualKline \n%s\n%s\n%d", new_kline.FullString(), cache_kline.FullString(), resolution))
 
 	var pub_kline *Kline = nil
@@ -392,7 +392,7 @@ func (k *KlineCache) ProcessEqualKline(new_kline *Kline, cache_kline *Kline, las
 
 	pub_kline = NewKlineWithKline(cache_kline)
 
-	if IsOldKlineEnd(new_kline, int64(resolution)) {
+	if IsOldKlineEnd(new_kline, resolution) {
 		logx.Slowf("Old Kline End!")
 		k.AddCompletedKline(cache_kline, resolution)
 	}
@@ -412,7 +412,7 @@ func (k *KlineCache) ProcessOldMinuteWork(cache_kline *Kline, last_kline *Kline)
 
 }
 
-func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution int) *Kline {
+func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution uint64) *Kline {
 	defer util.CatchExp(fmt.Sprintf("ProcessNewMinuteWork \ncache: %s\n%s", cache_kline.FullString(), last_kline.FullString()))
 
 	var pub_kline *Kline = nil
@@ -446,7 +446,7 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 }
 
 // Tested
-func (k *KlineCache) ProcessLaterRealKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution int) *Kline {
+func (k *KlineCache) ProcessLaterRealKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution uint64) *Kline {
 	defer util.CatchExp(fmt.Sprintf("ProcessLaterRealKline \n%s\n%s\n%d", new_kline.FullString(), cache_kline.FullString(), resolution))
 
 	var pub_kline *Kline = nil
@@ -472,14 +472,14 @@ func (k *KlineCache) ProcessLaterRealKline(new_kline *Kline, cache_kline *Kline,
 }
 
 // Tested
-func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution int) *Kline {
+func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution uint64) *Kline {
 	defer util.CatchExp(fmt.Sprintf("ProcessLaterHistKline \n%s\n%s\n%d", new_kline.FullString(), cache_kline.FullString(), resolution))
 
 	var pub_kline *Kline = nil
 
 	logx.Slowf("ProcessLaterHistKline")
 
-	if IsOldKlineEnd(new_kline, int64(resolution)) { //Tested
+	if IsOldKlineEnd(new_kline, resolution) { //Tested
 
 		logx.Slowf("OldKlineEnd,Resolution:%d, NewTime: %s", resolution, util.TimeStrFromInt(new_kline.Time))
 
@@ -515,7 +515,7 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 }
 
 // Tested
-func (k *KlineCache) ProcessLaterKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution int) *Kline {
+func (k *KlineCache) ProcessLaterKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution uint64) *Kline {
 	defer util.CatchExp(fmt.Sprintf("ProcessLaterKline \n%s\n%s\n%d", new_kline.FullString(), cache_kline.FullString(), resolution))
 	var pub_kline *Kline = nil
 
@@ -528,7 +528,7 @@ func (k *KlineCache) ProcessLaterKline(new_kline *Kline, cache_kline *Kline, las
 }
 
 // Tested
-func (k *KlineCache) InitCacheKline(new_kline *Kline, resolution int) *Kline {
+func (k *KlineCache) InitCacheKline(new_kline *Kline, resolution uint64) *Kline {
 	defer util.CatchExp(fmt.Sprintf("InitCacheKline: %d, %s", resolution, new_kline.FullString()))
 	var pub_kline *Kline = nil
 
@@ -540,7 +540,7 @@ func (k *KlineCache) InitCacheKline(new_kline *Kline, resolution int) *Kline {
 	pub_kline = NewKlineWithKline(kline)
 
 	if new_kline.IsHistory() {
-		if IsOldKlineEnd(new_kline, int64(resolution)) {
+		if IsOldKlineEnd(new_kline, resolution) {
 			k.AddCompletedKline(kline, resolution)
 		}
 	} else {
@@ -555,7 +555,7 @@ func (k *KlineCache) InitCacheKline(new_kline *Kline, resolution int) *Kline {
 	return pub_kline
 }
 
-func (k *KlineCache) UpdateWithKlineLimitCount(new_kline *Kline, resolution int) *Kline {
+func (k *KlineCache) UpdateWithKlineLimitCount(new_kline *Kline, resolution uint64) *Kline {
 	defer util.CatchExp(fmt.Sprintf("UpdateWithKlineLimitCount %d, %s", resolution, new_kline.FullString()))
 
 	pub_kline := k.UpdateWithKline(new_kline, resolution)
@@ -566,7 +566,7 @@ func (k *KlineCache) UpdateWithKlineLimitCount(new_kline *Kline, resolution int)
 }
 
 // UnTest - 70%
-func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution int) *Kline {
+func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution uint64) *Kline {
 	defer util.CatchExp("UpdateWithKline")
 
 	var pub_kline *Kline = nil
@@ -652,7 +652,7 @@ func (k *KlineCache) EraseOutTimeKline() {
 	}
 }
 
-func (k *KlineCache) GetKlinesByCount(symbol string, resolution int, count int, get_most bool) []*Kline {
+func (k *KlineCache) GetKlinesByCount(symbol string, resolution uint64, count int, get_most bool) []*Kline {
 	defer util.CatchExp("GetKlinesByCount")
 
 	k.UpdateMutex.Lock()
@@ -703,7 +703,7 @@ func (k *KlineCache) GetKlinesByCount(symbol string, resolution int, count int, 
 	return rst
 }
 
-func (k *KlineCache) GetKlinesByTime(symbol string, resolution int, start_time int64, end_time int64, get_most bool) []*Kline {
+func (k *KlineCache) GetKlinesByTime(symbol string, resolution uint64, start_time int64, end_time int64, get_most bool) []*Kline {
 	defer util.CatchExp("GetKlinesByTime")
 
 	k.CompleteKlinesMutex.Lock()

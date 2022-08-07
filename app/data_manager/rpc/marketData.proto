@@ -52,7 +52,7 @@ message HistKlineData
     uint64 start_time = 3;
     uint64 end_time = 4;
     uint32 count = 5;
-    uint32 frequency = 6;
+    uint64 frequency = 6;
     repeated Kline kline_data = 7;
 };
 

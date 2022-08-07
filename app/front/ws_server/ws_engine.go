@@ -415,7 +415,7 @@ func (w *WSEngine) ProcessUnSubTrade(m map[string]interface{}, ws *net.WSInfo) {
 */
 func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 	var symbol string
-	var resolution uint32
+	var resolution uint64
 	count := uint32(0)
 	start_time := uint64(0)
 	end_time := uint64(0)
@@ -439,7 +439,7 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 		}
 
 		// logx.Infof("0.1")
-		resolution = uint32(tmp)
+		resolution = uint64(tmp)
 
 		// logx.Infof("0.2")
 		if resolution%datastruct.SECS_PER_MIN != 0 {
@@ -516,7 +516,7 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 
 func (w *WSEngine) ProcessUnSubKline(m map[string]interface{}, ws *net.WSInfo) {
 	var symbol string
-	var resolution uint32
+	var resolution uint64
 
 	if value, ok := m["symbol"]; ok {
 		symbol = value.(string)
@@ -531,7 +531,7 @@ func (w *WSEngine) ProcessUnSubKline(m map[string]interface{}, ws *net.WSInfo) {
 			logx.Errorf("subkline frequency is not string: %+v ", m)
 			return
 		}
-		resolution = uint32(tmp)
+		resolution = uint64(tmp)
 	} else {
 		logx.Error("ProcessSubTrade: No frequency Data %+v", m)
 		return
