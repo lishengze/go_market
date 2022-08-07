@@ -502,7 +502,7 @@ func (w *WSEngine) ProcessSubKline(m map[string]interface{}, ws *net.WSInfo) {
 		StartTime:       start_time,
 		EndTime:         end_time,
 		Count:           count,
-		Frequency:       resolution,
+		Frequency:       resolution * datastruct.NANO_PER_SECS,
 		ReqArriveTime:   util.UTCNanoTime(),
 		ReqResponseTime: 0,
 	}
