@@ -358,7 +358,7 @@ func (k *KlineCache) CheckStoredKline(kline *Kline) bool {
 func (k *KlineCache) ProcessOldKline(new_kline *Kline, cache_kline *Kline, last_kline *Kline, resolution uint64) *Kline {
 	defer util.CatchExp(fmt.Sprintf("ProcessOldKline \n%s\n%s\n%d", new_kline.FullString(), cache_kline.FullString(), resolution))
 
-	if new_kline.Sequence == 0 {
+	if new_kline.Sequence == 0 || new_kline.Time > cache_kline.Time {
 		logx.Infof("KlineSource Restarted")
 		k.ProcessLaterKline(new_kline, cache_kline, last_kline, resolution)
 
@@ -585,12 +585,12 @@ func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution uint64) *Kline
 		logx.Slowf("cache_kline: %s", cache_kline.FullString())
 		logx.Slowf("last_kline : %s", last_kline.FullString())
 
-		if new_kline.Sequence < cache_kline.Sequence {
-			pub_kline = k.ProcessOldKline(new_kline, cache_kline, last_kline, resolution)
+		if new_kline.Sequence > cache_kline.Sequence || new_kline.Time > cache_kline.Time {
+			pub_kline = k.ProcessLaterKline(new_kline, cache_kline, last_kline, resolution)
 		} else if new_kline.Sequence == cache_kline.Sequence {
 			pub_kline = k.ProcessEqualKline(new_kline, cache_kline, last_kline, resolution)
 		} else {
-			pub_kline = k.ProcessLaterKline(new_kline, cache_kline, last_kline, resolution)
+			pub_kline = k.ProcessOldKline(new_kline, cache_kline, last_kline, resolution)
 		}
 	}
 
