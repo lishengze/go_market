@@ -25,7 +25,6 @@ type Config struct {
 	LogConfig logx.LogConf
 	Nacos     comm_config.NacosConfig
 
-	Cache       CacheConfig
 	WS          WSConfig
 	CacheConfig datastruct.CacheConfig
 }
