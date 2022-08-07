@@ -274,7 +274,7 @@ func (r *ReqHistKline) String() string {
 
 type RspHistKline struct {
 	ReqInfo        *ReqHistKline
-	Klines         *treemap.Map
+	Klines         []*Kline
 	IsLastComplete bool
 }
 
@@ -337,59 +337,38 @@ func HistKlineString(hist_line *treemap.Map) string {
 	return rst
 }
 
-func HistKlineSimpleTime(hist_line *treemap.Map) string {
+func HistKlineSimpleTime(klines []*Kline) string {
 
-	rst := fmt.Sprintf("Size: %d, ", hist_line.Size())
-
-	iter := hist_line.Iterator()
-
-	if iter.First() {
-		rst = rst + fmt.Sprintf("First : %s ", util.TimeStrFromInt(iter.Value().(*Kline).Time))
+	if len(klines) == 0 {
+		return "klines is empty!"
 	}
 
-	if iter.Last() {
-		rst = rst + fmt.Sprintf("Last : %s ", util.TimeStrFromInt(iter.Value().(*Kline).Time))
-	}
-
-	return rst
+	return fmt.Sprintf("Size: %d, First : %s, Last: %s ", len(klines), klines[0], klines[len(klines)-1])
 }
 
-func HistKlineTimeList(hist_line *treemap.Map, size int) string {
+func HistKlineTimeList(klines []*Kline, size int) string {
 
-	rst := fmt.Sprintf("Size: %d; \n", hist_line.Size())
+	rst := fmt.Sprintf("Size: %d; \n", len(klines))
 
-	if size == 0 || size*2 > hist_line.Size() {
-		iter := hist_line.Iterator()
-
-		for iter.Begin(); iter.Next(); {
-			rst = rst + fmt.Sprintf("%s, \n", util.TimeStrFromInt(iter.Value().(*Kline).Time))
+	if size == 0 || size*2 > len(klines) {
+		for _, kline := range klines {
+			rst = rst + fmt.Sprintf("%s, \n", util.TimeStrFromInt(kline.Time))
 		}
 	} else {
-		first_count := 0
-		iter := hist_line.Iterator()
-
+		first_data := klines[0:size]
 		rst = rst + fmt.Sprintf("First %d data: \n", size)
-		for iter.Begin(); iter.Next() && first_count < size; {
-			rst = rst + fmt.Sprintf("%s, \n", util.TimeStrFromInt(iter.Value().(*Kline).Time))
-			first_count += 1
+		for _, kline := range first_data {
+			rst = rst + fmt.Sprintf("%s, \n", util.TimeStrFromInt(kline.Time))
 		}
 
-		first_count = 0
+		end_data := klines[len(klines)-size:]
+
 		rst = rst + fmt.Sprintf("Last %d data: \n", size)
-		for iter.End(); iter.Prev() && first_count < size; {
-			rst = rst + fmt.Sprintf("%s, \n", util.TimeStrFromInt(iter.Value().(*Kline).Time))
-			first_count += 1
+		for _, kline := range end_data {
+			rst = rst + fmt.Sprintf("%s, \n", util.TimeStrFromInt(kline.Time))
 		}
+
 	}
-
-	// if iter.First() {
-	// 	rst = rst + fmt.Sprintf("First : %s ", iter.Value().(*Kline).String())
-	// }
-
-	// if iter.Last() {
-	// 	rst = rst + fmt.Sprintf("Last : %s ", iter.Value().(*Kline).String())
-	// }
-
 	return rst
 }
 

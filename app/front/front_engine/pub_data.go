@@ -295,9 +295,7 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 
 	var kline_data []PubKlineDetail
 
-	iter := hist_kline.Klines.Iterator()
-	for iter.Begin(); iter.Next(); {
-		tmp_kline := iter.Value().(*datastruct.Kline)
+	for _, tmp_kline := range hist_kline.Klines {
 		tmp_detail := PubKlineDetail{
 			Open:   tmp_kline.Open,
 			High:   tmp_kline.High,
@@ -317,7 +315,7 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 		StartTime:       int64(hist_kline.ReqInfo.StartTime),
 		EndTime:         int64(hist_kline.ReqInfo.EndTime),
 		Resolution:      hist_kline.ReqInfo.Frequency,
-		DataCount:       hist_kline.Klines.Size(),
+		DataCount:       len(hist_kline.Klines),
 		Data:            kline_data,
 		ReqProcessTime:  util.UTCNanoTime() - hist_kline.ReqInfo.ReqArriveTime,
 		ReqResponseTime: util.UTCNanoTime(),

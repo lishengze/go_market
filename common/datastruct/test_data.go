@@ -166,9 +166,9 @@ func GetTestTradeMultiSymbols(symbol_list []string, exchange string) *Trade {
 	return new_trade
 }
 
-func GetTestHistKline(req_kline_info *ReqHistKline) *treemap.Map {
+func GetTestHistKline(req_kline_info *ReqHistKline) []*Kline {
 
-	klines := treemap.NewWith(utils.Int64Comparator)
+	var klines []*Kline
 
 	real_count := req_kline_info.Count * (uint32)(req_kline_info.Frequency/uint64(SECS_PER_MIN))
 
@@ -178,7 +178,7 @@ func GetTestHistKline(req_kline_info *ReqHistKline) *treemap.Map {
 		for i := 0; i < int(real_count); i++ {
 			cur_time += NANO_PER_MIN
 
-			klines.Put(cur_time, &Kline{
+			klines = append(klines, &Kline{
 				Exchange:   req_kline_info.Exchange,
 				Symbol:     req_kline_info.Symbol,
 				Time:       cur_time,
@@ -241,15 +241,17 @@ func TestGetHistKlineData() {
 
 	klines := GetTestHistKline(req_info)
 
-	iter := klines.Iterator()
+	HistKlineSimpleTime(klines)
 
-	if iter.First() {
-		fmt.Printf("First Kline: %s ", iter.Value().(*Kline).String())
-	}
+	// iter := klines.Iterator()
 
-	if iter.Last() {
-		fmt.Printf("Last Kline: %s ", iter.Value().(*Kline).String())
-	}
+	// if iter.First() {
+	// 	fmt.Printf("First Kline: %s ", iter.Value().(*Kline).String())
+	// }
+
+	// if iter.Last() {
+	// 	fmt.Printf("Last Kline: %s ", iter.Value().(*Kline).String())
+	// }
 }
 
 func TestIsTargetTime() {

@@ -373,7 +373,7 @@ func (d *DBServer) GetKlinesByCount(symbol string, resolution uint64, count int)
 
 	logx.Slowf("GetKlinesByCount  %s, %d, %d \n", symbol, resolution, count)
 
-	rst := d.kline_cache.GetKlinesByCount(symbol, resolution, count, true)
+	rst := d.kline_cache.GetKlinesByCount(symbol, resolution, count, true, true)
 
 	if rst == nil {
 		logx.Slowf("KlineCache does not have enough data \n")
@@ -393,7 +393,7 @@ func (d *DBServer) GetKlinesByCount(symbol string, resolution uint64, count int)
 		logx.Infof("\n--------------------------  KlineCache: ------------------------%s", d.kline_cache.String(symbol, resolution))
 	}
 
-	rst = d.kline_cache.GetKlinesByCount(symbol, resolution, count, false)
+	rst = d.kline_cache.GetKlinesByCount(symbol, resolution, count, true, false)
 
 	return rst
 }

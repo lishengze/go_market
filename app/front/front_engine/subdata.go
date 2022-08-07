@@ -341,29 +341,29 @@ func (s *SubData) ProcessKlineHistData(hist_kline *datastruct.RspHistKline) {
 
 	logx.Slowf("[SD] HistK, rsl: %d, %s", hist_kline.ReqInfo.Frequency, datastruct.HistKlineSimpleTime(hist_kline.Klines))
 
-	iter := hist_kline.Klines.Iterator()
-	iter.Last()
-	last_kline := iter.Value().(*datastruct.Kline)
+	// iter := hist_kline.Klines.Iterator()
+	// iter.Last()
+	// last_kline := iter.Value().(*datastruct.Kline)
 
-	if _, ok := s.KlineInfo.Info[hist_kline.ReqInfo.Symbol]; !ok {
-		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol] = make(map[uint64]*KlineSubItem)
-	}
+	// if _, ok := s.KlineInfo.Info[hist_kline.ReqInfo.Symbol]; !ok {
+	// 	s.KlineInfo.Info[hist_kline.ReqInfo.Symbol] = make(map[uint64]*KlineSubItem)
+	// }
 
-	if _, ok := s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][hist_kline.ReqInfo.Frequency]; !ok {
+	// if _, ok := s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][hist_kline.ReqInfo.Frequency]; !ok {
 
-		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][hist_kline.ReqInfo.Frequency].cache_data = datastruct.NewKlineWithKline(last_kline)
-		logx.Slowf("[Store] %s ", last_kline.String())
-	} else if s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][hist_kline.ReqInfo.Frequency].cache_data == nil {
+	// 	s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][hist_kline.ReqInfo.Frequency].cache_data = datastruct.NewKlineWithKline(last_kline)
+	// 	logx.Slowf("[Store] %s ", last_kline.String())
+	// } else if s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][hist_kline.ReqInfo.Frequency].cache_data == nil {
 
-		s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][hist_kline.ReqInfo.Frequency].cache_data = datastruct.NewKlineWithKline(last_kline)
-		logx.Slowf("[Store] %s ", last_kline.String())
-	}
+	// 	s.KlineInfo.Info[hist_kline.ReqInfo.Symbol][hist_kline.ReqInfo.Frequency].cache_data = datastruct.NewKlineWithKline(last_kline)
+	// 	logx.Slowf("[Store] %s ", last_kline.String())
+	// }
 
-	if hist_kline.Klines.Size() == int(hist_kline.ReqInfo.Count)+1 {
-		iter.First()
-		first_kline := iter.Value().(*datastruct.Kline)
-		hist_kline.Klines.Remove(first_kline.Time)
-	}
+	// if hist_kline.Klines.Size() == int(hist_kline.ReqInfo.Count)+1 {
+	// 	iter.First()
+	// 	first_kline := iter.Value().(*datastruct.Kline)
+	// 	hist_kline.Klines.Remove(first_kline.Time)
+	// }
 
 	// if !hist_kline.IsLastComplete {
 	// logx.Infof("hist_kline.Klines.Size: %d, hist_kline.ReqInfo.Count: %d, last kline %+v, is not complete kline data, leave it in cache, wait for next round!",

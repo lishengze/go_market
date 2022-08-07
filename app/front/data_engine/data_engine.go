@@ -128,7 +128,7 @@ func (a *DataEngine) InitPeriodDara(symbol string) error {
 		StartTime: start_time_nanos,
 		EndTime:   end_time_nanos,
 		Count:     datastruct.MIN_PER_DAY,
-		Frequency: datastruct.SECS_PER_MIN,
+		Frequency: datastruct.NANO_PER_MIN,
 	}
 
 	hist_klines, err := a.msclient.RequestHistKlineData(context.Background(), req_hist_info)
@@ -509,14 +509,14 @@ func (d *DataEngine) GetDBKlinesByTime(symbol string, resolution uint64, start_t
 func (d *DataEngine) GetKlinesByCount(symbol string, resolution uint64, count int) []*datastruct.Kline {
 	defer util.CatchExp("DataEngine GetKlinesByCount")
 
-	rst := d.kline_cache.GetKlinesByCount(symbol, resolution, count, true)
+	rst := d.kline_cache.GetKlinesByCount(symbol, resolution, count, false, true)
 
 	if rst == nil {
 		db_klines := d.GetDBKlinesByCount(symbol, resolution, count)
-		d.kline_cache.InitWithHistKlines(db_klines, symbol, resolution)
+		d.kline_cache.ReleaseInputKlines(db_klines, symbol, resolution)
 	}
 
-	rst = d.kline_cache.GetKlinesByCount(symbol, resolution, count, false)
+	rst = d.kline_cache.GetKlinesByCount(symbol, resolution, count, false, false)
 
 	return rst
 }
@@ -537,105 +537,79 @@ func (d *DataEngine) GetKlinesByTime(symbol string, resolution uint64, start_tim
 	return rst
 }
 
-// Untest
-func (d *DataEngine) GetHistKlineDataNew(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
-	defer util.CatchExp(fmt.Sprintf("GetHistKlineDataNew %s", req_kline_info.String()))
-	var ori_klines []*datastruct.Kline
+func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
+	var klines []*datastruct.Kline
 
-	if req_kline_info.Count > 0 {
-		ori_klines = d.GetKlinesByCount(req_kline_info.Symbol, req_kline_info.Frequency, int(req_kline_info.Count))
-	} else if req_kline_info.StartTime > 0 && req_kline_info.EndTime > req_kline_info.StartTime {
-		ori_klines = d.GetKlinesByTime(req_kline_info.Symbol, req_kline_info.Frequency,
-			int64(req_kline_info.StartTime), int64(req_kline_info.EndTime))
+	if d.IsTest {
+		tmp := datastruct.GetTestHistKline(req_kline_info)
+		fmt.Println(tmp)
 	} else {
-		logx.Errorf("error req_hist_kline %s", req_kline_info.String())
-	}
+		klines = d.GetKlinesByCount(req_kline_info.Symbol, req_kline_info.Frequency, int(req_kline_info.Count))
 
-	trans_kline := datastruct.TransSliceKlines(ori_klines)
+		logx.Infof("req_hist_info: %+v", req_kline_info)
+	}
 
 	return &datastruct.RspHistKline{
 		ReqInfo: req_kline_info,
-		Klines:  trans_kline,
+		Klines:  klines,
 	}
 }
 
-func (d *DataEngine) GetHistKlineData(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
+func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) (string, bool) {
+	defer util.CatchExp(fmt.Sprintf("SubKline %s, %s", req_kline_info.String(), ws.String()))
 
-	tmp := treemap.NewWith(utils.Int64Comparator)
+	logx.Slowf("[DE] SubK %s,", req_kline_info.String())
 
-	if d.IsTest {
-		tmp = datastruct.GetTestHistKline(req_kline_info)
+	rst := d.GetHistKlineData(req_kline_info)
+
+	if rst != nil {
+		logx.Slowf("[DE] HistK, rsl:%d, %s", req_kline_info.Frequency, datastruct.HistKlineSimpleTime(rst.Klines))
+
+		d.next_worker.PublishHistKline(rst, ws)
+
+		return "", true
 	} else {
-		// rate := req_kline_info.Frequency / datastruct.SECS_PER_MIN
-
-		req_hist_info := &marketservice.ReqHishKlineInfo{
-			Symbol:    req_kline_info.Symbol,
-			Exchange:  req_kline_info.Exchange,
-			StartTime: req_kline_info.StartTime,
-			EndTime:   req_kline_info.EndTime,
-			Count:     req_kline_info.Count,
-			Frequency: req_kline_info.Frequency,
-		}
-
-		if req_kline_info.Frequency%datastruct.NANO_PER_MIN != 0 {
-			return nil
-		}
-
-		logx.Infof("req_hist_info: %+v", req_kline_info)
-
-		hist_klines, err := d.msclient.RequestHistKlineData(context.Background(), req_hist_info)
-
-		if err != nil {
-			logx.Errorf("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
-			return nil
-		} else {
-			// logx.Infof("Original hist_klines : %+v", hist_klines.KlineData)
-		}
-
-		for _, pb_kline := range hist_klines.KlineData {
-			kline := marketservice.NewKlineWithPbKline(pb_kline)
-			if kline == nil {
-				continue
-			}
-
-			tmp.Put(kline.Time, kline)
-		}
+		logx.Errorf("kline %s get hist data failed! ", req_kline_info.String())
+		return fmt.Sprintf("depth %s get hist data failed!", req_kline_info.String()), false
 	}
 
-	d.UpdateCacheKlinesWithHist(tmp)
-
-	logx.Slowf("\nOriKlineTime: %s", datastruct.HistKlineTimeList(tmp, 3))
-	// fmt.Printf("OriKlineTime: %s \n", datastruct.HistKlineTimeList(tmp))
-
-	trans_kline, is_last_complete := d.TrasOriKlineData(req_kline_info, tmp)
-
-	logx.Slowf("\nTransKlineTime: %s", datastruct.HistKlineTimeList(trans_kline, 3))
-	// fmt.Printf("TransKlineTime: %s\n", datastruct.HistKlineTimeList(trans_kline))
-
-	return &datastruct.RspHistKline{
-		ReqInfo:        req_kline_info,
-		Klines:         trans_kline,
-		IsLastComplete: is_last_complete,
-	}
 }
 
-func catch_trasoriklinedaata_exp(req_kline_info *datastruct.ReqHistKline) {
-	errMsg := recover()
-	if errMsg != nil {
-		fmt.Printf("catch_trasoriklinedaata_exp sub depth,  %+v\n", req_kline_info)
-		fmt.Printf("errMsg: %+v \n", errMsg)
+func (f *DataEngine) UnSubTrade(symbol string, ws *net.WSInfo) {
 
-		logx.Errorf("catch_trasoriklinedaata_exp sub depth, %+v\n", req_kline_info)
-		logx.Errorf("errMsg: %+v \n", errMsg)
+}
 
-		logx.Infof("catch_trasoriklinedaata_exp sub depth, %+v\n", req_kline_info)
-		logx.Infof("errMsg: %+v \n", errMsg)
-	}
+func (f *DataEngine) UnSubDepth(symbol string, ws *net.WSInfo) {
+}
+
+func (f *DataEngine) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
+}
+
+// Untest
+func (d *DataEngine) GetHistKlineDataNew(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
+	// defer util.CatchExp(fmt.Sprintf("GetHistKlineDataNew %s", req_kline_info.String()))
+	// var ori_klines []*datastruct.Kline
+
+	// if req_kline_info.Count > 0 {
+	// 	ori_klines = d.GetKlinesByCount(req_kline_info.Symbol, req_kline_info.Frequency, int(req_kline_info.Count))
+	// } else if req_kline_info.StartTime > 0 && req_kline_info.EndTime > req_kline_info.StartTime {
+	// 	ori_klines = d.GetKlinesByTime(req_kline_info.Symbol, req_kline_info.Frequency,
+	// 		int64(req_kline_info.StartTime), int64(req_kline_info.EndTime))
+	// } else {
+	// 	logx.Errorf("error req_hist_kline %s", req_kline_info.String())
+	// }
+
+	// trans_kline := datastruct.TransSliceKlines(ori_klines)
+
+	// return &datastruct.RspHistKline{
+	// 	ReqInfo: req_kline_info,
+	// 	Klines:  trans_kline,
+	// }
+
+	return nil
 }
 
 func (d *DataEngine) TrasOriKlineData(req_kline_info *datastruct.ReqHistKline, ori_klines *treemap.Map) (*treemap.Map, bool) {
-	defer catch_trasoriklinedaata_exp(req_kline_info)
-
 	rst := treemap.NewWith(utils.Int64Comparator)
 	resolution := req_kline_info.Frequency
 
@@ -697,46 +671,65 @@ func (d *DataEngine) UpdateCacheKlinesWithHist(klines *treemap.Map) {
 
 }
 
-func catch_sub_kline_exp(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
-	errMsg := recover()
-	if errMsg != nil {
-		fmt.Printf("catch_exp sub kline, %+v, %+v\n", req_kline_info, ws)
-		fmt.Printf("errMsg: %+v \n", errMsg)
+func (d *DataEngine) GetHistKlineDataBak(req_kline_info *datastruct.ReqHistKline) *datastruct.RspHistKline {
 
-		logx.Errorf("catch_exp sub kline, %+v, %+v\n", req_kline_info, ws)
-		logx.Errorf("errMsg: %+v \n", errMsg)
+	tmp := treemap.NewWith(utils.Int64Comparator)
 
-		logx.Infof("catch_exp sub kline, %+v, %+v\n", req_kline_info, ws)
-		logx.Infof("errMsg: %+v \n", errMsg)
-	}
-}
-
-func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) (string, bool) {
-	defer catch_sub_kline_exp(req_kline_info, ws)
-
-	logx.Slowf("[DE] SubK %s,", req_kline_info.String())
-
-	rst := d.GetHistKlineData(req_kline_info)
-
-	if rst != nil {
-		logx.Slowf("[DE] HistK, rsl:%d, %s", req_kline_info.Frequency, datastruct.HistKlineSimpleTime(rst.Klines))
-
-		d.next_worker.PublishHistKline(rst, ws)
-
-		return "", true
+	if d.IsTest {
+		// tmp := datastruct.GetTestHistKline(req_kline_info)
 	} else {
-		logx.Errorf("kline %s get hist data failed! ", req_kline_info.String())
-		return fmt.Sprintf("depth %s get hist data failed!", req_kline_info.String()), false
+
+		// rate := req_kline_info.Frequency / datastruct.SECS_PER_MIN
+
+		req_hist_info := &marketservice.ReqHishKlineInfo{
+			Symbol:    req_kline_info.Symbol,
+			Exchange:  req_kline_info.Exchange,
+			StartTime: req_kline_info.StartTime,
+			EndTime:   req_kline_info.EndTime,
+			Count:     req_kline_info.Count,
+			Frequency: req_kline_info.Frequency,
+		}
+
+		if req_kline_info.Frequency%datastruct.NANO_PER_MIN != 0 {
+			return nil
+		}
+
+		logx.Infof("req_hist_info: %+v", req_kline_info)
+
+		hist_klines, err := d.msclient.RequestHistKlineData(context.Background(), req_hist_info)
+
+		if err != nil {
+			logx.Errorf("GetHistData Failed: %+v, %+v\n", req_hist_info, err)
+			return nil
+		} else {
+			// logx.Infof("Original hist_klines : %+v", hist_klines.KlineData)
+		}
+
+		for _, pb_kline := range hist_klines.KlineData {
+			kline := marketservice.NewKlineWithPbKline(pb_kline)
+			if kline == nil {
+				continue
+			}
+
+			tmp.Put(kline.Time, kline)
+		}
 	}
 
-}
+	d.UpdateCacheKlinesWithHist(tmp)
 
-func (f *DataEngine) UnSubTrade(symbol string, ws *net.WSInfo) {
+	// logx.Slowf("\nOriKlineTime: %s", datastruct.HistKlineTimeList(tmp, 3))
+	// // fmt.Printf("OriKlineTime: %s \n", datastruct.HistKlineTimeList(tmp))
 
-}
+	// trans_kline, is_last_complete := d.TrasOriKlineData(req_kline_info, tmp)
 
-func (f *DataEngine) UnSubDepth(symbol string, ws *net.WSInfo) {
-}
+	// logx.Slowf("\nTransKlineTime: %s", datastruct.HistKlineTimeList(trans_kline, 3))
+	// // fmt.Printf("TransKlineTime: %s\n", datastruct.HistKlineTimeList(trans_kline))
 
-func (f *DataEngine) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
+	// return &datastruct.RspHistKline{
+	// 	ReqInfo:        req_kline_info,
+	// 	Klines:         trans_kline,
+	// 	IsLastComplete: is_last_complete,
+	// }
+
+	return nil
 }

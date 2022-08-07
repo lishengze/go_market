@@ -264,17 +264,13 @@ func (p *PeriodData) InitCacheData(klines *marketservice.HistKlineData) {
 
 }
 
-func (p *PeriodData) InitCacheDataWithTreeMap(klines *treemap.Map) {
+func (p *PeriodData) InitCacheDataWithTreeMap(klines []*datastruct.Kline) {
 
 	p.mutex.Lock()
 
 	defer p.mutex.Unlock()
 
-	iter := klines.Iterator()
-
-	for iter.Begin(); iter.Next(); {
-		kline := iter.Value().(*datastruct.Kline)
-
+	for _, kline := range klines {
 		p.time_cache_data.Put(kline.Time, kline)
 
 		p.high_price_cache_data.Add(&AtomData{
@@ -286,13 +282,7 @@ func (p *PeriodData) InitCacheDataWithTreeMap(klines *treemap.Map) {
 			time:  kline.Time})
 	}
 
-	if iter.First() {
-		logx.Statf("[Init] First: %s ", iter.Value().(*datastruct.Kline).String())
-	}
-
-	if iter.Last() {
-		logx.Statf("[Init] Last: %s ", iter.Value().(*datastruct.Kline).String())
-	}
+	logx.Slowf("PeriodData: %s", datastruct.HistKlineSimpleTime(klines))
 }
 
 func (p *PeriodData) UpdateMeta() {
@@ -371,7 +361,7 @@ func (p *PeriodData) UpdateWithPbKlines(klines *marketservice.HistKlineData) {
 	p.UpdateMeta()
 }
 
-func (p *PeriodData) UpdateWithKlines(klines *treemap.Map) {
+func (p *PeriodData) UpdateWithKlines(klines []*datastruct.Kline) {
 	defer util.CatchExp("UpdateWithKlines")
 
 	p.InitCacheDataWithTreeMap(klines)

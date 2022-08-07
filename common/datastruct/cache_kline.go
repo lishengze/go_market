@@ -78,15 +78,16 @@ func (k *KlineCache) ReleaseInputKlines(klines []*Kline, symbol string, resoluti
 
 	k.CleanHistData(symbol, resolution)
 
-	if len(klines) < 2 {
-		logx.Errorf("Not Enough Info,At least has CacheKline and LastKline")
+	if len(klines) < 3 {
+		logx.Errorf("Not Enough Info,At least has PublishKline CacheKline and LastKline")
 		return
 	}
 
+	// pub_kline := klines[len(klines)-3]
 	cache_kline := klines[len(klines)-2]
 	last_kline := klines[len(klines)-1]
 
-	complete_klines := klines[0 : len(klines)-2]
+	complete_klines := klines[0 : len(klines)-3]
 
 	k.SetCacheKline(cache_kline, resolution)
 	k.SetLastKline(last_kline, resolution)
@@ -652,7 +653,7 @@ func (k *KlineCache) EraseOutTimeKline() {
 	}
 }
 
-func (k *KlineCache) GetKlinesByCount(symbol string, resolution uint64, count int, get_most bool) []*Kline {
+func (k *KlineCache) GetKlinesByCount(symbol string, resolution uint64, count int, get_cache bool, get_most bool) []*Kline {
 	defer util.CatchExp("GetKlinesByCount")
 
 	k.UpdateMutex.Lock()
@@ -696,9 +697,18 @@ func (k *KlineCache) GetKlinesByCount(symbol string, resolution uint64, count in
 
 	cache_kline := k.GetCurCacheKline(symbol, resolution)
 	last_kline := k.GetCurLastKline(symbol, resolution)
+	pub_kline := NewKlineWithKline(cache_kline)
 
-	rst = append(rst, cache_kline)
-	rst = append(rst, last_kline)
+	if !last_kline.IsHistory() {
+		pub_kline.Volume = cache_kline.Volume + last_kline.Volume
+	}
+
+	rst = append(rst, pub_kline)
+
+	if get_cache {
+		rst = append(rst, cache_kline)
+		rst = append(rst, last_kline)
+	}
 
 	return rst
 }
