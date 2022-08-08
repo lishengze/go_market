@@ -286,10 +286,11 @@ func (p *PubKlineJson) TimeList() string {
 func (p *PubKlineJson) UTCTimeList() string {
 	rst := ""
 	for _, kline_detail := range p.Data {
-		rst = rst + fmt.Sprintf("%s, v: %f;o: %f, h: %f, l: %f, c: %f;\n",
+		rst = rst + fmt.Sprintf("%s, %d, lv: %f, c: %f, o: %f, h: %f, l: %f,v: %f;\n",
 			util.TimeStrFromInt(kline_detail.Tick*datastruct.NANO_PER_SECS),
-			kline_detail.Volume, kline_detail.Open, kline_detail.High,
-			kline_detail.Low, kline_detail.Close)
+			kline_detail.Sequence, kline_detail.LastVolume, kline_detail.Close,
+			kline_detail.Open, kline_detail.High,
+			kline_detail.Low, kline_detail.Volume)
 	}
 
 	rst = rst[0 : len(rst)-1]
