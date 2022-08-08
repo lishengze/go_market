@@ -218,7 +218,7 @@ func (p *PeriodData) EraseOuttimeData() {
 	begin_iter.Begin()
 
 	for begin_iter.Next() {
-		first_time_secs := begin_iter.Key().(int64) / datastruct.NANO_PER_SECS
+		first_time_secs := p.StartTime / datastruct.NANO_PER_SECS
 		last_time_secs := p.LastTime / datastruct.NANO_PER_SECS
 
 		if last_time_secs-first_time_secs > p.TimeSecs+datastruct.SECS_PER_MIN {
@@ -229,7 +229,7 @@ func (p *PeriodData) EraseOuttimeData() {
 	}
 
 	for _, outtime := range outtime_datalist {
-		logx.Infof("[Erase] %s ", outtime.String())
+		logx.Slowf("[Erase] %s ", outtime.String())
 		p.time_cache_data.Remove(outtime.Time)
 
 		p.high_price_cache_data.Del(&AtomData{
@@ -335,6 +335,7 @@ func (p *PeriodData) UpdateMeta() {
 	}
 
 	if p.CurTrade != nil && p.CurTrade.Time > p.KLineLastTime {
+		p.LastTime = p.CurTrade.Time
 		p.Change = decimal.NewFromFloat(p.CurTrade.Price).Sub(decimal.NewFromFloat(p.Start))
 
 		// if p.Symbol == "BTC_USDT" {
@@ -345,6 +346,7 @@ func (p *PeriodData) UpdateMeta() {
 
 	} else {
 		p.Change = decimal.NewFromFloat(p.Last).Sub(decimal.NewFromFloat(p.Start))
+		p.LastTime = p.KLineLastTime
 
 		// if p.Symbol == "BTC_USDT" {
 		// 	logx.Infof("LastK: t %s,p %f;\nStartL: t %s, p %f",
