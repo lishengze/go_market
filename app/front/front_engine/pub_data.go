@@ -349,12 +349,14 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 func NewKlineUpdateJsonMsg(kline *datastruct.Kline) []byte {
 	var kline_data []PubKlineDetail
 	tmp_detail := PubKlineDetail{
-		Open:   kline.Open,
-		High:   kline.High,
-		Low:    kline.Low,
-		Close:  kline.Close,
-		Volume: kline.Volume,
-		Tick:   kline.Time / datastruct.NANO_PER_SECS,
+		Open:       kline.Open,
+		High:       kline.High,
+		Low:        kline.Low,
+		Close:      kline.Close,
+		Volume:     kline.Volume,
+		Tick:       kline.Time / datastruct.NANO_PER_SECS,
+		Sequence:   kline.Sequence,
+		LastVolume: kline.LastVolume,
 	}
 	kline_data = append(kline_data, tmp_detail)
 
