@@ -173,7 +173,7 @@ func (f *FrontEngine) PublishTrade(trade *datastruct.RspTrade, ws *net.WSInfo) {
 
 		for _, info := range trade_pub_list {
 			if info.ws_info.IsAlive() {
-				// logx.Slowf("[TP]:%s", info.String())
+				logx.Slowf("[TP]:%s \n", info.String())
 				err := info.ws_info.SendMsg(1, info.data)
 				if err != nil {
 					logx.Errorf("PublishTrade err: %+v \n", err)
@@ -228,7 +228,7 @@ func (f *FrontEngine) PublishKline(kline *datastruct.Kline, ws *net.WSInfo) {
 					Frequency: info.Resolution,
 				}
 
-				// logx.Slowf("[KP]:%s", info.String())
+				logx.Slowf("[KP]:%s\n", info.String())
 				if info.ws_info.IsAlive() {
 					err := info.ws_info.SendMsg(1, info.data)
 					if err != nil {

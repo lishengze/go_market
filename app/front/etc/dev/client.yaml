@@ -35,7 +35,7 @@ Nacos:
   LogLevel: "debug"
 
 CacheConfig:
-  Count: 100
+  Count: 1500
   IsDebug: true
 
 
