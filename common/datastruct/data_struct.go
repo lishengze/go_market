@@ -297,7 +297,7 @@ func (r *RspHistKline) SimpleTimeList() string {
 }
 
 func (c *ChangeInfo) String() string {
-	return fmt.Sprintf("Symbol: %s, High: %f, Low: %f, Change: %f, ChangeRate: %f \n",
+	return fmt.Sprintf("%s, h: %f, l: %f, c: %f, cr: %f \n",
 		c.Symbol, c.High, c.Low, c.Change, c.ChangeRate)
 }
 
