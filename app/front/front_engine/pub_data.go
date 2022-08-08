@@ -165,11 +165,12 @@ type PubTradeJson struct {
 	ReqWSTime       int64   `json:"req_ws_time"`
 	ReqProcessTime  int64   `json:"req_process_time"`
 	ReqResponseTime int64   `json:"req_response_time"`
+	Sequence        uint64  `json:"sequence"`
 }
 
 func (t *PubTradeJson) String() string {
-	return fmt.Sprintf("%s, %s, v: %f,p: %f,up: %f,c: %f,cr: %f,h: %f,l:%f",
-		t.Symbol, util.TimeStrFromInt(t.Time*datastruct.NANO_PER_SECS),
+	return fmt.Sprintf("%s, %s, %d, v : %f,p: %f,up: %f,c: %f,cr: %f,h: %f,l:%f",
+		t.Symbol, util.TimeStrFromInt(t.Time*datastruct.NANO_PER_SECS), t.Sequence,
 		t.Volume, t.Price, t.USDPrice, t.Change, t.ChangeRate, t.High, t.Low)
 }
 
@@ -185,6 +186,7 @@ func NewTradeJsonMsg(trade *datastruct.RspTrade) []byte {
 		ReqWSTime:       trade.ReqWSTime,
 		ReqProcessTime:  util.UTCNanoTime() - trade.ReqArriveTime,
 		ReqResponseTime: util.UTCNanoTime(),
+		Sequence:        trade.TradeData.Sequence,
 	}
 
 	if trade.ChangeData != nil {
@@ -245,12 +247,14 @@ func NewTradeJsonMsg(trade *datastruct.RspTrade) []byte {
 */
 
 type PubKlineDetail struct {
-	Open   float64 `json:"open"`
-	High   float64 `json:"high"`
-	Low    float64 `json:"low"`
-	Close  float64 `json:"close"`
-	Volume float64 `json:"volume"`
-	Tick   int64   `json:"tick"`
+	Open       float64 `json:"open"`
+	High       float64 `json:"high"`
+	Low        float64 `json:"low"`
+	Close      float64 `json:"close"`
+	Volume     float64 `json:"volume"`
+	Tick       int64   `json:"tick"`
+	Sequence   uint64  `json:"sequence"`
+	LastVolume float64 `json:"last_volume"`
 }
 
 type PubKlineJson struct {
@@ -269,8 +273,9 @@ type PubKlineJson struct {
 func (p *PubKlineJson) TimeList() string {
 	rst := ""
 	for _, kline_detail := range p.Data {
-		rst = rst + fmt.Sprintf("%s, v: %f;o: %f, h: %f, l: %f, c: %f;\n",
+		rst = rst + fmt.Sprintf("%s, %d, lv: %f, v: %f;o: %f, h: %f, l: %f, c: %f;\n",
 			util.TimeStrFromInt(kline_detail.Tick*datastruct.NANO_PER_SECS),
+			kline_detail.Sequence, kline_detail.LastVolume,
 			kline_detail.Volume, kline_detail.Open, kline_detail.High,
 			kline_detail.Low, kline_detail.Close)
 	}
@@ -297,12 +302,14 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 
 	for _, tmp_kline := range hist_kline.Klines {
 		tmp_detail := PubKlineDetail{
-			Open:   tmp_kline.Open,
-			High:   tmp_kline.High,
-			Low:    tmp_kline.Low,
-			Close:  tmp_kline.Close,
-			Volume: tmp_kline.Volume,
-			Tick:   tmp_kline.Time / datastruct.NANO_PER_SECS,
+			Open:       tmp_kline.Open,
+			High:       tmp_kline.High,
+			Low:        tmp_kline.Low,
+			Close:      tmp_kline.Close,
+			Volume:     tmp_kline.Volume,
+			Tick:       tmp_kline.Time / datastruct.NANO_PER_SECS,
+			Sequence:   tmp_kline.Sequence,
+			LastVolume: tmp_kline.LastVolume,
 		}
 
 		kline_data = append(kline_data, tmp_detail)

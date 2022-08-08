@@ -644,6 +644,8 @@ func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution uint64) *Kline
 		}
 	}
 
+	pub_kline.LastVolume = new_kline.LastVolume
+
 	if k.Config.IsDebug {
 		logx.Slowf("PubKline: %s\n", pub_kline.FullString())
 	}
