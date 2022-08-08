@@ -635,10 +635,10 @@ func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution uint64) *Kline
 			logx.Slowf("last_kline : %s", last_kline.FullString())
 		}
 
-		if new_kline.Sequence > cache_kline.Sequence || new_kline.Time > cache_kline.Time {
-			pub_kline = k.ProcessLaterKline(new_kline, cache_kline, last_kline, resolution)
-		} else if new_kline.Sequence == cache_kline.Sequence {
+		if new_kline.Sequence == cache_kline.Sequence {
 			pub_kline = k.ProcessEqualKline(new_kline, cache_kline, last_kline, resolution)
+		} else if new_kline.Sequence > cache_kline.Sequence || new_kline.Time > cache_kline.Time {
+			pub_kline = k.ProcessLaterKline(new_kline, cache_kline, last_kline, resolution)
 		} else {
 			pub_kline = k.ProcessOldKline(new_kline, cache_kline, last_kline, resolution)
 		}
