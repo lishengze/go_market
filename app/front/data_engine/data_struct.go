@@ -167,7 +167,7 @@ func (p *PeriodData) AddKlineData(kline *datastruct.Kline) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
-	logx.Slowf("[Add] Kline: %s", kline.String())
+	// logx.Slowf("[Add] Kline: %s", kline.String())
 
 	p.time_cache_data.Put(kline.Time, kline)
 

@@ -210,7 +210,7 @@ func catch_kline_exp(kline *datastruct.Kline) {
 func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 	defer catch_kline_exp(kline)
 
-	logx.Slowf("[RK]: %s", kline.FullString())
+	// logx.Slowf("[RK]: %s", kline.FullString())
 
 	d.InitPeriodDaraMain(kline.Symbol)
 
@@ -231,7 +231,7 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 	}
 
 	for _, tmp_kline := range pubklines {
-		logx.Slowf("[PK] %s", tmp_kline.FullString())
+		// logx.Slowf("[PK] %s", tmp_kline.FullString())
 		d.PublishKline(tmp_kline, nil)
 	}
 
@@ -274,7 +274,7 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	defer catch_trade_exp("process_trade", trade)
 
 	d.trade_cache_map.Store(trade.Symbol, trade)
-	logx.Slowf("[RT]: %s", trade.String())
+	// logx.Slowf("[RT]: %s", trade.String())
 
 	usd_price := trade.Price * d.GetUsdPrice(trade.Symbol)
 
