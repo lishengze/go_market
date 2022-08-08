@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
+	"github.com/emirpasic/gods/utils"
 	"github.com/shopspring/decimal"
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -116,8 +117,18 @@ func (p *PeriodData) String() string {
 		p.Change, p.ChangeRate)
 }
 
-func NewPeriodData() *PeriodData {
-	return nil
+func NewPeriodData(symbol string) *PeriodData {
+	return &PeriodData{
+		Symbol:                symbol,
+		TimeSecs:              datastruct.SECS_PER_DAY,
+		Count:                 0,
+		MaxTime:               0,
+		MinTime:               0,
+		time_cache_data:       treemap.NewWith(utils.Int64Comparator),
+		high_price_cache_data: NewSortedList(true),
+		low_price_cache_data:  NewSortedList(false),
+		CurTrade:              nil,
+	}
 }
 
 func (p *PeriodData) UpdateWithTrade(trade *datastruct.Trade) {
@@ -183,7 +194,7 @@ func (p *PeriodData) AddKlineData(kline *datastruct.Kline) {
 
 	kline_is_later := false
 	last_iter := p.time_cache_data.Iterator()
-	if ok := last_iter.Last(); ok {
+	if ok := last_iter.Last(); ok && p.CurTrade != nil {
 		if p.CurTrade.Time < last_iter.Key().(int64) {
 			kline_is_later = true
 		}
