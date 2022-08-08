@@ -222,7 +222,7 @@ func (p *PeriodData) EraseOuttimeData() {
 		last_time_secs := p.LastTime / datastruct.NANO_PER_SECS
 
 		if last_time_secs-first_time_secs > p.TimeSecs+datastruct.SECS_PER_MIN {
-			logx.Slowf("Outtime: %s, last: %s", util.TimeStrFromInt(begin_iter.Key().(int64)), util.TimeStrFromInt(p.LastTime))
+			// logx.Slowf("Outtime: %s, last: %s", util.TimeStrFromInt(begin_iter.Key().(int64)), util.TimeStrFromInt(p.LastTime))
 			outtime_datalist = append(outtime_datalist, begin_iter.Value().(*datastruct.Kline))
 		} else {
 			break
@@ -230,7 +230,7 @@ func (p *PeriodData) EraseOuttimeData() {
 	}
 
 	for _, outtime := range outtime_datalist {
-		logx.Slowf("[Erase] %s ", outtime.String())
+		// logx.Slowf("[Erase] %s ", outtime.String())
 		p.time_cache_data.Remove(outtime.Time)
 
 		p.high_price_cache_data.Del(&AtomData{

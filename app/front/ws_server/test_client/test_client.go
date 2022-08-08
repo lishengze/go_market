@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -111,7 +112,7 @@ func (t *TestMain) TestGetJsonData() {
 	// fmt.Println(string(rst3))
 }
 
-var addr = flag.String("addr", "127.0.0.1:8114", "http service address")
+var addr = flag.String("addr", "118.193.45.36:8114", "http service address")
 
 // var addr = flag.String("addr", "18.162.42.238:8114", "http service address")
 
@@ -264,15 +265,16 @@ func (t *TestMain) write_func(c *websocket.Conn) {
 		return
 	}
 
-	// time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 5)
 
-	// send_msg2 := t.GetTestKlineReqJson("BTC_USDT", 10, 300)
+	symbol_list := []string{"BTC_USDT"}
+	send_msg2 := t.GetTestTradeReqJson(symbol_list)
 
-	// err = c.WriteMessage(websocket.TextMessage, send_msg2)
-	// if err != nil {
-	// 	logx.Info("write:", err)
-	// 	return
-	// }
+	err = c.WriteMessage(websocket.TextMessage, send_msg2)
+	if err != nil {
+		logx.Info("write:", err)
+		return
+	}
 
 	// ticker := time.NewTicker(time.Second)
 	// defer ticker.Stop()
