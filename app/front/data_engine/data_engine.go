@@ -283,7 +283,7 @@ func (d *DataEngine) process_trade(trade *datastruct.Trade) error {
 	} else {
 		change_data = d.cache_period_data[trade.Symbol].GetChangeInfo(precision)
 	}
-	logx.Slowf("change_data: %s", change_data.String())
+	// logx.Slowf("change_data: %s", change_data.String())
 
 	rsp_trade := datastruct.RspTrade{
 		TradeData:     trade,
