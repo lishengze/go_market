@@ -73,7 +73,7 @@ func TransPbKlines(pb_klines []*pb.Kline) []*datastruct.Kline {
 	return rst
 }
 
-func NewKlineWithPbTrade(pb_trade *Trade) *datastruct.Trade {
+func NewTradeWithPbTrade(pb_trade *Trade) *datastruct.Trade {
 	price, err := strconv.ParseFloat(pb_trade.Price, 64)
 	if err != nil {
 		logx.Error(err.Error())

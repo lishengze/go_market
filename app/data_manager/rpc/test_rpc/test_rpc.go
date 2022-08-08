@@ -89,8 +89,8 @@ func NewTestRpc() *TestRpc {
 }
 
 func (t *TestRpc) Start() {
-	t.TestKline()
-	// t.TestTrade()
+	// t.TestKline()
+	t.TestTrade()
 
 	select {}
 }
@@ -152,6 +152,10 @@ func (t *TestRpc) TestTrade() {
 	}
 
 	fmt.Printf("ReqTrade Rst: %+v \n", rst)
+
+	// for _, pb_trade := range rst {
+
+	// }
 }
 
 func main() {
