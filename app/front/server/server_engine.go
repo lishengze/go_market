@@ -113,7 +113,7 @@ func (s *ServerEngine) ProcsssHedgeConfigStr(data string) {
 		}
 	}
 
-	// NewMeta.DepthMeta = symbol_exchange_set
+	NewMeta.DepthMeta = symbol_exchange_set
 	// NewMeta.TradeMeta = symbol_exchange_set
 	NewMeta.KlineMeta = symbol_exchange_set
 
