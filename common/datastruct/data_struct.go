@@ -280,8 +280,14 @@ type RspHistKline struct {
 
 type ChangeInfo struct {
 	Symbol     string
+	StartTime  int64
+	StartPrice float64
+	EndTime    int64
+	EndPrice   float64
 	High       float64
+	HighTime   int64
 	Low        float64
+	LowTime    int64
 	Change     float64
 	ChangeRate float64
 }
@@ -297,8 +303,10 @@ func (r *RspHistKline) SimpleTimeList() string {
 }
 
 func (c *ChangeInfo) String() string {
-	return fmt.Sprintf("%s, h: %f, l: %f, c: %f, cr: %f \n",
-		c.Symbol, c.High, c.Low, c.Change, c.ChangeRate)
+	return fmt.Sprintf("%s, s:%f, %s, e: %f, %s;  h: %f, %s, l: %f, %s, c: %f, cr: %f \n",
+		c.Symbol, c.StartPrice, util.TimeStrFromInt(c.StartTime), c.EndPrice, util.TimeStrFromInt(c.EndTime),
+		c.High, util.TimeStrFromInt(c.HighTime), c.Low, util.TimeStrFromInt(c.LowTime),
+		c.Change, c.ChangeRate)
 }
 
 func (t *Trade) String() string {

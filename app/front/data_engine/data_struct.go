@@ -405,7 +405,13 @@ func (p *PeriodData) GetChangeInfo(precision int) *datastruct.ChangeInfo {
 
 	return &datastruct.ChangeInfo{
 		Symbol:     p.Symbol,
+		StartPrice: p.Start,
+		StartTime:  p.StartTime,
+		EndPrice:   p.Last,
+		EndTime:    p.KLineLastTime,
 		High:       p.Max,
+		HighTime:   p.MaxTime,
+		LowTime:    p.MinTime,
 		Low:        p.Min,
 		Change:     Change,
 		ChangeRate: ChangeRate,
