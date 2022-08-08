@@ -169,7 +169,7 @@ type PubTradeJson struct {
 }
 
 func (t *PubTradeJson) String() string {
-	return fmt.Sprintf("%s, %s, %d, v : %f,p: %f,up: %f,c: %f,cr: %f,h: %f,l:%f",
+	return fmt.Sprintf("%s, %s, %d,v : %f,p: %f,up: %f,c: %f,cr: %f,h: %f,l:%f",
 		t.Symbol, util.TimeStrFromInt(t.Time*datastruct.NANO_PER_SECS), t.Sequence,
 		t.Volume, t.Price, t.USDPrice, t.Change, t.ChangeRate, t.High, t.Low)
 }
@@ -273,7 +273,7 @@ type PubKlineJson struct {
 func (p *PubKlineJson) TimeList() string {
 	rst := ""
 	for _, kline_detail := range p.Data {
-		rst = rst + fmt.Sprintf("%s, %d, lv: %f, c: %f;o: %f, h: %f, l: %f, v: %f;\n",
+		rst = rst + fmt.Sprintf("%s, %d,lv: %f,c: %f,o: %f,h: %f,l: %f,v: %f;\n",
 			util.TimeStrFromInt(kline_detail.Tick*datastruct.NANO_PER_SECS),
 			kline_detail.Sequence, kline_detail.LastVolume, kline_detail.Close,
 			kline_detail.Open, kline_detail.High,
@@ -286,7 +286,7 @@ func (p *PubKlineJson) TimeList() string {
 func (p *PubKlineJson) UTCTimeList() string {
 	rst := ""
 	for _, kline_detail := range p.Data {
-		rst = rst + fmt.Sprintf("%s, %d, lv: %f, c: %f, o: %f, h: %f, l: %f,v: %f;\n",
+		rst = rst + fmt.Sprintf("%s, %d,lv: %f,c: %f,o: %f,h: %f,l: %f,v: %f;\n",
 			util.TimeStrFromInt(kline_detail.Tick*datastruct.NANO_PER_SECS),
 			kline_detail.Sequence, kline_detail.LastVolume, kline_detail.Close,
 			kline_detail.Open, kline_detail.High,
