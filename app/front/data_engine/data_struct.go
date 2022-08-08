@@ -218,7 +218,7 @@ func (p *PeriodData) EraseOuttimeData() {
 	begin_iter.Begin()
 
 	for begin_iter.Next() {
-		first_time_secs := p.StartTime / datastruct.NANO_PER_SECS
+		first_time_secs := begin_iter.Key().(int64) / datastruct.NANO_PER_SECS
 		last_time_secs := p.LastTime / datastruct.NANO_PER_SECS
 
 		if last_time_secs-first_time_secs > p.TimeSecs+datastruct.SECS_PER_MIN {
