@@ -255,15 +255,7 @@ func (p *PeriodData) InitCacheData(klines *marketservice.HistKlineData) {
 			time:  kline.Time})
 	}
 
-	iter := p.time_cache_data.Iterator()
-	if iter.First() {
-		logx.Slowf("[Init]First : %s ", iter.Value().(*datastruct.Kline).String())
-	}
-
-	if iter.Last() {
-		logx.Slowf("[Init]Last : %s ", iter.Value().(*datastruct.Kline).String())
-	}
-
+	logx.Slow(datastruct.HistKlineList(p.time_cache_data, 3))
 }
 
 func (p *PeriodData) InitCacheDataWithTreeMap(klines []*datastruct.Kline) {

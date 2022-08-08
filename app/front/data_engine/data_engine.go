@@ -109,7 +109,7 @@ func (a *DataEngine) InitPeriodDara(symbol string) error {
 			Symbol:    symbol,
 			Exchange:  datastruct.BCTS_EXCHANGE,
 			Count:     datastruct.MIN_PER_DAY,
-			Frequency: datastruct.SECS_PER_MIN,
+			Frequency: datastruct.NANO_PER_MIN,
 		}
 
 		Klines := datastruct.GetTestHistKline(req_hist_info)
@@ -139,11 +139,11 @@ func (a *DataEngine) InitPeriodDara(symbol string) error {
 		return err
 	}
 
-	logx.Infof("Init Period HistKline: %s", marketservice.HistKlineString(hist_klines))
+	logx.Slowf("Init Period HistKline: %s", marketservice.HistKlineString(hist_klines))
 
 	a.cache_period_data[symbol].UpdateWithPbKlines(hist_klines)
 
-	logx.Infof("Symbol Meta Info: %+v", a.cache_period_data[symbol].String())
+	logx.Slowf("Symbol Meta Info: %+v", a.cache_period_data[symbol].String())
 
 	return nil
 
