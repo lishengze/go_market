@@ -221,7 +221,7 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 	}
 
 	for _, tmp_kline := range pubklines {
-		logx.Slowf("[PK] %s", tmp_kline.FullString())
+		// logx.Slowf("[PK] %s", tmp_kline.FullString())
 		d.PublishKline(tmp_kline, nil)
 	}
 
@@ -526,9 +526,9 @@ func (d *DataEngine) GetKlinesByCount(symbol string, resolution uint64, count in
 		datastruct.OutputDetailHistKlines(db_klines)
 
 		d.kline_cache.ReleaseInputKlines(db_klines, symbol, resolution)
-	}
 
-	rst = d.kline_cache.GetKlinesByCount(symbol, resolution, count, false, false)
+		rst = d.kline_cache.GetKlinesByCount(symbol, resolution, count, false, false)
+	}
 
 	return rst
 }
