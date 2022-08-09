@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -98,18 +99,72 @@ func IsNewMinuteStart(new_time int64, old_time int64) bool {
 	return new_time_minute != old_time_minute
 }
 
+func SetToStartTime(src_time int64, resolution uint64) int64 {
+
+	if resolution < uint64(time.Second) {
+		resolution = resolution * uint64(time.Second)
+	}
+
+	nano_per_day := uint64(24 * time.Hour)
+	nano_per_week := uint64(7 * nano_per_day)
+
+	new_src_time := src_time
+
+	if resolution == nano_per_week {
+		src_time = src_time + int64(3*nano_per_day)
+
+		// left_nanos := src_time % int64(resolution)
+		// left_secs := left_nanos / int64(time.Second)
+		// left_days := left_secs / (24 * 3600)
+
+		// fmt.Printf("FullTime: %s, left_secs: %d, left_day: %d\n", TimeStrFromInt(src_time), left_secs, left_days)
+	}
+
+	start_time := new_src_time - src_time%int64(resolution)
+
+	return start_time
+}
+
 func IsNewResolutionStart(new_time int64, old_time int64, resolution uint64) bool {
 
 	if resolution < uint64(time.Second) {
 		resolution = resolution * uint64(time.Second)
 	}
 
-	new_time_minute := new_time - new_time%int64(resolution)
-	old_time_minute := old_time - old_time%int64(resolution)
+	new_start_time := SetToStartTime(new_time, resolution)
+	old_start_time := SetToStartTime(old_time, resolution)
 
-	return new_time_minute != old_time_minute
+	return new_start_time != old_start_time
 }
 
 func TestNanoMinute() {
 	UTCMinuteNano()
+}
+
+func TestSetToStartTime() {
+	resolution := uint64(7 * 24 * time.Hour)
+	time1 := time.Date(1970, 1, 7, 10, 20, 33, 0, time.UTC)
+	int_time1 := time1.UTC().UnixNano()
+	start_time1 := SetToStartTime(int_time1, resolution)
+
+	time2 := time.Date(2022, 8, 3, 10, 20, 33, 0, time.UTC)
+	int_time2 := time2.UTC().UnixNano()
+	start_time2 := SetToStartTime(int_time2, resolution)
+
+	fmt.Printf("time1: %s, start_time1: %s\ntime2: %s, start_time2: %s\n",
+		TimeStrFromInt(int_time1), TimeStrFromInt(start_time1),
+		TimeStrFromInt(int_time2), TimeStrFromInt(start_time2))
+
+	resolution2 := uint64(24 * time.Hour)
+	time3 := time.Date(1970, 1, 7, 10, 20, 33, 0, time.UTC)
+	int_time3 := time3.UTC().UnixNano()
+	start_time3 := SetToStartTime(int_time3, resolution2)
+
+	time4 := time.Date(2022, 8, 3, 10, 20, 33, 0, time.UTC)
+	int_time4 := time4.UTC().UnixNano()
+	start_time4 := SetToStartTime(int_time4, resolution2)
+
+	fmt.Printf("time3: %s, start_time1: %s\ntime2: %s, start_time2: %s\n",
+		TimeStrFromInt(int_time3), TimeStrFromInt(start_time3),
+		TimeStrFromInt(int_time4), TimeStrFromInt(start_time4))
 }

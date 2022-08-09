@@ -441,7 +441,7 @@ func (k *KlineCache) ProcessNewMinuteWork(new_kline *Kline, cache_kline *Kline, 
 		}
 
 		cache_kline.ResetWithNewKline(new_kline)
-		cache_kline.SetPerfectTime(int64(resolution))
+		cache_kline.SetToStartTime(resolution)
 		cache_kline.Volume = 0
 		cache_kline.LastVolume = 0
 		cache_kline.Resolution = resolution
@@ -535,7 +535,7 @@ func (k *KlineCache) ProcessLaterHistKline(new_kline *Kline, cache_kline *Kline,
 		cache_kline = NewKlineWithKline(new_kline)
 		cache_kline.Resolution = resolution
 		cache_kline.LastVolume = 0
-		cache_kline.SetPerfectTime(int64(resolution))
+		cache_kline.SetToStartTime(resolution)
 
 		if k.Config.IsDebug {
 			logx.Slowf("NewKlineStart, SetCache: %s", cache_kline.FullString())
@@ -577,7 +577,7 @@ func (k *KlineCache) InitCacheKline(new_kline *Kline, resolution uint64) *Kline 
 	var pub_kline *Kline = nil
 
 	kline := NewKlineWithKline(new_kline)
-	kline.SetPerfectTime(int64(resolution))
+	kline.SetToStartTime(resolution)
 	kline.Resolution = resolution
 	kline.LastVolume = 0
 
@@ -616,9 +616,6 @@ func (k *KlineCache) UpdateWithKline(new_kline *Kline, resolution uint64) *Kline
 	defer util.CatchExp("UpdateWithKline")
 
 	var pub_kline *Kline = nil
-
-	// k.CompleteKlinesMutex.Lock()
-	// defer k.CompleteKlinesMutex.Unlock()
 
 	if k.Config.IsDebug {
 		logx.Slowf("NewKline: %s", new_kline.FullString())

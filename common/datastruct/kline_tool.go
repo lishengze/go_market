@@ -32,6 +32,231 @@ func TransSliceKlines(ori_klines []*Kline) *treemap.Map {
 	return rst
 }
 
+func HistKlineString(hist_line *treemap.Map) string {
+
+	rst := fmt.Sprintf("HistKline, Size: %d, ", hist_line.Size())
+
+	iter := hist_line.Iterator()
+
+	if iter.First() {
+		rst = rst + fmt.Sprintf("First : %s ", iter.Value().(*Kline).String())
+	}
+
+	if iter.Last() {
+		rst = rst + fmt.Sprintf("Last : %s ", iter.Value().(*Kline).String())
+	}
+
+	return rst
+}
+
+func HistKlineSimpleTime(klines []*Kline) string {
+
+	if len(klines) == 0 {
+		return "klines is empty!"
+	}
+
+	return fmt.Sprintf("Size: %d, First : %s, Last: %s ", len(klines), klines[0], klines[len(klines)-1])
+}
+
+func HistKlineTimeList(klines []*Kline, size int) string {
+
+	rst := fmt.Sprintf("Size: %d; \n", len(klines))
+
+	if size == 0 || size*2 > len(klines) {
+		for _, kline := range klines {
+			rst = rst + fmt.Sprintf("%s, \n", util.TimeStrFromInt(kline.Time))
+		}
+	} else {
+		first_data := klines[0:size]
+		rst = rst + fmt.Sprintf("First %d data: \n", size)
+		for _, kline := range first_data {
+			rst = rst + fmt.Sprintf("%s, \n", util.TimeStrFromInt(kline.Time))
+		}
+
+		end_data := klines[len(klines)-size:]
+
+		rst = rst + fmt.Sprintf("Last %d data: \n", size)
+		for _, kline := range end_data {
+			rst = rst + fmt.Sprintf("%s, \n", util.TimeStrFromInt(kline.Time))
+		}
+
+	}
+	return rst
+}
+
+func HistKlineList(hist_line *treemap.Map, size int) string {
+
+	rst := fmt.Sprintf("Size: %d; \n", hist_line.Size())
+
+	if size == 0 || size*2 > hist_line.Size() {
+		iter := hist_line.Iterator()
+
+		for iter.Begin(); iter.Next(); {
+			rst = rst + fmt.Sprintf("%s, \n", iter.Value().(*Kline).FullString())
+		}
+	} else {
+		first_count := 0
+		iter := hist_line.Iterator()
+
+		rst = rst + fmt.Sprintf("First %d data: \n", size)
+		for iter.Begin(); iter.Next() && first_count < size; {
+			rst = rst + fmt.Sprintf("%s, \n", iter.Value().(*Kline).FullString())
+			first_count += 1
+		}
+
+		first_count = 0
+		rst = rst + fmt.Sprintf("Last %d data: \n", size)
+		for iter.End(); iter.Prev() && first_count < size; {
+			rst = rst + fmt.Sprintf("%s, \n", iter.Value().(*Kline).FullString())
+			first_count += 1
+		}
+	}
+	return rst
+}
+
+func HistKlineListWithSlice(klines []*Kline, size int) string {
+
+	rst := fmt.Sprintf("Size: %d; \n", len(klines))
+
+	if size == 0 || size*2 > len(klines) {
+		for _, kline := range klines {
+			rst = rst + fmt.Sprintf("%s, \n", kline.FullString())
+		}
+	} else {
+		first_data := klines[0:size]
+		rst = rst + fmt.Sprintf("First %d data: \n", size)
+		for _, kline := range first_data {
+			rst = rst + fmt.Sprintf("%s, \n", kline.FullString())
+		}
+
+		end_data := klines[len(klines)-size:]
+
+		rst = rst + fmt.Sprintf("Last %d data: \n", size)
+		for _, kline := range end_data {
+			rst = rst + fmt.Sprintf("%s, \n", kline.FullString())
+		}
+
+	}
+	return rst
+}
+
+func NewKlineWithKline(kline *Kline) *Kline {
+	return &Kline{
+		Exchange:   kline.Exchange,
+		Symbol:     kline.Symbol,
+		Time:       kline.Time,
+		Open:       kline.Open,
+		High:       kline.High,
+		Low:        kline.Low,
+		Close:      kline.Close,
+		Volume:     kline.Volume,
+		Resolution: kline.Resolution,
+		LastVolume: kline.LastVolume,
+		Sequence:   kline.Sequence,
+	}
+}
+
+func IsNewKlineStart(kline *Kline, resolution uint64) bool {
+	return IsNewKlineStartTime(kline.Time, resolution)
+}
+
+func IsTargetTime(time_secs uint64, resolution_secs uint64) bool {
+
+	if resolution_secs == SECS_PER_DAY*7 {
+		// fmt.Printf("Ori Days: %d\n", time_secs/SECS_PER_DAY)
+
+		time_secs = time_secs + SECS_PER_DAY*3
+
+		// fmt.Printf("Tras Days: %d\n", time_secs/SECS_PER_DAY)
+	}
+
+	// fmt.Printf("time_secs: %d \n", time_secs)
+
+	if time_secs%resolution_secs == 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func IsNewKlineStartTime(tmp_time int64, resolution uint64) bool {
+
+	if tmp_time > NANO_PER_HOUR {
+		tmp_time = tmp_time - tmp_time%NANO_PER_MIN
+		tmp_time = tmp_time / NANO_PER_SECS
+	}
+
+	if resolution > NANO_PER_SECS {
+		resolution = resolution / NANO_PER_SECS
+	}
+
+	tmp_time = tmp_time - tmp_time%SECS_PER_MIN
+
+	return IsTargetTime(uint64(tmp_time), resolution)
+
+}
+
+func IsOldKlineEnd(kline *Kline, resolution uint64) bool {
+
+	return IsOldKlineEndTime(kline.Time, kline.Resolution, resolution)
+}
+
+func IsOldKlineEndTime(tmp_time int64, src_resolution uint64, dst_resolution uint64) bool {
+
+	if tmp_time > NANO_PER_HOUR {
+		tmp_time = tmp_time - tmp_time%NANO_PER_MIN
+		tmp_time = tmp_time / NANO_PER_SECS
+	}
+
+	if dst_resolution > NANO_PER_SECS {
+		dst_resolution = dst_resolution / NANO_PER_SECS
+	}
+
+	if src_resolution > NANO_PER_SECS {
+		src_resolution = src_resolution / NANO_PER_SECS
+	}
+
+	tmp_time = tmp_time - tmp_time%SECS_PER_MIN
+
+	tmp_time = tmp_time + int64(src_resolution)
+
+	return IsTargetTime(uint64(tmp_time), dst_resolution)
+}
+
+func GetLastStartTime(tmp_time int64, resolution int64) int64 {
+	if tmp_time > NANO_PER_DAY {
+		tmp_time = tmp_time / NANO_PER_SECS
+	}
+
+	if resolution > NANO_PER_SECS {
+		resolution = resolution / NANO_PER_SECS
+	}
+
+	// fmt.Printf("tmp_time days : %d \n", tmp_time/SECS_PER_DAY)
+
+	original_time := tmp_time
+
+	if resolution == SECS_PER_DAY*7 {
+
+		tmp_time = tmp_time - tmp_time%SECS_PER_DAY
+		original_time = tmp_time
+		tmp_time = tmp_time + SECS_PER_DAY*3
+	}
+
+	// fmt.Printf("trans_time days : %d , res: %d\n", tmp_time/SECS_PER_DAY, resolution/SECS_PER_DAY)
+	// fmt.Printf("trans_time: %s, left_days: %d \n", util.TimeStrFromInt(tmp_time*NANO_PER_SECS), tmp_time%(resolution)/SECS_PER_DAY)
+
+	tmp_time = original_time - tmp_time%(resolution)
+
+	tmp_time = tmp_time * NANO_PER_SECS
+
+	return tmp_time
+}
+
+func GetMiniuteNanos(ori_nanos int64) int64 {
+	return ori_nanos - ori_nanos%NANO_PER_MIN
+}
+
 func ResetFirstKline(latest_kline *Kline, target_resolution uint64) {
 	defer util.CatchExp("ResetFirstKline")
 	latest_kline.Time = GetLastStartTime(latest_kline.Time, int64(target_resolution))
@@ -121,62 +346,6 @@ func GetLastKline(kline_tree *treemap.Map) *Kline {
 	latest_kline := iter.Value().(*Kline)
 
 	return latest_kline
-}
-
-/*
-功能: 更新某个频率下的 K线树;
-流程: 1. 获取已经存储最新的一根Kline - latest_kline;
-     2. 若 new_kline 是当前频率的最后一分的数据，当前这个频率时段已经结束; ex: 5min, new_kline: 20:24 即为 20:00 ~ 20:24 的最后一根kline
-		再次判断 new_kline 与 latest_kline 原始频率是否相等; ex: latest_kline: 5min, new_kline: 5min
-		2.1 相等: 无需从 latest_kline 获取信息，直接发布;
-		2.2 不相等: latest_kline: 5min, new_kline: 1min, [new_kline 频率一定小于 latest_kline - 用低频率聚合高频率]
-				 需要进行行情的比较与吸收 - close, high, low, volume，再发布;
-	3. 是否是下一个频率时段的起始时间；ex: 5min, new_kline: 20:25
-	   将其存储进 Kline Tree; 可以直接发布;
-	4. 是当前频率时段的中间某个时间的 Kline:
-	   进行行情的比较与吸收 - close, high, low, volume，再发布;
-*/
-func UpdateTreeWithKline(latest_kline *Kline, kline *Kline, resolution uint64) (*Kline, bool) {
-	defer util.CatchExp("UpdateTreeWithKline")
-
-	var pub_kline *Kline = nil
-	is_add := false
-
-	if kline.Time <= latest_kline.Time {
-		return nil, false
-	}
-
-	if IsOldKlineEnd(kline, resolution) {
-		logx.Slowf("Old Kline End: rsl:%d, %s", resolution, kline.String())
-
-		if kline.Resolution != resolution {
-			latest_kline.Close = kline.Close
-			latest_kline.Low = util.MinFloat64(latest_kline.Low, kline.Low)
-			latest_kline.High = util.MaxFloat64(latest_kline.High, kline.High)
-			latest_kline.Volume += kline.Volume
-
-			pub_kline = NewKlineWithKline(latest_kline)
-		} else {
-			pub_kline = NewKlineWithKline(kline)
-		}
-	} else if IsNewKlineStart(kline, resolution) {
-		logx.Slowf("New Kline Start: rsl:%d, %s", resolution, kline.String())
-		new_add_kline := NewKlineWithKline(kline)
-		new_add_kline.Resolution = resolution
-		pub_kline = new_add_kline
-		is_add = true
-	} else {
-		latest_kline.Close = kline.Close
-		latest_kline.Low = util.MinFloat64(latest_kline.Low, kline.Low)
-		latest_kline.High = util.MaxFloat64(latest_kline.High, kline.High)
-		latest_kline.Volume = latest_kline.Volume + kline.Volume
-
-		logx.Slowf("Cached Kline:%d, %s", resolution, kline.String())
-
-		pub_kline = NewKlineWithKline(latest_kline)
-	}
-
-	return pub_kline, is_add
 }
 
 // func UpdateTreeWithKlines(kline_tree *treemap.Map, ori_klines []*Kline, target_resolution int) *Kline {
