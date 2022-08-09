@@ -537,10 +537,12 @@ func (w *WSEngine) ProcessUnSubKline(m map[string]interface{}, ws *net.WSInfo) {
 		return
 	}
 
+	logx.Infof("WSEngine UnSubInfo: %s,%d", symbol, resolution)
+
 	req_kline := &datastruct.ReqHistKline{
 		Symbol:    symbol,
 		Exchange:  datastruct.BCTS_EXCHANGE,
-		Frequency: resolution,
+		Frequency: resolution * datastruct.NANO_PER_SECS,
 	}
 	w.next_worker.UnSubKline(req_kline, ws)
 }

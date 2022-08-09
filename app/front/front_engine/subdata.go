@@ -290,6 +290,8 @@ func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WS
 	s.KlineInfo.mutex.Lock()
 	defer s.KlineInfo.mutex.Unlock()
 
+	// logx.Infof("WSEngine UnSubInfo: %s,%d", symbol, resolution)
+
 	if _, ok := s.KlineInfo.Info[req_kline_info.Symbol]; !ok {
 		return
 	} else if _, ok := s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency]; !ok {
