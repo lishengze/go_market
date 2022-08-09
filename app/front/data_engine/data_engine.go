@@ -575,7 +575,7 @@ func (d *DataEngine) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.W
 	rst := d.GetHistKlineData(req_kline_info)
 
 	if rst != nil {
-		logx.Slowf("[DE] HistK, rsl:%d, %s", req_kline_info.Frequency, datastruct.HistKlineSimpleTime(rst.Klines))
+		logx.Slowf("\n[DE] HistK, rsl:%d;\n%s", req_kline_info.Frequency, datastruct.HistKlineTimeList(rst.Klines, 3))
 
 		d.next_worker.PublishHistKline(rst, ws)
 
