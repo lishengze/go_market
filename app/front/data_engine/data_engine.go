@@ -197,7 +197,6 @@ func catch_kline_exp(kline *datastruct.Kline) {
 	}
 }
 
-//UnTest
 func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 	defer catch_kline_exp(kline)
 
@@ -222,7 +221,7 @@ func (d *DataEngine) process_kline(kline *datastruct.Kline) error {
 	}
 
 	for _, tmp_kline := range pubklines {
-		// logx.Slowf("[PK] %s", tmp_kline.FullString())
+		logx.Slowf("[PK] %s", tmp_kline.FullString())
 		d.PublishKline(tmp_kline, nil)
 	}
 

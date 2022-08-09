@@ -107,9 +107,9 @@ func (s *SubData) GetKlinePubInfoListAtom(sub_info *KlineSubItem, pub_kline *dat
 
 	byte_data := NewKlineUpdateJsonMsg(pub_kline)
 
-	if pub_kline.Resolution > datastruct.NANO_PER_SECS {
-		pub_kline.Resolution = pub_kline.Resolution / datastruct.NANO_PER_SECS
-	}
+	// if pub_kline.Resolution > datastruct.NANO_PER_SECS {
+	// 	pub_kline.Resolution = pub_kline.Resolution / datastruct.NANO_PER_SECS
+	// }
 
 	sub_tree := sub_info.ws_info
 	sub_tree_iter := sub_tree.Iterator()

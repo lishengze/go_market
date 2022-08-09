@@ -302,33 +302,49 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 
 	var kline_data []PubKlineDetail
 
+	resolution := hist_kline.ReqInfo.Frequency
+
+	if resolution > datastruct.NANO_PER_SECS {
+		resolution = resolution / datastruct.NANO_PER_SECS
+	}
+
 	for _, tmp_kline := range hist_kline.Klines {
+		time := tmp_kline.Time
+		if time > datastruct.NANO_PER_SECS {
+			time = time / datastruct.NANO_PER_SECS
+		}
 		tmp_detail := PubKlineDetail{
 			Open:       tmp_kline.Open,
 			High:       tmp_kline.High,
 			Low:        tmp_kline.Low,
 			Close:      tmp_kline.Close,
 			Volume:     tmp_kline.Volume,
-			Tick:       tmp_kline.Time / datastruct.NANO_PER_SECS,
+			Tick:       time,
 			Sequence:   tmp_kline.Sequence,
 			LastVolume: tmp_kline.LastVolume,
-			Resolution: tmp_kline.Resolution,
+			Resolution: resolution,
 		}
 
 		kline_data = append(kline_data, tmp_detail)
 	}
 
-	if hist_kline.ReqInfo.Frequency > datastruct.NANO_PER_SECS {
-		hist_kline.ReqInfo.Frequency = hist_kline.ReqInfo.Frequency / datastruct.NANO_PER_SECS
+	start_time := hist_kline.ReqInfo.StartTime
+	end_time := hist_kline.ReqInfo.EndTime
+
+	if start_time > datastruct.NANO_PER_SECS {
+		start_time = start_time / datastruct.NANO_PER_SECS
+	}
+	if end_time > datastruct.NANO_PER_SECS {
+		end_time = end_time / datastruct.NANO_PER_SECS
 	}
 
 	json_data := PubKlineJson{
 		TypeInfo:        net.KLINE_UPATE,
 		DataType:        net.KLINE_HIST,
 		Symbol:          hist_kline.ReqInfo.Symbol,
-		StartTime:       int64(hist_kline.ReqInfo.StartTime),
-		EndTime:         int64(hist_kline.ReqInfo.EndTime),
-		Resolution:      hist_kline.ReqInfo.Frequency,
+		StartTime:       int64(start_time),
+		EndTime:         int64(end_time),
+		Resolution:      resolution,
 		DataCount:       len(hist_kline.Klines),
 		Data:            kline_data,
 		ReqProcessTime:  util.UTCNanoTime() - hist_kline.ReqInfo.ReqArriveTime,
@@ -351,16 +367,28 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 
 func NewKlineUpdateJsonMsg(kline *datastruct.Kline) []byte {
 	var kline_data []PubKlineDetail
+
+	resolution := kline.Resolution
+
+	if resolution > datastruct.NANO_PER_SECS {
+		resolution = resolution / datastruct.NANO_PER_SECS
+	}
+
+	time := kline.Time
+	if time > datastruct.NANO_PER_SECS {
+		time = time / datastruct.NANO_PER_SECS
+	}
+
 	tmp_detail := PubKlineDetail{
 		Open:       kline.Open,
 		High:       kline.High,
 		Low:        kline.Low,
 		Close:      kline.Close,
 		Volume:     kline.Volume,
-		Tick:       kline.Time / datastruct.NANO_PER_SECS,
+		Tick:       time,
 		Sequence:   kline.Sequence,
 		LastVolume: kline.LastVolume,
-		Resolution: kline.Resolution,
+		Resolution: resolution,
 	}
 	kline_data = append(kline_data, tmp_detail)
 
@@ -368,9 +396,9 @@ func NewKlineUpdateJsonMsg(kline *datastruct.Kline) []byte {
 		TypeInfo:        net.KLINE_UPATE,
 		DataType:        net.KLINE_REAL,
 		Symbol:          kline.Symbol,
-		StartTime:       kline.Time,
-		EndTime:         kline.Time,
-		Resolution:      kline.Resolution,
+		StartTime:       time,
+		EndTime:         time,
+		Resolution:      resolution,
 		DataCount:       1,
 		Data:            kline_data,
 		ReqResponseTime: util.UTCNanoTime(),
