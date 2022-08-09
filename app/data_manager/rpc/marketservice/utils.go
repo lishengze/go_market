@@ -46,7 +46,7 @@ func NewKlineWithPbKline(pb_kline *Kline) *datastruct.Kline {
 
 	last_volume, err := strconv.ParseFloat(pb_kline.Lastvolume, 64)
 	if err != nil {
-		logx.Infof("Parse LastVolume err: %s", err.Error())
+		// logx.Infof("Parse LastVolume err: %s", err.Error())
 	}
 
 	return &datastruct.Kline{
