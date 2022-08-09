@@ -258,7 +258,7 @@ func (t *TestMain) write_func(c *websocket.Conn) {
 	// send_msg := t.GetTestTradeReqJson(symbol_list)
 	// send_msg := t.GetTestDepthReqJson()
 
-	send_msg := t.GetTestKlineReqJson("BTC_USDT", 10, datastruct.SECS_PER_DAY)
+	send_msg := t.GetTestKlineReqJson("BTC_USDT", 10, datastruct.SECS_PER_DAY*7)
 
 	err := c.WriteMessage(websocket.TextMessage, send_msg)
 	if err != nil {
