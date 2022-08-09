@@ -255,6 +255,7 @@ type PubKlineDetail struct {
 	Tick       int64   `json:"tick"`
 	Sequence   uint64  `json:"sequence"`
 	LastVolume float64 `json:"last_volume"`
+	Resolution uint64  `json:"resolution"`
 }
 
 type PubKlineJson struct {
@@ -273,11 +274,11 @@ type PubKlineJson struct {
 func (p *PubKlineJson) TimeList() string {
 	rst := ""
 	for _, kline_detail := range p.Data {
-		rst = rst + fmt.Sprintf("%s, %d,lv: %f,c: %f,o: %f,h: %f,l: %f,v: %f;\n",
+		rst = rst + fmt.Sprintf("%s, %d,lv: %f,c: %f,o: %f,h: %f,l: %f,v: %f, rsl: %d;;\n",
 			util.TimeStrFromInt(kline_detail.Tick*datastruct.NANO_PER_SECS),
 			kline_detail.Sequence, kline_detail.LastVolume, kline_detail.Close,
 			kline_detail.Open, kline_detail.High,
-			kline_detail.Low, kline_detail.Volume)
+			kline_detail.Low, kline_detail.Volume, kline_detail.Resolution)
 	}
 	rst = rst[0 : len(rst)-1]
 	return rst
@@ -286,11 +287,11 @@ func (p *PubKlineJson) TimeList() string {
 func (p *PubKlineJson) UTCTimeList() string {
 	rst := ""
 	for _, kline_detail := range p.Data {
-		rst = rst + fmt.Sprintf("%s, %d,lv: %f,c: %f,o: %f,h: %f,l: %f,v: %f;\n",
+		rst = rst + fmt.Sprintf("%s, %d,lv: %f,c: %f,o: %f,h: %f,l: %f,v: %f, rsl: %d;\n",
 			util.TimeStrFromInt(kline_detail.Tick*datastruct.NANO_PER_SECS),
 			kline_detail.Sequence, kline_detail.LastVolume, kline_detail.Close,
 			kline_detail.Open, kline_detail.High,
-			kline_detail.Low, kline_detail.Volume)
+			kline_detail.Low, kline_detail.Volume, kline_detail.Resolution)
 	}
 
 	rst = rst[0 : len(rst)-1]
@@ -311,6 +312,7 @@ func NewHistKlineJsonMsg(hist_kline *datastruct.RspHistKline) []byte {
 			Tick:       tmp_kline.Time / datastruct.NANO_PER_SECS,
 			Sequence:   tmp_kline.Sequence,
 			LastVolume: tmp_kline.LastVolume,
+			Resolution: tmp_kline.Resolution,
 		}
 
 		kline_data = append(kline_data, tmp_detail)
@@ -358,6 +360,7 @@ func NewKlineUpdateJsonMsg(kline *datastruct.Kline) []byte {
 		Tick:       kline.Time / datastruct.NANO_PER_SECS,
 		Sequence:   kline.Sequence,
 		LastVolume: kline.LastVolume,
+		Resolution: kline.Resolution,
 	}
 	kline_data = append(kline_data, tmp_detail)
 
