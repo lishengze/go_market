@@ -14,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -266,16 +265,16 @@ func (t *TestMain) write_func(c *websocket.Conn) {
 		return
 	}
 
-	time.Sleep(time.Second * 5)
+	// time.Sleep(time.Second * 5)
 
-	symbol_list := []string{"BTC_USDT"}
-	send_msg2 := t.GetTestTradeReqJson(symbol_list)
+	// symbol_list := []string{"BTC_USDT"}
+	// send_msg2 := t.GetTestTradeReqJson(symbol_list)
 
-	err = c.WriteMessage(websocket.TextMessage, send_msg2)
-	if err != nil {
-		logx.Info("write:", err)
-		return
-	}
+	// err = c.WriteMessage(websocket.TextMessage, send_msg2)
+	// if err != nil {
+	// 	logx.Info("write:", err)
+	// 	return
+	// }
 
 	// ticker := time.NewTicker(time.Second)
 	// defer ticker.Stop()
