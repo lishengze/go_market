@@ -281,7 +281,7 @@ func (s *SubData) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSIn
 
 	s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency].ws_info.Put(ws.ID, ws)
 
-	logx.Infof("SubKline After Sub %s, %s,%s", req_kline_info.String(), ws.String(), s.KlineInfo.String())
+	logx.Infof("SubKline After Sub %s, %s\n", req_kline_info.String(), ws.String())
 }
 
 func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
@@ -307,7 +307,7 @@ func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WS
 			}
 		}
 
-		logx.Infof("UnSubKline Remove %s, %d : %+v", req_kline_info.Symbol, int(req_kline_info.Frequency), ws)
+		logx.Infof("UnSubKline Remove %s, %d : %s", req_kline_info.Symbol, int(req_kline_info.Frequency), ws.String())
 	} else {
 		logx.Infof("KlineInfo, %s.%d is already nil!", req_kline_info.Symbol, req_kline_info.Frequency)
 	}
