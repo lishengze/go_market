@@ -139,9 +139,12 @@ func (s *SubData) GetKlinePubInfoList(kline *datastruct.Kline) []*KlinePubInfo {
 		return rst
 	}
 
-	for _, sub_info := range s.KlineInfo.Info[kline.Symbol] {
-		cur_pub_list := s.GetKlinePubInfoListAtom(sub_info, kline)
-		rst = append(rst, cur_pub_list...)
+	for resolution, sub_info := range s.KlineInfo.Info[kline.Symbol] {
+
+		if resolution == kline.Resolution {
+			cur_pub_list := s.GetKlinePubInfoListAtom(sub_info, kline)
+			rst = append(rst, cur_pub_list...)
+		}
 	}
 
 	return rst
@@ -320,7 +323,7 @@ func (s *SubData) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSIn
 		}
 	}
 
-	logx.Infof("\n After SubKline After Sub %s, %d\n%s", req_kline_info.String(), req_kline_info.Frequency, info)
+	logx.Infof("\nAfter SubKline After Sub %s\n%s", req_kline_info.String(), info)
 }
 
 func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
@@ -355,7 +358,7 @@ func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WS
 			}
 		}
 
-		logx.Infof("\n After UnSubKline Remove %s, %d\n%s", req_kline_info.Symbol, int(req_kline_info.Frequency), info)
+		logx.Infof("\nAfter UnSubKline Remove %s, %d\n%s", req_kline_info.Symbol, int(req_kline_info.Frequency), info)
 	} else {
 		logx.Infof("KlineInfo, %s.%d is already nil!", req_kline_info.Symbol, req_kline_info.Frequency)
 	}
