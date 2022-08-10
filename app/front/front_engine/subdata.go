@@ -280,7 +280,7 @@ func (s *SubData) SetSubHistKlineFlag(req_kline_info *datastruct.ReqHistKline, w
 	value, ok := s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency].ws_info.Get(ws.ID)
 
 	if ok {
-
+		fmt.Println(value)
 	} else {
 		logx.Errorf("SetSubHistKlineFlag symbol: %s, resolution: %d, ws: %d, not subed!\n",
 			req_kline_info.Symbol, req_kline_info.Frequency, ws.ID)
