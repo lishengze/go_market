@@ -320,7 +320,7 @@ func (s *SubData) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSIn
 		}
 	}
 
-	logx.Infof("\n After SubKline After Sub %s, %s\n", req_kline_info.String(), req_kline_info.Frequency, info)
+	logx.Infof("\n After SubKline After Sub %s, %d\n%s", req_kline_info.String(), req_kline_info.Frequency, info)
 }
 
 func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
