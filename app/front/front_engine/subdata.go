@@ -1,6 +1,7 @@
 package front_engine
 
 import (
+	"fmt"
 	"market_server/app/front/net"
 	"market_server/common/datastruct"
 	"market_server/common/util"
@@ -312,7 +313,14 @@ func (s *SubData) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSIn
 
 	s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency].ws_info.Put(ws.ID, ws)
 
-	logx.Infof("SubKline After Sub %s, %s\n", req_kline_info.String(), ws.String())
+	info := "SubInfo : \n"
+	for symbol, data := range s.KlineInfo.Info {
+		for resolution, ws_info := range data {
+			info = info + fmt.Sprintf("%s.%d: %s \n", symbol, resolution, ws_info.String())
+		}
+	}
+
+	logx.Infof("\n After SubKline After Sub %s, %s\n", req_kline_info.String(), req_kline_info.Frequency, info)
 }
 
 func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
@@ -340,7 +348,14 @@ func (s *SubData) UnSubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WS
 			}
 		}
 
-		logx.Infof("UnSubKline Remove %s, %d : %s", req_kline_info.Symbol, int(req_kline_info.Frequency), ws.String())
+		info := "SubInfo : \n"
+		for symbol, data := range s.KlineInfo.Info {
+			for resolution, ws_info := range data {
+				info = info + fmt.Sprintf("%s.%d: %s \n", symbol, resolution, ws_info.String())
+			}
+		}
+
+		logx.Infof("\n After UnSubKline Remove %s, %d\n%s", req_kline_info.Symbol, int(req_kline_info.Frequency), info)
 	} else {
 		logx.Infof("KlineInfo, %s.%d is already nil!", req_kline_info.Symbol, req_kline_info.Frequency)
 	}

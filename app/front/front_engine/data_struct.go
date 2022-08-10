@@ -125,6 +125,20 @@ type KlineSubItem struct {
 	// cache_data *datastruct.Kline
 }
 
+func (k *KlineSubItem) String() string {
+	rst := ""
+	if k.ws_info.Size() == 0 {
+		rst = " Empty!"
+	} else {
+		rst = "ws_id_list: "
+		iter := k.ws_info.Iterator()
+		for iter.Begin(); iter.Next(); {
+			rst = rst + fmt.Sprintf("%d, ", iter.Value().(*net.WSInfo).ID)
+		}
+	}
+	return rst
+}
+
 func NewKlineWithKline() *KlineSubItem {
 	return &KlineSubItem{
 		ws_info: treemap.NewWith(utils.Int64Comparator),
