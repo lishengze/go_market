@@ -258,6 +258,37 @@ func (s *SubData) UnSubTrade(symbol string, ws *net.WSInfo) {
 	logx.Infof("UnSubTrade Remove %s : %+v", symbol, ws)
 }
 
+func (s *SubData) SetSubHistKlineFlag(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
+	defer util.CatchExp("SubKline")
+
+	s.KlineInfo.mutex.Lock()
+	defer s.KlineInfo.mutex.Unlock()
+
+	if _, ok := s.KlineInfo.Info[req_kline_info.Symbol]; !ok {
+
+		logx.Errorf("SetSubHistKlineFlag symbol %s not subed!\n", req_kline_info.Symbol)
+		return
+	}
+
+	if _, ok := s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency]; !ok {
+		logx.Errorf("SetSubHistKlineFlag symbol: %s, resolution: %d not subed!\n",
+			req_kline_info.Symbol, req_kline_info.Frequency)
+		return
+	}
+
+	value, ok := s.KlineInfo.Info[req_kline_info.Symbol][req_kline_info.Frequency].ws_info.Get(ws.ID)
+
+	if ok {
+
+	} else {
+		logx.Errorf("SetSubHistKlineFlag symbol: %s, resolution: %d, ws: %d, not subed!\n",
+			req_kline_info.Symbol, req_kline_info.Frequency, ws.ID)
+		return
+	}
+
+	logx.Infof("SubKline After Sub %s, %s\n", req_kline_info.String(), ws.String())
+}
+
 func (s *SubData) SubKline(req_kline_info *datastruct.ReqHistKline, ws *net.WSInfo) {
 	defer util.CatchExp("SubKline")
 
